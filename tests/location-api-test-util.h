@@ -28,14 +28,14 @@
 G_BEGIN_DECLS
 
 void json_util_init(const char *file_file);
-char* json_util_result_zone_test(int polygon_index, int marker_index);
-char* json_util_get_marker_name(int polygon_index, int marker_index);
+char *json_util_result_zone_test(int polygon_index, int marker_index);
+char *json_util_get_marker_name(int polygon_index, int marker_index);
 int json_util_get_marker_position_count(int polygon_index);
 LocationPosition *json_util_get_marker_position(int polygon_index, int marker_index);
 
 int json_util_get_polygon_count(void);
-char* json_util_get_polygon_name(int polygon_index);
-LocationBoundary* json_util_get_polygon_boundary(int polygon_index);
+char *json_util_get_polygon_name(int polygon_index);
+LocationBoundary *json_util_get_polygon_boundary(int polygon_index);
 
 G_END_DECLS
 

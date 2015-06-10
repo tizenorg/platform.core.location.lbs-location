@@ -33,16 +33,20 @@
 
 G_BEGIN_DECLS
 
+#define CAPP	1
+#define WEBAPP	2
+#define CPPAPP	3
+
 typedef enum {
-	LOCATION_APP_OFF = 0,
-	LOCATION_APP_ON,
-	LOCATION_APP_NOT_FOUND
+    LOCATION_APP_OFF = 0,
+    LOCATION_APP_ON,
+    LOCATION_APP_NOT_FOUND
 } LOCATION_APP_STATE;
 
 typedef enum {
-	ZONE_STATUS_NONE = 0,
-	ZONE_STATUS_IN,
-	ZONE_STATUS_OUT,
+    ZONE_STATUS_NONE = 0,
+    ZONE_STATUS_IN,
+    ZONE_STATUS_OUT,
 } ZoneStatus;
 
 typedef struct _LocationBoundaryPrivate {
@@ -50,16 +54,12 @@ typedef struct _LocationBoundaryPrivate {
 	ZoneStatus zone_status;
 } LocationBoundaryPrivate;
 
-int location_application_manager (void);
-int location_application_enabled (void);
-
 int location_application_get_authority(void);
-int location_application_set_authority (int auth);
-int location_application_add_app_to_applist (void);
+int location_application_set_authority(int auth);
 
 int set_prop_boundary(GList **prev_boundary_list, GList *new_boundary_list);
 int set_prop_removal_boundary(GList **prev_boundary_list, LocationBoundary *boundary);
-void free_boundary_list (gpointer data);
+void free_boundary_list(gpointer data);
 
 G_END_DECLS
 

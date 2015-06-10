@@ -4,7 +4,7 @@
  * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
- *          Genie Kim <daejins.kim@samsung.com>
+ *					Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,36 +30,16 @@
 /* Tag defines */
 #define TAG_LOCATION_FWK "LOCATION"
 
-
-#ifdef LOCATION_DLOG_DEBUG        /* if debug mode, show filename & line number */
 #include <dlog.h>
-
 #ifdef LOG_TAG
 #undef LOG_TAG
 #define LOG_TAG TAG_LOCATION_FWK
 #endif
 
-#define LOCATION_LOGD(fmt,args...)  LOGD(fmt, ##args)
-#define LOCATION_LOGW(fmt,args...)  LOGW(fmt, ##args)
-#define LOCATION_LOGI(fmt,args...)  LOGI(fmt, ##args)
-#define LOCATION_LOGE(fmt,args...)  LOGE(fmt, ##args)
-#elif LOCATION_DLOG_RELEASE      /* if release mode */
-#include <dlog.h>
-
-#ifdef LOG_TAG
-#undef LOG_TAG
-#define LOG_TAG TAG_LOCATION_FWK
-#endif
-
-#define LOCATION_LOGD(fmt,args...)  LOGD(fmt, ##args)
-#define LOCATION_LOGW(fmt,args...)  LOGW(fmt, ##args)
-#define LOCATION_LOGI(fmt,args...)  LOGI(fmt, ##args)
-#define LOCATION_LOGE(fmt,args...)  LOGE(fmt, ##args)
-#else                       /* if do not use dlog */
-#define LOCATION_LOGD(...)  g_debug(__VA_ARGS__)
-#define LOCATION_LOGW(...)  g_warning(__VA_ARGS__)
-#define LOCATION_LOGI(...)  g_message(__VA_ARGS__)
-#define LOCATION_LOGE(...)  g_error(__VA_ARGS__)
-#endif
+#define LOCATION_LOGD(fmt,args...)		LOGD(fmt, ##args)
+#define LOCATION_LOGW(fmt,args...)		LOGW(fmt, ##args)
+#define LOCATION_LOGI(fmt,args...)		LOGI(fmt, ##args)
+#define LOCATION_LOGE(fmt,args...)		LOGE(fmt, ##args)
+#define LOCATION_SECLOG(fmt,args...)	SECURE_LOGW(fmt, ##args)
 
 #endif

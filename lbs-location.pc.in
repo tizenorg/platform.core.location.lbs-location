@@ -1,0 +1,11 @@
+prefix=@PREFIX@
+exec_prefix=@PREFIX@
+libdir=@LIBDIR@
+includedir=@INCLUDEDIR@/location
+
+Name: location
+Description: Tizen Location FW
+Requires: glib-2.0 gobject-2.0 gmodule-2.0 vconf
+Version: @VERSION@
+Libs: -L${libdir} -llbs-location
+Cflags: -I${includedir} -I${includedir}/location

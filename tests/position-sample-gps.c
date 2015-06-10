@@ -25,102 +25,102 @@
 static GMainLoop *loop = NULL;
 
 static gboolean
-exit_program (gpointer data)
+exit_program(gpointer data)
 {
-	g_main_loop_quit (loop);
-	g_debug ("Quit g_main_loop");
+	g_main_loop_quit(loop);
+	g_debug("Quit g_main_loop");
 	return FALSE;
 }
 
 static void
-cb_service_updated (GObject *self,
-	guint type,
-	gpointer data,
-	gpointer accuracy,
-	gpointer userdata)
+cb_service_updated(GObject *self,
+                   guint type,
+                   gpointer data,
+                   gpointer accuracy,
+                   gpointer userdata)
 {
 	g_debug("cb_service_updated: type(%d) userdata(0x%x)", type, (unsigned int)userdata);
 
-	LocationAccuracy *acc = (LocationAccuracy*) accuracy;
+	LocationAccuracy *acc = (LocationAccuracy *) accuracy;
 	switch (type) {
-	case POSITION_UPDATED: {
-			LocationPosition *pos = (LocationPosition*) data;
-			g_debug ("ASYNC>> Current position> time: %d, lat: %f, long: %f, alt: %f, status: %d",
-				pos->timestamp, pos->latitude, pos->longitude, pos->altitude, pos->status);
-			g_debug ("\tAccuracy level %d (%.0f meters %.0f meters)",
-				acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
-		}
+		case POSITION_UPDATED: {
+				LocationPosition *pos = (LocationPosition *) data;
+				g_debug("ASYNC>> Current position> time: %d, lat: %f, long: %f, alt: %f, status: %d",
+				        pos->timestamp, pos->latitude, pos->longitude, pos->altitude, pos->status);
+				g_debug("\tAccuracy level %d (%.0f meters %.0f meters)",
+				        acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
+			}
 	}
 }
 
 
 static void
-cb_service_enabled (GObject *self,
-	guint status,
-	gpointer userdata)
+cb_service_enabled(GObject *self,
+                   guint status,
+                   gpointer userdata)
 {
 	g_debug("cb_service_enabled: status(%d) userdata(0x%x)", status, (unsigned int)userdata);
 
-	LocationObject *loc = (LocationObject*)userdata;
+	LocationObject *loc = (LocationObject *)userdata;
 	LocationAccuracy *acc = NULL;
 	LocationPosition *pos = NULL;
 
-	if (LOCATION_ERROR_NONE == location_get_position (loc, &pos, &acc)) {
-		g_debug ("SYNC>> Current position> time: %d, lat: %f, long: %f, alt: %f, status: %d",
-			pos->timestamp, pos->latitude, pos->longitude, pos->altitude, pos->status);
-		g_debug ("\tAccuracy level %d (%.0f meters %.0f meters)",
-			acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
+	if (LOCATION_ERROR_NONE == location_get_position(loc, &pos, &acc)) {
+		g_debug("SYNC>> Current position> time: %d, lat: %f, long: %f, alt: %f, status: %d",
+		        pos->timestamp, pos->latitude, pos->longitude, pos->altitude, pos->status);
+		g_debug("\tAccuracy level %d (%.0f meters %.0f meters)",
+		        acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
 		location_position_free(pos);
 		location_accuracy_free(acc);
-	} else g_warning ("SYNC>> Current position> failed");
+	} else g_warning("SYNC>> Current position> failed");
 }
 
 static void
-cb_service_disabled (GObject *self,
-	guint status,
-	gpointer userdata)
+cb_service_disabled(GObject *self,
+                    guint status,
+                    gpointer userdata)
 {
 	g_debug("cb_service_disabled: status(%d) userdata(0x%x)", status, (unsigned int)userdata);
 }
 
 int
-main (int argc, char *argv[])
+main(int argc, char *argv[])
 {
 	LocationObject *loc = NULL;
 
-	location_init ();
+	location_init();
 
-	loop = g_main_loop_new (NULL, TRUE);
+	loop = g_main_loop_new(NULL, TRUE);
 
-	loc  = location_new (LOCATION_METHOD_GPS);
+	loc  = location_new(LOCATION_METHOD_GPS);
 	if (!loc) {
 		g_debug("location_new failed");
 		return -1;
 	}
 
-	g_signal_connect (loc, "service-enabled", G_CALLBACK(cb_service_enabled), loc);
-	g_signal_connect (loc, "service-disabled", G_CALLBACK(cb_service_disabled), loc);
-	g_signal_connect (loc, "service-updated", G_CALLBACK(cb_service_updated), loc);
+	g_signal_connect(loc, "service-enabled", G_CALLBACK(cb_service_enabled), loc);
+	g_signal_connect(loc, "service-disabled", G_CALLBACK(cb_service_disabled), loc);
+	g_signal_connect(loc, "service-updated", G_CALLBACK(cb_service_updated), loc);
 
-	if( LOCATION_ERROR_NONE != location_start (loc) ){
+	if (LOCATION_ERROR_NONE != location_start(loc)) {
 		g_debug("location_start failed");
 		return -1;
 	}
 
 	g_timeout_add_seconds(60, exit_program, NULL);
-	g_main_loop_run (loop);
+	g_main_loop_run(loop);
 
-	location_stop (loc);
+	location_stop(loc);
 
 	LocationPosition *pos = NULL;
 	g_object_get(loc, "last-position", &pos, NULL);
 	if (pos) {
-		g_debug ("Get property>> last-position> time: %d, lat: %f, long: %f, alt: %f, status: %d",
-			pos->timestamp, pos->latitude, pos->longitude, pos->altitude, pos->status);
+		g_debug("Get property>> last-position> time: %d, lat: %f, long: %f, alt: %f, status: %d",
+		        pos->timestamp, pos->latitude, pos->longitude, pos->altitude, pos->status);
 		location_position_free(pos);
 	} else 	g_warning("failed to get property> last-position");
 
-	location_free (loc);
+	location_free(loc);
 
 	return 0;
 }

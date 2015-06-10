@@ -1,5 +1,0 @@
-* Mon Jul 01 2013 Anas Nashif <anas.nashif@intel.com> submit/tizen/20130517.044936@a3cd55b
-- we do not depend on gconf
-
-* Tue May 28 2013 Baptiste DURAND <baptiste.durand@eurogiciel.fr> accepted/tizen/20130520.101053@268dabb
-- Fix build for x86_64 arch

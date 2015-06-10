@@ -19,22 +19,14 @@
  * limitations under the License.
  */
 
+#ifndef __LOCATION_PRIVACY_H__
+#define __LOCATION_PRIVACY_H__
 
-#ifndef __LOCATION_MAP_SERVICE_EXT_H__
-#define __LOCATION_MAP_SERVICE_EXT_H__
+void location_privacy_initialize(void);
+void location_privacy_finalize(void);
+int location_get_app_type(char *app_id);
+int location_get_privacy(const char *privilege_name);
+int location_check_privilege(const char *privilege_name);
 
 
-#include <location-map-types.h>
-#include <location-route-ext.h>
-#include <location-landmark-ext.h>
-
-G_BEGIN_DECLS
-
-/**
- * @file location-map-service-ext.h
- * @brief This file contains the extensional headers.
- */
-
-G_END_DECLS
-
-#endif /* __LOCATION_MAP_SERVICE_EXT_H__ */
+#endif /* __LOCATION_PRIVACY_H__ */

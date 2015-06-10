@@ -4,7 +4,7 @@
  * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
- *          Genie Kim <daejins.kim@samsung.com>
+ *			Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,25 +27,27 @@
 #include "location-log.h"
 
 GType
-location_accuracy_get_type (void)
+location_accuracy_get_type(void)
 {
 	static volatile gsize type_volatile = 0;
-	if(g_once_init_enter(&type_volatile)) {
-		GType type = g_boxed_type_register_static (
-			g_intern_static_string ("LocationAccuracy"),
-			(GBoxedCopyFunc) location_accuracy_copy,
-			(GBoxedFreeFunc) location_accuracy_free);
+	if (g_once_init_enter(&type_volatile)) {
+		GType type = g_boxed_type_register_static(
+		                 g_intern_static_string("LocationAccuracy"),
+		                 (GBoxedCopyFunc) location_accuracy_copy,
+		                 (GBoxedFreeFunc) location_accuracy_free);
 		g_once_init_leave(&type_volatile, type);
 	}
 	return type_volatile;
 }
 
-EXPORT_API LocationAccuracy*
-location_accuracy_new (LocationAccuracyLevel level,
-	gdouble horizontal_accuracy,
-	gdouble vertical_accuracy)
+EXPORT_API LocationAccuracy *
+location_accuracy_new(LocationAccuracyLevel level,
+                      gdouble horizontal_accuracy,
+                      gdouble vertical_accuracy)
 {
-	LocationAccuracy* accuracy = g_slice_new0 (LocationAccuracy);
+	LocationAccuracy *accuracy = g_slice_new0(LocationAccuracy);
+	g_return_val_if_fail(accuracy, NULL);
+
 	accuracy->level = level;
 	accuracy->horizontal_accuracy = horizontal_accuracy;
 	accuracy->vertical_accuracy = vertical_accuracy;
@@ -54,10 +56,10 @@ location_accuracy_new (LocationAccuracyLevel level,
 }
 
 EXPORT_API void
-location_accuracy_free (LocationAccuracy* accuracy)
+location_accuracy_free(LocationAccuracy *accuracy)
 {
-	g_return_if_fail (accuracy);
-	g_slice_free (LocationAccuracy, accuracy);
+	g_return_if_fail(accuracy);
+	g_slice_free(LocationAccuracy, accuracy);
 }
 
 static int
@@ -86,22 +88,22 @@ location_accuracy_level_compare(const LocationAccuracy *accuracy1, const Locatio
 }
 
 EXPORT_API int
-location_accuracy_compare (const LocationAccuracy *accuracy1, const LocationAccuracy *accuracy2)
+location_accuracy_compare(const LocationAccuracy *accuracy1, const LocationAccuracy *accuracy2)
 {
 	int ret = 0;
 	ret = location_accuracy_level_compare(accuracy1, accuracy2);
-	if(!ret){
+	if (!ret) {
 		ret = comp_double_reverse(accuracy1->horizontal_accuracy, accuracy2->horizontal_accuracy);
-		if(!ret) return comp_double_reverse(accuracy1->vertical_accuracy, accuracy2->vertical_accuracy);
+		if (!ret) return comp_double_reverse(accuracy1->vertical_accuracy, accuracy2->vertical_accuracy);
 	}
 	return ret;
 }
 
-EXPORT_API LocationAccuracy*
-location_accuracy_copy (const LocationAccuracy *accuracy)
+EXPORT_API LocationAccuracy *
+location_accuracy_copy(const LocationAccuracy *accuracy)
 {
 	g_return_val_if_fail(accuracy, NULL);
 	return location_accuracy_new(accuracy->level,
-				accuracy->horizontal_accuracy,
-				accuracy->vertical_accuracy);
+	                             accuracy->horizontal_accuracy,
+	                             accuracy->vertical_accuracy);
 }

@@ -30,16 +30,16 @@ static int _get_polygon_position_count(int polygon_index)
 {
 	if (parser == NULL || root == NULL) return 0;
 
-	JsonObject* polygon_obj = json_array_get_object_element(json_node_get_array(root), polygon_index);
+	JsonObject *polygon_obj = json_array_get_object_element(json_node_get_array(root), polygon_index);
 	if (polygon_obj == NULL) return 0;
 
-	JsonArray * positions = json_object_get_array_member (polygon_obj, "positions");
+	JsonArray *positions = json_object_get_array_member(polygon_obj, "positions");
 	if (positions == NULL) return 0;
 
 	return json_array_get_length(positions);
 }
 
-static LocationPosition* _get_position_from_polygon(int polygon_index, int pos_index)
+static LocationPosition *_get_position_from_polygon(int polygon_index, int pos_index)
 {
 	double latitude = 0.0;
 	double longitude = 0.0;
@@ -47,8 +47,8 @@ static LocationPosition* _get_position_from_polygon(int polygon_index, int pos_i
 	if (parser == NULL || root == NULL) return NULL;
 
 	JsonObject *polygon_obj = json_array_get_object_element(json_node_get_array(root), polygon_index);
-	JsonArray * pos_array = json_object_get_array_member(polygon_obj, "positions");
-	JsonObject* pos = json_array_get_object_element(pos_array, pos_index);
+	JsonArray *pos_array = json_object_get_array_member(polygon_obj, "positions");
+	JsonObject *pos = json_array_get_object_element(pos_array, pos_index);
 
 	latitude = json_object_get_double_member(pos, "latitude");
 	longitude = json_object_get_double_member(pos, "longitude");
@@ -60,7 +60,7 @@ static LocationPosition* _get_position_from_polygon(int polygon_index, int pos_i
 	return position;
 }
 
-static LocationPosition* _get_marker_position_from_polygon(int polygon_index, int pos_index)
+static LocationPosition *_get_marker_position_from_polygon(int polygon_index, int pos_index)
 {
 	double latitude = 0.0;
 	double longitude = 0.0;
@@ -68,8 +68,8 @@ static LocationPosition* _get_marker_position_from_polygon(int polygon_index, in
 	if (parser == NULL || root == NULL) return NULL;
 
 	JsonObject *polygon_obj = json_array_get_object_element(json_node_get_array(root), polygon_index);
-	JsonArray * pos_array = json_object_get_array_member(polygon_obj, "marker_position");
-	JsonObject* pos = json_array_get_object_element(pos_array, pos_index);
+	JsonArray *pos_array = json_object_get_array_member(polygon_obj, "marker_position");
+	JsonObject *pos = json_array_get_object_element(pos_array, pos_index);
 
 	latitude = json_object_get_double_member(pos, "latitude");
 	longitude = json_object_get_double_member(pos, "longitude");
@@ -85,25 +85,25 @@ static void _free_position_list(gpointer data)
 {
 	if (data == NULL) return;
 
-	LocationPosition *position = (LocationPosition*) data;
+	LocationPosition *position = (LocationPosition *) data;
 
 	location_position_free(position);
 }
 
 
-LocationBoundary* json_util_get_polygon_boundary(int polygon_index)
+LocationBoundary *json_util_get_polygon_boundary(int polygon_index)
 {
 	if (parser == NULL || root == NULL) {
 		g_printf("invalid param parser[%d], root[%d]\n", parser, root);
 		return NULL;
 	}
-	GList* position_list = NULL;
+	GList *position_list = NULL;
 	LocationBoundary *boundary = NULL;
 	int index = 0;
 	int pos_count = _get_polygon_position_count(polygon_index);
 	if (pos_count == 0) return NULL;
 
-	for(index = 0; index < pos_count; index++) {
+	for (index = 0; index < pos_count; index++) {
 		position_list = g_list_append(position_list, _get_position_from_polygon(polygon_index, index));
 	}
 
@@ -118,7 +118,7 @@ LocationBoundary* json_util_get_polygon_boundary(int polygon_index)
 /* Polygon boundary */
 int json_util_get_polygon_count(void)
 {
-	JsonArray * array = json_node_get_array(root);
+	JsonArray *array = json_node_get_array(root);
 
 	return json_array_get_length(array);
 }
@@ -129,20 +129,20 @@ char *json_util_get_polygon_name(int polygon_index)
 	JsonObject *polygon_obj = json_array_get_object_element(json_node_get_array(root), polygon_index);
 
 	name = (char *)json_object_get_string_member(polygon_obj, "name");
-	if (name == NULL)  return NULL;
+	if (name == NULL) return NULL;
 
 	return g_strdup(name);
 }
 
 /* Test Marker */
-char * json_util_get_marker_name(int polygon_index, int pos_index)
+char *json_util_get_marker_name(int polygon_index, int pos_index)
 {
 	char *result = NULL;
 	if (parser == NULL || root == NULL) return NULL;
 
 	JsonObject *polygon_obj = json_array_get_object_element(json_node_get_array(root), polygon_index);
-	JsonArray * pos_array = json_object_get_array_member(polygon_obj, "marker_position");
-	JsonObject* pos = json_array_get_object_element(pos_array, pos_index);
+	JsonArray *pos_array = json_object_get_array_member(polygon_obj, "marker_position");
+	JsonObject *pos = json_array_get_object_element(pos_array, pos_index);
 
 	result = (char *)json_object_get_string_member(pos, "where");
 	if (result == NULL) return NULL;
@@ -154,8 +154,8 @@ int json_util_get_marker_position_count(int polygon_index)
 {
 	if (parser == NULL || root == NULL) return 0;
 
-	JsonObject* polygon_obj = json_array_get_object_element(json_node_get_array(root), polygon_index);
-	JsonArray * marker_position = json_object_get_array_member (polygon_obj, "marker_position");
+	JsonObject *polygon_obj = json_array_get_object_element(json_node_get_array(root), polygon_index);
+	JsonArray *marker_position = json_object_get_array_member(polygon_obj, "marker_position");
 
 	return json_array_get_length(marker_position);
 }
@@ -164,20 +164,20 @@ LocationPosition *json_util_get_marker_position(int polygon_index, int marker_in
 {
 	if (parser == NULL || root == NULL) return NULL;
 
-	LocationPosition* position = NULL;
+	LocationPosition *position = NULL;
 	position = _get_marker_position_from_polygon(polygon_index, marker_index);
 
 	return position;
 }
 
-char* json_util_result_zone_test(int polygon_index, int marker_index)
+char *json_util_result_zone_test(int polygon_index, int marker_index)
 {
 	if (parser == NULL || root == NULL) return NULL;
 
 	char *result = NULL;
 	JsonObject *polygon_obj = json_array_get_object_element(json_node_get_array(root), polygon_index);
-	JsonArray * pos_array = json_object_get_array_member(polygon_obj, "marker_position");
-	JsonObject* pos = json_array_get_object_element(pos_array, marker_index);
+	JsonArray *pos_array = json_object_get_array_member(polygon_obj, "marker_position");
+	JsonObject *pos = json_array_get_object_element(pos_array, marker_index);
 
 	result = (char *)json_object_get_string_member(pos, "result");
 	if (result == NULL) return NULL;
@@ -185,7 +185,7 @@ char* json_util_result_zone_test(int polygon_index, int marker_index)
 	return g_strdup(result);
 }
 
-void json_util_init(const char * file_name)
+void json_util_init(const char *file_name)
 {
 	g_print("Enter init_json_parser");
 	GError *error;

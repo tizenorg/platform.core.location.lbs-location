@@ -31,25 +31,36 @@
  * @brief This file contains the definitions and functions for setting.
  */
 
+#define LOCATION_UPDATE_INTERVAL_NONE		0
 #define LOCATION_UPDATE_INTERVAL_MIN		1
 #define LOCATION_UPDATE_INTERVAL_MAX		120
-#define LOCATION_UPDATE_INTERVAL_DEFAULT 	LOCATION_UPDATE_INTERVAL_MIN
+#define LOCATION_UPDATE_INTERVAL_DEFAULT	LOCATION_UPDATE_INTERVAL_MIN
+#define LOCATION_BATCH_PERIOD_MIN			120
+#define LOCATION_BATCH_PERIOD_MAX			600
+#define LOCATION_BATCH_PERIOD_DEFAULT		LOCATION_BATCH_PERIOD_MIN
+#define LOCATION_MIN_INTERVAL_MIN			1
+#define LOCATION_MIN_INTERVAL_MAX			120
+#define LOCATION_MIN_INTERVAL_DEFAULT		LOCATION_MIN_INTERVAL_MIN
+#define LOCATION_MIN_DISTANCE_MIN			1.0
+#define LOCATION_MIN_DISTANCE_MAX			120.0
+#define LOCATION_MIN_DISTANCE_DEFAULT		LOCATION_MIN_DISTANCE_MIN
 
 typedef void (*SettingCB)(keynode_t *key, gpointer data);
 
 gint location_setting_get_key_val(keynode_t *key);
-gint location_setting_get_int(const gchar* path);
-gchar *location_setting_get_string(const gchar* path);
-gint location_setting_add_notify(const gchar* path, SettingCB setting_cb, gpointer self);
-gint location_setting_ignore_notify(const gchar* path, SettingCB setting_cb);
+gint location_setting_get_int(const gchar *path);
+gboolean location_setting_get_bool(const gchar *path);
+gchar *location_setting_get_string(const gchar *path);
+gint location_setting_add_notify(const gchar *path, SettingCB setting_cb, gpointer self);
+gint location_setting_ignore_notify(const gchar *path, SettingCB setting_cb);
 
 #define setting_retval_if_fail(path) {\
-	int val = location_setting_get_int(path);\
-	if (val == -1){\
-		return LOCATION_ERROR_UNKNOWN;\
-	} else if (val == 0) {\
-		return LOCATION_ERROR_SETTING_OFF;\
-	}\
-}
+		int val = location_setting_get_int(path);\
+		if (val == -1){\
+			return LOCATION_ERROR_UNKNOWN;\
+		} else if (val == 0) {\
+			return LOCATION_ERROR_SETTING_OFF;\
+		}\
+	}
 
 #endif

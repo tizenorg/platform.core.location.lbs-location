@@ -27,26 +27,28 @@
 #include "location-log.h"
 
 GType
-location_velocity_get_type (void)
+location_velocity_get_type(void)
 {
 	static volatile gsize type_volatile = 0;
-	if(g_once_init_enter(&type_volatile)) {
-		GType type = g_boxed_type_register_static (
-			g_intern_static_string ("LocationVelocity"),
-			(GBoxedCopyFunc) location_velocity_copy,
-			(GBoxedFreeFunc) location_velocity_free);
+	if (g_once_init_enter(&type_volatile)) {
+		GType type = g_boxed_type_register_static(
+		                 g_intern_static_string("LocationVelocity"),
+		                 (GBoxedCopyFunc) location_velocity_copy,
+		                 (GBoxedFreeFunc) location_velocity_free);
 		g_once_init_leave(&type_volatile, type);
 	}
 	return type_volatile;
 }
 
-EXPORT_API LocationVelocity*
-location_velocity_new (guint timestamp,
-	gdouble speed,
-	gdouble direction,
-	gdouble climb)
+EXPORT_API LocationVelocity *
+location_velocity_new(guint timestamp,
+                      gdouble speed,
+                      gdouble direction,
+                      gdouble climb)
 {
-	LocationVelocity* velocity = g_slice_new0(LocationVelocity);
+	LocationVelocity *velocity = g_slice_new0(LocationVelocity);
+	g_return_val_if_fail(velocity, NULL);
+
 	velocity->timestamp = timestamp;
 	velocity->speed = speed;
 	velocity->direction = direction;
@@ -55,37 +57,37 @@ location_velocity_new (guint timestamp,
 }
 
 EXPORT_API void
-location_velocity_free (LocationVelocity* velocity)
+location_velocity_free(LocationVelocity *velocity)
 {
 	g_return_if_fail(velocity);
 	g_slice_free(LocationVelocity, velocity);
 }
 
 EXPORT_API gboolean
-location_velocity_equal (const LocationVelocity *velocity1, const LocationVelocity *velocity2)
+location_velocity_equal(const LocationVelocity *velocity1, const LocationVelocity *velocity2)
 {
 	g_return_val_if_fail(velocity1, FALSE);
 	g_return_val_if_fail(velocity2, FALSE);
 
 	if (velocity1->timestamp == velocity2->timestamp &&
-		velocity1->speed == velocity2->speed &&
-		velocity1->direction == velocity2->direction &&
-		velocity1->climb == velocity2->climb)
+	    velocity1->speed == velocity2->speed &&
+	    velocity1->direction == velocity2->direction &&
+	    velocity1->climb == velocity2->climb)
 		return TRUE;
 	return FALSE;
 }
 
-EXPORT_API LocationVelocity*
-location_velocity_copy (const LocationVelocity *velocity)
+EXPORT_API LocationVelocity *
+location_velocity_copy(const LocationVelocity *velocity)
 {
 	g_return_val_if_fail(velocity, NULL);
 
 	LocationVelocity *new_velocity = NULL;
 
 	new_velocity = location_velocity_new(velocity->timestamp,
-								velocity->speed,
-								velocity->direction,
-								velocity->climb);
+	                                     velocity->speed,
+	                                     velocity->direction,
+	                                     velocity->climb);
 
 	return new_velocity;
 }

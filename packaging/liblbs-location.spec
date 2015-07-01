@@ -51,7 +51,7 @@ MAJORVER=`echo %{version} | awk 'BEGIN {FS="."}{print $1}'`
 #cmake . -DCMAKE_INSTALL_PREFIX=/usr -DFULLVER=%{version} -DMAJORVER=${MAJORVER} \
 cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix} -DBUILD_PKGTYPE=rpm -DLIBDIR=%{_libdir} -DINCLUDEDIR=%{_includedir} \
 -DFULLVER=%{version} -DMAJORVER=${MAJORVER} \
-%if "%{?tizen_profile_name}" == "wearable"
+%if "%{profile}" == "wearable"
 	-DFEATURE_PROFILE_WEARABLE:BOOL=ON
 %else
 	-DFEATURE_PROFILE_WEARABLE:BOOL=OFF

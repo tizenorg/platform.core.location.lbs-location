@@ -337,7 +337,7 @@ hybrid_service_updated(GObject *obj,
 			LOCATION_LOGD("Searching GPS");
 
 			/* restart WPS when GPS not available */
-			g_object_get(priv->wps, "is_started", &wps_started, NULL);
+			if (priv->wps) g_object_get(priv->wps, "is_started", &wps_started, NULL);
 			if (priv->wps && wps_started == FALSE) {
 				ret = location_start(priv->wps);
 				if (ret != LOCATION_ERROR_NONE) {
@@ -378,7 +378,7 @@ hybrid_service_updated(GObject *obj,
 		}
 
 		/* if receive GPS position then stop WPS.. */
-		g_object_get(priv->wps, "is_started", &wps_started, NULL);
+		if (priv->wps) g_object_get(priv->wps, "is_started", &wps_started, NULL);
 		if (LOCATION_TYPE_GPS == g_type && wps_started == TRUE) {
 			ret = location_stop(priv->wps);
 			if (ret != LOCATION_ERROR_NONE) {
@@ -449,9 +449,13 @@ location_hybrid_start(LocationHybrid *self)
 
 	LocationHybridPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
+	if (!priv->gps && !priv->wps) {
+		LOCATION_LOGE("GPS and WPS Object are not created.");
+		return LOCATION_ERROR_NOT_AVAILABLE;
+	}
 
-	g_object_get(priv->gps, "is_started", &gps_started, NULL);
-	g_object_get(priv->wps, "is_started", &wps_started, NULL);
+	if (priv->gps) g_object_get(priv->gps, "is_started", &gps_started, NULL);
+	if (priv->wps) g_object_get(priv->wps, "is_started", &wps_started, NULL);
 
 	if ((gps_started == TRUE) || (wps_started == TRUE)) {
 		LOCATION_LOGD("Already started");
@@ -508,7 +512,7 @@ location_hybrid_stop(LocationHybrid *self)
 	gboolean wps_started = FALSE;
 
 	g_object_get(priv->gps, "is_started", &gps_started, NULL);
-	g_object_get(priv->wps, "is_started", &wps_started, NULL);
+	if (priv->wps) g_object_get(priv->wps, "is_started", &wps_started, NULL);
 
 	if ((gps_started == FALSE) && (wps_started == FALSE)) {
 		return LOCATION_ERROR_NONE;

@@ -37,7 +37,7 @@
 #define LOG_TAG TAG_LOCATION_FWK
 #endif
 
-#define MODULE_PATH_PREFIX LIBDIR"location/module"
+#define MODULE_PATH_PREFIX LIBDIR"/location/module"
 /* const char *MODULE_PATH_PREFIX = "/usr/lib/location/module"; */
 
 static GMod *gmod_new(const char *module_name, gboolean is_resident)

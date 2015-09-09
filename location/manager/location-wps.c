@@ -71,6 +71,7 @@ enum {
     PROP_LAST_POSITION,
     PROP_POS_INTERVAL,
     PROP_VEL_INTERVAL,
+    PROP_LOC_INTERVAL,
     PROP_BOUNDARY,
     PROP_REMOVAL_BOUNDARY,
     PROP_MIN_INTERVAL,
@@ -394,6 +395,19 @@ location_wps_set_property(GObject *object,
 				}
 				break;
 			}
+		case PROP_LOC_INTERVAL: {
+				guint interval = g_value_get_uint(value);
+				LOCATION_LOGD("Set prop>> PROP_LOC_INTERVAL: %u", interval);
+				if (interval > 0) {
+					if (interval < LOCATION_UPDATE_INTERVAL_MAX)
+						priv->loc_interval = interval;
+					else
+						priv->loc_interval = (guint)LOCATION_UPDATE_INTERVAL_MAX;
+				} else
+					priv->loc_interval = (guint)LOCATION_UPDATE_INTERVAL_DEFAULT;
+
+				break;
+			}
 		case PROP_MIN_INTERVAL: {
 				guint interval = g_value_get_uint(value);
 				LOCATION_LOGD("Set prop>> update-min-interval: %u", interval);
@@ -453,6 +467,9 @@ location_wps_get_property(GObject *object,
 			break;
 		case PROP_VEL_INTERVAL:
 			g_value_set_uint(value, priv->vel_interval);
+			break;
+		case PROP_LOC_INTERVAL:
+			g_value_set_uint(value, priv->loc_interval);
 			break;
 		case PROP_MIN_INTERVAL:
 			g_value_set_uint(value, priv->min_interval);
@@ -627,11 +644,12 @@ static gboolean __single_location_timeout_cb(void *data)
 	if (priv->loc_timeout) g_source_remove(priv->loc_timeout);
 	priv->loc_timeout = 0;
 
-	g_signal_emit(self, signals[LOCATION_UPDATED], LOCATION_ERROR_NOT_AVAILABLE, 0, pos, vel, acc);
+	g_signal_emit(self, signals[LOCATION_UPDATED], 0, LOCATION_ERROR_NOT_AVAILABLE, pos, vel, acc);
 	location_wps_stop(self);
 
 	return FALSE;
 }
+
 
 static void
 wps_single_location_cb(gboolean enabled,
@@ -649,7 +667,7 @@ wps_single_location_cb(gboolean enabled,
 	LocationWpsPrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(priv);
 
-	g_signal_emit(self, signals[LOCATION_UPDATED], LOCATION_ERROR_NONE, 0, pos, vel, acc);
+	g_signal_emit(self, signals[LOCATION_UPDATED], 0, LOCATION_ERROR_NONE, pos, vel, acc);
 	if (priv->loc_timeout) {
 		g_source_remove(priv->loc_timeout);
 		priv->loc_timeout = 0;
@@ -753,10 +771,12 @@ location_wps_init(LocationWps *self)
 
 	priv->pos_interval = LOCATION_UPDATE_INTERVAL_DEFAULT;
 	priv->vel_interval = LOCATION_UPDATE_INTERVAL_DEFAULT;
-	priv->min_interval = 0;
+	priv->loc_interval = LOCATION_UPDATE_INTERVAL_DEFAULT;
+	priv->min_interval = LOCATION_UPDATE_INTERVAL_NONE;
 
 	priv->pos_updated_timestamp = 0;
 	priv->vel_updated_timestamp = 0;
+	priv->loc_updated_timestamp = 0;
 
 	priv->pos = NULL;
 	priv->vel = NULL;
@@ -811,9 +831,10 @@ location_wps_class_init(LocationWpsClass *klass)
 	                                        G_SIGNAL_NO_RECURSE,
 	                                        G_STRUCT_OFFSET(LocationWpsClass, updated),
 	                                        NULL, NULL,
-	                                        location_VOID__UINT_POINTER_POINTER,
-	                                        G_TYPE_NONE, 3,
-	                                        G_TYPE_UINT,
+	                                        location_VOID__INT_POINTER_POINTER_POINTER,
+	                                        G_TYPE_NONE, 4,
+	                                        G_TYPE_INT,
+	                                        G_TYPE_POINTER,
 	                                        G_TYPE_POINTER,
 	                                        G_TYPE_POINTER);
 
@@ -885,6 +906,14 @@ location_wps_class_init(LocationWpsClass *klass)
 	properties[PROP_VEL_INTERVAL] = g_param_spec_uint("vel-interval",
 	                                                  "wps velocity interval prop",
 	                                                  "wps velocity interval data",
+	                                                  LOCATION_UPDATE_INTERVAL_MIN,
+	                                                  LOCATION_UPDATE_INTERVAL_MAX,
+	                                                  LOCATION_UPDATE_INTERVAL_DEFAULT,
+	                                                  G_PARAM_READWRITE);
+
+	properties[PROP_LOC_INTERVAL] = g_param_spec_uint("loc-interval",
+	                                                  "gps location interval prop",
+	                                                  "gps location interval data",
 	                                                  LOCATION_UPDATE_INTERVAL_MIN,
 	                                                  LOCATION_UPDATE_INTERVAL_MAX,
 	                                                  LOCATION_UPDATE_INTERVAL_DEFAULT,

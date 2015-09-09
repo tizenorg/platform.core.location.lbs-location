@@ -97,10 +97,6 @@ position_velocity_signaling(LocationObject *obj,
 		}
 	}
 
-	if ((pos_interval == 0) && (vel_interval == 0) && (loc_interval == 0)) {
-		signal_type |= POSITION_UPDATED;
-	}
-
 	if (signal_type != 0) {
 		g_signal_emit(obj, signals[SERVICE_UPDATED], 0, signal_type, pos, vel, acc);
 	}
@@ -124,7 +120,6 @@ position_velocity_signaling(LocationObject *obj,
 			index++;
 		}
 	}
-
 }
 
 void

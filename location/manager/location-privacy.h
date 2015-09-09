@@ -24,7 +24,6 @@
 
 void location_privacy_initialize(void);
 void location_privacy_finalize(void);
-int location_get_app_type(char *app_id);
 int location_get_privacy(const char *privilege_name);
 int location_check_privilege(const char *privilege_name);
 

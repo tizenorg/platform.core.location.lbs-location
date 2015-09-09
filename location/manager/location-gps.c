@@ -211,6 +211,8 @@ __reset_pos_data_from_priv(LocationGpsPrivate *priv)
 	priv->vel_updated_timestamp = 0;
 	priv->sat_updated_timestamp = 0;
 	priv->loc_updated_timestamp = 0;
+
+	priv->signal_type = 0;
 }
 
 static gboolean
@@ -351,8 +353,6 @@ location_setting_search_cb(keynode_t *key, gpointer self)
 	g_return_if_fail(self);
 	LocationGpsPrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(priv);
-	g_return_if_fail(priv->mod);
-	g_return_if_fail(priv->mod->handler);
 
 	if (location_setting_get_key_val(key) == VCONFKEY_LOCATION_GPS_SEARCHING) {
 		if (!priv->pos_searching_timer) priv->pos_searching_timer = g_timeout_add(priv->pos_interval * 1000, _position_timeout_cb, self);
@@ -404,7 +404,7 @@ location_setting_gps_cb(keynode_t *key,
 static int
 location_gps_start(LocationGps *self)
 {
-	LOCATION_LOGD("location_gps_start");
+	LOCATION_LOGD("ENTER >>>");
 	LocationGpsPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
@@ -431,12 +431,14 @@ location_gps_start(LocationGps *self)
 
 	if (priv->app_type != CPPAPP && priv->set_noti == FALSE) {
 		location_setting_add_notify(VCONFKEY_LOCATION_ENABLED, location_setting_gps_cb, self);
+
 #ifdef TIZEN_PROFILE_MOBILE
-		location_setting_add_notify(VCONFKEY_LOCATION_GPS_STATE, location_setting_search_cb, self);
+		location_state_add_notify(VCONFKEY_LOCATION_GPS_STATE, location_setting_search_cb, self);
 #endif
 		priv->set_noti = TRUE;
 	}
 
+	LOCATION_LOGD("EXIT <<<");
 	return ret;
 }
 
@@ -472,7 +474,7 @@ location_gps_stop(LocationGps *self)
 	if (priv->app_type != CPPAPP && priv->set_noti == TRUE) {
 		location_setting_ignore_notify(VCONFKEY_LOCATION_ENABLED, location_setting_gps_cb);
 #ifdef TIZEN_PROFILE_MOBILE
-		location_setting_ignore_notify(VCONFKEY_LOCATION_GPS_STATE, location_setting_search_cb);
+		location_state_ignore_notify(VCONFKEY_LOCATION_GPS_STATE, location_setting_search_cb);
 #endif
 		priv->set_noti = FALSE;
 	}
@@ -550,16 +552,16 @@ location_gps_dispose(GObject *gobject)
 #ifdef TIZEN_PROFILE_MOBILE
 	if (priv->pos_searching_timer) g_source_remove(priv->pos_searching_timer);
 	if (priv->vel_searching_timer) g_source_remove(priv->vel_searching_timer);
-	if (priv->loc_timeout) g_source_remove(priv->loc_timeout);
 	priv->pos_searching_timer = 0;
 	priv->vel_searching_timer = 0;
-	priv->loc_timeout = 0;
 #endif
+	if (priv->loc_timeout) g_source_remove(priv->loc_timeout);
+	priv->loc_timeout = 0;
 
 	if (priv->app_type != CPPAPP && priv->set_noti == TRUE) {
 		location_setting_ignore_notify(VCONFKEY_LOCATION_ENABLED, location_setting_gps_cb);
 #ifdef TIZEN_PROFILE_MOBILE
-		location_setting_ignore_notify(VCONFKEY_LOCATION_GPS_STATE, location_setting_search_cb);
+		location_state_ignore_notify(VCONFKEY_LOCATION_GPS_STATE, location_setting_search_cb);
 #endif
 		priv->set_noti = FALSE;
 	}
@@ -636,13 +638,17 @@ location_gps_set_property(GObject *object,
 		case PROP_POS_INTERVAL: {
 				guint interval = g_value_get_uint(value);
 				LOCATION_LOGD("Set prop>> PROP_POS_INTERVAL: %u", interval);
+				/* We don't need to set interval when new one is same as the previous one */
+				if (interval == priv->pos_interval) break;
+
 				if (interval > 0) {
 					if (interval < LOCATION_UPDATE_INTERVAL_MAX)
 						priv->pos_interval = interval;
 					else
 						priv->pos_interval = (guint)LOCATION_UPDATE_INTERVAL_MAX;
-				} else
+				} else {
 					priv->pos_interval = (guint)LOCATION_UPDATE_INTERVAL_DEFAULT;
+				}
 
 #ifdef TIZEN_PROFILE_MOBILE
 				if (priv->pos_searching_timer) {
@@ -662,6 +668,8 @@ location_gps_set_property(GObject *object,
 		case PROP_VEL_INTERVAL: {
 				guint interval = g_value_get_uint(value);
 				LOCATION_LOGD("Set prop>> PROP_VEL_INTERVAL: %u", interval);
+				if (interval == priv->vel_interval) break;
+
 				if (interval > 0) {
 					if (interval < LOCATION_UPDATE_INTERVAL_MAX)
 						priv->vel_interval = interval;
@@ -854,10 +862,7 @@ location_gps_get_position(LocationGps *self,
 
 	LocationGpsPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
-	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
 	setting_retval_if_fail(VCONFKEY_LOCATION_ENABLED);
-
-	g_return_val_if_fail(priv->mod->handler, LOCATION_ERROR_NOT_AVAILABLE);
 
 	if (__get_started(self) != TRUE) {
 		LOCATION_LOGE("location is not started");
@@ -884,7 +889,6 @@ location_gps_get_position_ext(LocationGps *self,
 
 	LocationGpsPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
-	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
 	setting_retval_if_fail(VCONFKEY_LOCATION_ENABLED);
 
 	if (__get_started(self) != TRUE) {
@@ -952,9 +956,7 @@ location_gps_get_velocity(LocationGps *self,
 
 	LocationGpsPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
-	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
 	setting_retval_if_fail(VCONFKEY_LOCATION_ENABLED);
-	g_return_val_if_fail(priv->mod->handler, LOCATION_ERROR_NOT_AVAILABLE);
 
 	if (__get_started(self) != TRUE) {
 		LOCATION_LOGE("location is not started");
@@ -1007,7 +1009,7 @@ static gboolean __single_location_timeout_cb(void *data)
 	if (priv->loc_timeout) g_source_remove(priv->loc_timeout);
 	priv->loc_timeout = 0;
 
-	g_signal_emit(self, signals[LOCATION_UPDATED], LOCATION_ERROR_NOT_AVAILABLE, 0, pos, vel, acc);
+	g_signal_emit(self, signals[LOCATION_UPDATED], 0, LOCATION_ERROR_NOT_AVAILABLE, pos, vel, acc);
 	location_gps_stop(self);
 
 	return FALSE;
@@ -1030,7 +1032,7 @@ gps_single_location_cb(gboolean enabled,
 	LocationGpsPrivate *priv = GET_PRIVATE(obj);
 	g_return_if_fail(priv);
 
-	g_signal_emit(self, signals[LOCATION_UPDATED], LOCATION_ERROR_NONE, 0, pos, vel, acc);
+	g_signal_emit(self, signals[LOCATION_UPDATED], 0, LOCATION_ERROR_NONE, pos, vel, acc);
 	if (priv->loc_timeout) {
 		g_source_remove(priv->loc_timeout);
 		priv->loc_timeout = 0;
@@ -1123,7 +1125,6 @@ location_gps_get_satellite(LocationGps *self,
 
 	LocationGpsPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
-	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
 	setting_retval_if_fail(VCONFKEY_LOCATION_ENABLED);
 
 	if (__get_started(self) != TRUE) {
@@ -1204,10 +1205,10 @@ location_gps_init(LocationGps *self)
 	priv->enabled = FALSE;
 	priv->signal_type = 0;
 
-	priv->pos_interval = LOCATION_UPDATE_INTERVAL_NONE;
-	priv->vel_interval = LOCATION_UPDATE_INTERVAL_NONE;
-	priv->sat_interval = LOCATION_UPDATE_INTERVAL_NONE;
-	priv->loc_interval = LOCATION_UPDATE_INTERVAL_NONE;
+	priv->pos_interval = LOCATION_UPDATE_INTERVAL_DEFAULT;
+	priv->vel_interval = LOCATION_UPDATE_INTERVAL_DEFAULT;
+	priv->sat_interval = LOCATION_UPDATE_INTERVAL_DEFAULT;
+	priv->loc_interval = LOCATION_UPDATE_INTERVAL_DEFAULT;
 	priv->batch_interval = LOCATION_UPDATE_INTERVAL_NONE;
 	priv->batch_period = LOCATION_BATCH_PERIOD_DEFAULT;
 	priv->min_interval = LOCATION_UPDATE_INTERVAL_NONE;
@@ -1227,8 +1228,8 @@ location_gps_init(LocationGps *self)
 #ifdef TIZEN_PROFILE_MOBILE
 	priv->pos_searching_timer = 0;
 	priv->vel_searching_timer = 0;
-	priv->loc_timeout = 0;
 #endif
+	priv->loc_timeout = 0;
 
 	priv->app_type = location_get_app_type(NULL);
 	if (priv->app_type == 0) {
@@ -1283,7 +1284,6 @@ location_gps_class_init(LocationGpsClass *klass)
 	                                        G_TYPE_POINTER,
 	                                        G_TYPE_POINTER);
 
-#ifdef TIZEN_PROFILE_MOBILE
 	signals[LOCATION_UPDATED] = g_signal_new("location-updated",
 	                                         G_TYPE_FROM_CLASS(klass),
 	                                         G_SIGNAL_RUN_FIRST |
@@ -1296,7 +1296,6 @@ location_gps_class_init(LocationGpsClass *klass)
 	                                         G_TYPE_POINTER,
 	                                         G_TYPE_POINTER,
 	                                         G_TYPE_POINTER);
-#endif
 
 	signals[BATCH_UPDATED] = g_signal_new("batch-updated",
 	                                      G_TYPE_FROM_CLASS(klass),

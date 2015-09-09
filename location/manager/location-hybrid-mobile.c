@@ -295,7 +295,7 @@ hybrid_location_updated(GObject *obj,
 	LocationHybridPrivate *priv = GET_PRIVATE((LocationHybrid *)self);
 	g_return_if_fail(priv);
 
-	g_signal_emit(self, signals[LOCATION_UPDATED], LOCATION_ERROR_NONE, 0, pos, vel, acc);
+	g_signal_emit(self, signals[LOCATION_UPDATED], 0, error, pos, vel, acc);
 }
 
 static void
@@ -465,23 +465,13 @@ location_hybrid_start(LocationHybrid *self)
 	if (priv->gps) ret_gps = location_start(priv->gps);
 	if (priv->wps) ret_wps = location_start(priv->wps);
 
-	if (ret_gps != LOCATION_ERROR_NONE) {
+	if ((ret_gps != LOCATION_ERROR_NONE) && (ret_wps != LOCATION_ERROR_NONE)) {
 		LOCATION_LOGD("ret_gps = %d, ret_wps = %d", ret_gps, ret_wps);
-		if (ret_gps == LOCATION_ERROR_SECURITY_DENIED) {
+		if (ret_gps == LOCATION_ERROR_SECURITY_DENIED || ret_wps == LOCATION_ERROR_SECURITY_DENIED) {
 			return LOCATION_ERROR_SECURITY_DENIED;
-		} else if (ret_gps == LOCATION_ERROR_SETTING_OFF) {
+		} else if (ret_gps == LOCATION_ERROR_SETTING_OFF || ret_wps == LOCATION_ERROR_SETTING_OFF) {
 			return LOCATION_ERROR_SETTING_OFF;
-		} else if (ret_gps == LOCATION_ERROR_NOT_ALLOWED) {
-			return LOCATION_ERROR_NOT_ALLOWED;
-		} else {
-			return LOCATION_ERROR_NOT_AVAILABLE;
-		}
-	} else if (ret_wps != LOCATION_ERROR_NONE) {
-		if (ret_wps == LOCATION_ERROR_SECURITY_DENIED) {
-			return LOCATION_ERROR_SECURITY_DENIED;
-		} else if (ret_wps == LOCATION_ERROR_SETTING_OFF) {
-			return LOCATION_ERROR_SETTING_OFF;
-		} else if (ret_wps == LOCATION_ERROR_NOT_ALLOWED) {
+		} else if (ret_gps == LOCATION_ERROR_NOT_ALLOWED || ret_wps == LOCATION_ERROR_NOT_ALLOWED) {
 			return LOCATION_ERROR_NOT_ALLOWED;
 		} else {
 			return LOCATION_ERROR_NOT_AVAILABLE;

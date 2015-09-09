@@ -1,10 +1,10 @@
 Name: liblbs-location
-Summary:	Location Based Service Library
-Version:	0.12.0
-Release:	1
-Group:		Location/Libraries
-License:	Apache-2.0
-Source0: 	%{name}-%{version}.tar.gz
+Summary: Location Based Service Library
+Version: 0.12.0
+Release: 1
+Group: Location/Libraries
+License: Apache-2.0
+Source0:  %{name}-%{version}.tar.gz
 Source1001: %{name}.manifest
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
@@ -16,7 +16,9 @@ BuildRequires:  pkgconfig(vconf)
 BuildRequires:  pkgconfig(capi-appfw-app-manager)
 BuildRequires:  pkgconfig(capi-appfw-package-manager)
 BuildRequires:  pkgconfig(pkgmgr-info)
+%if "%{profile}" != "tv"
 BuildRequires:  pkgconfig(privacy-manager-client)
+%endif
 BuildRequires:  pkgconfig(json-glib-1.0)
 BuildRequires:  pkgconfig(lbs-dbus)
 BuildRequires:  pkgconfig(bundle)
@@ -48,14 +50,16 @@ export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
 
 # Call make instruction with smp support
 MAJORVER=`echo %{version} | awk 'BEGIN {FS="."}{print $1}'`
-#cmake . -DCMAKE_INSTALL_PREFIX=/usr -DFULLVER=%{version} -DMAJORVER=${MAJORVER} \
 cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix} -DBUILD_PKGTYPE=rpm -DLIBDIR=%{_libdir} -DINCLUDEDIR=%{_includedir} \
 -DFULLVER=%{version} -DMAJORVER=${MAJORVER} \
 %if "%{profile}" == "wearable"
-	-DFEATURE_PROFILE_WEARABLE:BOOL=ON
-%else
-	-DFEATURE_PROFILE_WEARABLE:BOOL=OFF
+	-DFEATURE_PROFILE_WEARABLE:BOOL=ON \
 %endif
+%if "%{profile}" == "tv"
+	-DFEATURE_PROFILE_TV:BOOL=ON
+%endif
+
+
 
 make %{?jobs:-j%jobs}
 

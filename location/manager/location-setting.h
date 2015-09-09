@@ -15,7 +15,7 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * See the License for the specific language governing permissions and "1
  * limitations under the License.
  */
 
@@ -47,12 +47,17 @@
 
 typedef void (*SettingCB)(keynode_t *key, gpointer data);
 
+
+gint location_setting_send_system_event(const char *path, const int val);
 gint location_setting_get_key_val(keynode_t *key);
 gint location_setting_get_int(const gchar *path);
 gboolean location_setting_get_bool(const gchar *path);
 gchar *location_setting_get_string(const gchar *path);
 gint location_setting_add_notify(const gchar *path, SettingCB setting_cb, gpointer self);
 gint location_setting_ignore_notify(const gchar *path, SettingCB setting_cb);
+gint location_state_add_notify(const gchar *path, SettingCB setting_cb, gpointer self);
+gint location_state_ignore_notify(const gchar *path, SettingCB setting_cb);
+
 
 #define setting_retval_if_fail(path) {\
 		int val = location_setting_get_int(path);\

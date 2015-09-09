@@ -6,6 +6,12 @@ SET(INC_DIR "include")
 SET(MANAGER_DIR "manager")
 SET(MODULE_DIR "module")
 
+IF(FEATURE_PROFILE_TV)
+	SET (PRIVACY_SRC "")
+ELSE(FEATURE_PROFILE_TV)
+	SET (PRIVACY_SRC "${MANAGER_DIR}/location-privacy.c")
+ENDIF(FEATURE_PROFILE_TV)
+
 IF(FEATURE_PROFILE_WEARABLE)
 	MESSAGE("<<< Wearable Profile >>>")
 ELSE(FEATURE_PROFILE_WEARABLE)
@@ -37,7 +43,7 @@ SET(SRCS
 	${MANAGER_DIR}/location-common-util.c
 	${MANAGER_DIR}/location-gps.c
 	${MANAGER_DIR}/location-wps.c
-	${MANAGER_DIR}/location-privacy.c
+	${PRIVACY_SRC}
 
 	${MODULE_DIR}/module-internal.c
 )

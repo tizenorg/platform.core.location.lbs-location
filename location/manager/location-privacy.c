@@ -39,55 +39,7 @@ typedef struct _location_privilege_s {
 	bool found;
 } location_privilege_s;
 
-int
-location_get_app_type(char *target_app_id)
-{
-	int ret = 0;
-	pid_t pid = 0;
-	char *app_id = NULL;
-	app_info_h app_info;
-	char *type = NULL;
 
-	if (target_app_id == NULL) {
-		pid = getpid();
-		ret = app_manager_get_app_id(pid, &app_id);
-		if (ret != APP_MANAGER_ERROR_NONE) {
-			LOCATION_LOGE("Fail to get app_id. Err[%d]", ret);
-			return LOCATION_ERROR_NONE;
-		}
-	} else {
-		app_id = g_strdup(target_app_id);
-	}
-
-	ret = app_info_create(app_id, &app_info);
-	if (ret != APP_MANAGER_ERROR_NONE) {
-		LOCATION_LOGE("Fail to get app_id. Err[%d]", ret);
-		g_free(app_id);
-		return 0;
-	}
-
-	ret = app_info_get_type(app_info, &type);
-	if (ret != APP_MANAGER_ERROR_NONE) {
-		LOCATION_LOGE("Fail to get type. Err[%d]", ret);
-		g_free(app_id);
-		app_info_destroy(app_info);
-		return 0;
-	}
-
-	if (strcmp(type, "c++app") == 0) {
-		ret = CPPAPP;
-	} else if (strcmp(type, "webapp") == 0) {
-		ret = WEBAPP;
-	} else {
-		ret = CAPP;
-	}
-
-	g_free(type);
-	g_free(app_id);
-	app_info_destroy(app_info);
-
-	return ret;
-}
 
 void
 location_privacy_initialize(void)

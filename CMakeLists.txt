@@ -8,9 +8,26 @@ SET(EXEC_PREFIX "\${prefix}")
 
 # Set required packages
 INCLUDE(FindPkgConfig)
+
+IF(FEATURE_PROFILE_TV)
+        MESSAGE("<<< TV Profile >>>")
+        ADD_DEFINITIONS("-DTIZEN_PROFILE_TV")
+	SET(PRIVACY_PKG "")
+ELSE(FEATURE_PROFILE_TV)
+	SET(PRIVACY_PKG "privacy-manager-client")
+
+	IF(FEATURE_PROFILE_WEARABLE)
+		MESSAGE("<<< Wearable Profile >>>")
+	ELSE(FEATURE_PROFILE_WEARABLE)
+		MESSAGE("<<< Mobile Profile >>>")
+		#This is for OSP deamon. We don't need it any more.
+		#ADD_DEFINITIONS("-DTIZEN_PROFILE_MOBILE")
+	ENDIF(FEATURE_PROFILE_WEARABLE)
+ENDIF(FEATURE_PROFILE_TV)
+
 pkg_check_modules(pkgs REQUIRED glib-2.0 gthread-2.0 gobject-2.0 gmodule-2.0
 		capi-appfw-app-manager capi-appfw-package-manager pkgmgr-info
-		privacy-manager-client dlog vconf json-glib-1.0 lbs-dbus bundle eventsystem)
+		dlog vconf json-glib-1.0 bundle eventsystem ${PRIVACY_PKG})
 
 FOREACH(flag ${pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")

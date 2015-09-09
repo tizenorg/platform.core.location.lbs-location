@@ -61,6 +61,9 @@ int set_prop_boundary(GList **prev_boundary_list, GList *new_boundary_list);
 int set_prop_removal_boundary(GList **prev_boundary_list, LocationBoundary *boundary);
 void free_boundary_list(gpointer data);
 
+int location_get_app_type(char *app_id);
+
+
 G_END_DECLS
 
 #endif

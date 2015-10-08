@@ -237,7 +237,7 @@ location_boundary_if_inside(LocationBoundary *boundary,
 		case LOCATION_BOUNDARY_POLYGON: {
 
 				double interval_x = 0.0, interval_y = 0.0;
-				double x0=0.0, y0=0.0;
+				double x0 = 0.0, y0 = 0.0;
 				gboolean edge_area;
 				int crossing_num = 0;
 				GList *position_list = boundary->polygon.position_list;
@@ -259,8 +259,6 @@ location_boundary_if_inside(LocationBoundary *boundary,
 					 * Case 2. longitude2 - longitude1 < -180 		: interval_y = longitude2 - longitude1 + 360
 					 * Case 3. longitude2 - longitude1 > 180		: intreval_y = longitude2 - longitude1 - 360
 					 */
-
-					LOCATION_LOGD("edge_area = %d, interval_y = %lf, interval_x = %lf", edge_area,interval_y, interval_x);
 					if (interval_y > 180) {
 						interval_y = interval_y - 360;
 						edge_area = TRUE;

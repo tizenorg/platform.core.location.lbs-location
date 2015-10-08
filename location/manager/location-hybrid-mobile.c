@@ -224,7 +224,7 @@ _position_timeout_cb(gpointer data)
 	} else {
 		priv->signal_type |= POSITION_UPDATED;
 	}
-	_location_timeout_cb(priv);
+	_location_timeout_cb(object);
 
 	return TRUE;
 }
@@ -238,7 +238,7 @@ _velocity_timeout_cb(gpointer data)
 
 	if (priv->pos_interval != priv->vel_interval) {
 		priv->signal_type |= VELOCITY_UPDATED;
-		_location_timeout_cb(priv);
+		_location_timeout_cb(object);
 	}
 
 	return TRUE;
@@ -328,17 +328,19 @@ hybrid_service_updated(GObject *obj,
 
 	LocationHybridPrivate *priv = GET_PRIVATE((LocationHybrid *)self);
 	g_return_if_fail(priv);
+
 	GType g_type = G_TYPE_FROM_INSTANCE(obj);
 	if (g_type == LOCATION_TYPE_GPS) {
 		if (type == SATELLITE_UPDATED) {
 			satellite_signaling(self, signals, &(priv->enabled), priv->sat_interval, TRUE, &(priv->sat_updated_timestamp), &(priv->sat), sat);
-			return ;
+			return;
 		} else if (location_setting_get_int(VCONFKEY_LOCATION_GPS_STATE) == VCONFKEY_LOCATION_GPS_SEARCHING) {
 			LOCATION_LOGD("Searching GPS");
 
 			/* restart WPS when GPS not available */
 			if (priv->wps) g_object_get(priv->wps, "is_started", &wps_started, NULL);
 			if (priv->wps && wps_started == FALSE) {
+				LOCATION_LOGD("Starting WPS");
 				ret = location_start(priv->wps);
 				if (ret != LOCATION_ERROR_NONE) {
 					LOCATION_LOGW("Fail hyhrid location_start : [%d]", ret);
@@ -351,6 +353,8 @@ hybrid_service_updated(GObject *obj,
 	} else if (g_type == LOCATION_TYPE_WPS && location_setting_get_int(VCONFKEY_LOCATION_WPS_STATE) == VCONFKEY_LOCATION_WPS_SEARCHING) {
 		LOCATION_LOGD("Searching WPS");
 		return;
+	} else if (g_type == LOCATION_TYPE_WPS) {
+		LOCATION_LOGD("g_type is LOCATION_TYPE_WPS");
 	}
 
 	if (hybrid_compare_g_type_method(priv, g_type)) {
@@ -386,10 +390,30 @@ hybrid_service_updated(GObject *obj,
 				return;
 			}
 		}
+	} else if (g_type == LOCATION_TYPE_WPS && location_setting_get_int(VCONFKEY_LOCATION_GPS_STATE) == VCONFKEY_LOCATION_GPS_SEARCHING) {
+		hybrid_set_current_method(priv, g_type);
 
-	} else if (type == POSITION_UPDATED && priv->pos) {
-		if (pos->timestamp - priv->pos->timestamp > HYBRID_POSITION_EXPIRATION_TIME) {
-			hybrid_set_current_method(priv, g_type);
+		if (priv->pos) location_position_free(priv->pos);
+		if (priv->vel) location_velocity_free(priv->vel);
+		if (priv->acc) location_accuracy_free(priv->acc);
+
+		if (pos) priv->pos = location_position_copy(pos);
+		if (vel) priv->vel = location_velocity_copy(vel);
+		if (acc) priv->acc = location_accuracy_copy(acc);
+
+		if (!priv->enabled && pos) {
+			enable_signaling(self, signals, &(priv->enabled), TRUE, pos->status);
+		}
+
+		if (type == DISTANCE_UPDATED) {
+			distance_based_position_signaling(self, signals, priv->enabled, pos, vel, acc,
+											  priv->min_interval, priv->min_distance, &(priv->enabled),
+											  &(priv->dist_updated_timestamp), &(priv->pos), &(priv->vel), &(priv->acc));
+		} else {
+			LOCATION_LOGD("position_velocity_signaling");
+			position_velocity_signaling(self, signals, priv->pos_interval, priv->vel_interval, priv->loc_interval,
+										&(priv->pos_updated_timestamp), &(priv->vel_updated_timestamp), &(priv->loc_updated_timestamp),
+										priv->boundary_list, pos, vel, acc);
 		}
 	}
 }

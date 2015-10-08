@@ -155,7 +155,7 @@ _position_timeout_cb(gpointer data)
 	} else {
 		priv->signal_type |= POSITION_UPDATED;
 	}
-	_location_timeout_cb(priv);
+	_location_timeout_cb(object);
 
 	return TRUE;
 }
@@ -169,7 +169,7 @@ _velocity_timeout_cb(gpointer data)
 
 	if (priv->pos_interval != priv->vel_interval) {
 		priv->signal_type |= VELOCITY_UPDATED;
-		_location_timeout_cb(priv);
+		_location_timeout_cb(object);
 	}
 
 	return TRUE;

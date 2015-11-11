@@ -20,7 +20,6 @@ BuildRequires:  pkgconfig(pkgmgr-info)
 BuildRequires:  pkgconfig(privacy-manager-client)
 %endif
 BuildRequires:  pkgconfig(json-glib-1.0)
-BuildRequires:  pkgconfig(lbs-dbus)
 BuildRequires:  pkgconfig(bundle)
 BuildRequires:  pkgconfig(eventsystem)
 
@@ -50,7 +49,7 @@ export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
 
 # Call make instruction with smp support
 MAJORVER=`echo %{version} | awk 'BEGIN {FS="."}{print $1}'`
-cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix} -DBUILD_PKGTYPE=rpm -DLIBDIR=%{_libdir} -DINCLUDEDIR=%{_includedir} \
+cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix} -DLIBDIR=%{_libdir} -DINCLUDEDIR=%{_includedir} \
 -DFULLVER=%{version} -DMAJORVER=${MAJORVER} \
 %if "%{profile}" == "wearable"
 	-DFEATURE_PROFILE_WEARABLE:BOOL=ON \
@@ -82,6 +81,7 @@ rm -rf %{buildroot}
 
 %files
 %manifest %{name}.manifest
+%license LICENSE
 %{_libdir}/*.so.*
 
 %files devel

@@ -20,7 +20,6 @@ BuildRequires:  pkgconfig(pkgmgr-info)
 BuildRequires:  pkgconfig(privacy-manager-client)
 %endif
 BuildRequires:  pkgconfig(json-glib-1.0)
-BuildRequires:  pkgconfig(lbs-dbus)
 BuildRequires:  pkgconfig(bundle)
 BuildRequires:  pkgconfig(eventsystem)
 
@@ -82,6 +81,7 @@ rm -rf %{buildroot}
 
 %files
 %manifest %{name}.manifest
+%license LICENSE
 %{_libdir}/*.so.*
 
 %files devel

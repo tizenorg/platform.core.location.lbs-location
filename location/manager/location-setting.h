@@ -68,4 +68,8 @@ gint location_state_ignore_notify(const gchar *path, SettingCB setting_cb);
 		}\
 	}
 
+/* For test(Changes of vconf-internal-keys for ACR-476 is not submitted yet) */
+#define VCONFKEY_LOCATION_MOCK_ENABLED "db/location/setting/MockEnabled"
+#define VCONFKEY_LOCATION_MOCK_STATE "memory/location/mock/state"
+
 #endif

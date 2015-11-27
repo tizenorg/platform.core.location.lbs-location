@@ -148,31 +148,25 @@ static void cb_service_enabled (GObject *self, guint status, gpointer userdata)
 	g_object_get(loc, "method", &method, NULL);
 	g_debug("Get property>> method:%d", method);
 
-	if (LOCATION_ERROR_NONE == location_get_position (loc, &pos, &acc)) {
-		g_debug ("SYNC>> Current position> time: %d, lat: %f, long: %f, alt: %f, status: %d",
-			pos->timestamp, pos->latitude, pos->longitude, pos->altitude, pos->status);
-		g_debug ("\tAccuracy level %d (%.0f meters %.0f meters)",
-			acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
-		location_position_free(pos);
-		location_accuracy_free(acc);
-	} else g_warning ("SYNC>> Current position> failed");
-
-	if (LOCATION_ERROR_NONE == location_get_velocity (loc, &vel, &acc)) {
-		g_debug ("SYNC>> Current velocity> time: %d, speed: %f, direction:%f, climb:%f",
-				vel->timestamp, vel->speed, vel->direction, vel->climb);
-		g_debug ("\tAccuracy level %d (%.0f meters %.0f meters)",
+	if (status == LOCATION_STATUS_2D_FIX || status == LOCATION_STATUS_3D_FIX) {
+		if (LOCATION_ERROR_NONE == location_get_position (loc, &pos, &acc)) {
+			g_debug ("SYNC>> Current position> time: %d, lat: %f, long: %f, alt: %f, status: %d",
+				pos->timestamp, pos->latitude, pos->longitude, pos->altitude, pos->status);
+			g_debug ("\tAccuracy level %d (%.0f meters %.0f meters)",
 				acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
-		location_velocity_free(vel);
-		location_accuracy_free(acc);
-	} else g_warning ("SYNC>> Current velocity> failed");
+			location_position_free(pos);
+			location_accuracy_free(acc);
+		} else g_warning ("SYNC>> Current position> failed");
 
-	if (LOCATION_ERROR_NONE == location_get_address(loc, &addr, &acc)) {
-		g_debug ("SYNC>> Current address> %s %s %s %s %s %s %s",
-				addr->building_number, addr->street, addr->district, addr->city, addr->state, addr->postal_code, addr->country_code);
-		g_debug ("\tAccuracy level %d (%.0f meters %.0f meters)", acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
-		location_address_free(addr);
-		location_accuracy_free(acc);
-	} else g_warning ("SYNC>> Current address> failed");
+		if (LOCATION_ERROR_NONE == location_get_velocity (loc, &vel, &acc)) {
+			g_debug ("SYNC>> Current velocity> time: %d, speed: %f, direction:%f, climb:%f",
+					vel->timestamp, vel->speed, vel->direction, vel->climb);
+			g_debug ("\tAccuracy level %d (%.0f meters %.0f meters)",
+					acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
+			location_velocity_free(vel);
+			location_accuracy_free(acc);
+		} else g_warning ("SYNC>> Current velocity> failed");
+	}
 }
 
 static void
@@ -874,6 +868,14 @@ int location_ignore_setting_notify(LocationMethod method, LocationSettingCb call
 
 int location_get_nmea(LocationObject *obj, char **nmea_data);
 
+
+/* Tizen 3.0 */
+
+int location_get_service_state(LocationObject *obj, int *state);
+int location_enable_mock(const LocationMethod method, const int enable);
+int location_set_mock_method_enabled(const LocationMethod method, const int enable);
+int location_set_mock_location(LocationObject *obj, const LocationPosition *position, const LocationVelocity *velocity, const LocationAccuracy *accuracy);
+int location_clear_mock_location(LocationObject *obj);
 
 /**
  * @} @}

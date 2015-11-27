@@ -50,11 +50,12 @@ struct _LocationGpsClass {
 
 	void (* enabled)(guint type);
 	void (* disabled)(guint type);
-	void (* updated)(gint type, gpointer data, gpointer velocity, gpointer accuracy);
+	void (* service_updated)(gint type, gpointer data, gpointer velocity, gpointer accuracy);
 	void (* location_updated)(gint error, gpointer position, gpointer velocity, gpointer accuracy);
 	void (* batch_updated)(guint batch_interval, guint batch_period);
 	void (* zone_in)(gpointer boundary, gpointer position, gpointer accuracy);
 	void (* zone_out)(gpointer boundary, gpointer position, gpointer accuracy);
+	void (* status_changed)(guint type);
 };
 
 GType location_gps_get_type(void);

@@ -89,6 +89,7 @@ enum {
     PROP_SATELLITE,
     PROP_MIN_INTERVAL,
     PROP_MIN_DISTANCE,
+    PROP_SERVICE_STATUS,
     PROP_MAX
 };
 
@@ -565,6 +566,8 @@ location_gps_dispose(GObject *gobject)
 #endif
 		priv->set_noti = FALSE;
 	}
+
+	G_OBJECT_CLASS(location_gps_parent_class)->dispose(gobject);
 }
 
 static void
@@ -769,6 +772,12 @@ location_gps_set_property(GObject *object,
 
 				break;
 			}
+		case PROP_SERVICE_STATUS: {
+				gint enabled = g_value_get_int(value);
+				LOCATION_LOGD("Set prop>> PROP_SERVICE_STATUS: %u", enabled);
+				priv->min_distance = enabled;
+				break;
+			}
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
 			break;
@@ -847,6 +856,9 @@ location_gps_get_property(GObject *object,
 				}
 				break;
 			}
+		case PROP_SERVICE_STATUS:
+			g_value_set_int(value, priv->enabled);
+			break;
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
 			break;
@@ -1271,11 +1283,23 @@ location_gps_class_init(LocationGpsClass *klass)
 	                                         G_TYPE_NONE, 1,
 	                                         G_TYPE_UINT);
 
+#if 0 // integrated with STATUS_CHANGED.
+	signals[STATUS_CHANGED] = g_signal_new("status-changed",
+	                                        G_TYPE_FROM_CLASS(klass),
+	                                        G_SIGNAL_RUN_FIRST |
+	                                        G_SIGNAL_NO_RECURSE,
+	                                        G_STRUCT_OFFSET(LocationGpsClass, status_changed),
+	                                        NULL, NULL,
+	                                        location_VOID__UINT,
+	                                        G_TYPE_NONE, 1,
+	                                        G_TYPE_UINT);
+#endif
+
 	signals[SERVICE_UPDATED] = g_signal_new("service-updated",
 	                                        G_TYPE_FROM_CLASS(klass),
 	                                        G_SIGNAL_RUN_FIRST |
 	                                        G_SIGNAL_NO_RECURSE,
-	                                        G_STRUCT_OFFSET(LocationGpsClass, updated),
+	                                        G_STRUCT_OFFSET(LocationGpsClass, service_updated),
 	                                        NULL, NULL,
 	                                        location_VOID__INT_POINTER_POINTER_POINTER,
 	                                        G_TYPE_NONE, 4,
@@ -1439,6 +1463,14 @@ location_gps_class_init(LocationGpsClass *klass)
 	                                                LOCATION_TYPE_SATELLITE,
 	                                                G_PARAM_READABLE);
 
+	/* Tizen 3.0 */
+	properties[PROP_SERVICE_STATUS] = g_param_spec_int("service-status",
+	                                                "location service status prop",
+	                                                "location service status data",
+	                                                LOCATION_STATUS_NO_FIX,
+	                                                LOCATION_STATUS_3D_FIX,
+	                                                LOCATION_STATUS_NO_FIX,
+	                                                G_PARAM_READABLE);
 	g_object_class_install_properties(gobject_class,
 	                                  PROP_MAX,
 	                                  properties);

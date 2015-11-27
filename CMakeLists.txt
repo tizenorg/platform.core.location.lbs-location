@@ -2,7 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(lbs-location C)
 
 SET(PREFIX ${CMAKE_INSTALL_PREFIX})
-SET(EXEC_PREFIX "\${prefix}")
+#SET(EXEC_PREFIX "\${prefix}")
 #SET(LIBDIR "\${prefix}/lib")
 #SET(INCLUDEDIR "\${prefix}/include")
 
@@ -47,8 +47,6 @@ MESSAGE(${CMAKE_C_FLAGS})
 MESSAGE(${CMAKE_EXE_LINKER_FLAGS})
 
 # pkgconfig file
-SET(PREFIX ${CMAKE_INSTALL_PREFIX})
-
 CONFIGURE_FILE(lbs-location.pc.in lbs-location.pc @ONLY)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/lbs-location.pc DESTINATION ${LIBDIR}/pkgconfig)
 

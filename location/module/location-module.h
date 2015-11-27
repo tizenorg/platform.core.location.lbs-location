@@ -88,12 +88,27 @@ typedef struct {
  * @brief This represents APIs declared in a WPS plug-in for location WPS modules.
  */
 typedef struct {
-	int (*start)(gpointer handle, LocModStatusCB status_cb, LocModPositionExtCB pos_ext_cb, LocModSatelliteCB sat_cb, gpointer userdata);   /*/< This is used for starting a WPS service from a plug-in. #LocModStatusCB, #LocModPositionExtCB and #LocModSatelliteCB(Not used) are given from a location framework to a plug-in for asynchronous signaling. */
+	int (*start)(gpointer handle, LocModStatusCB status_cb, LocModPositionExtCB pos_ext_cb, gpointer userdata);   /*/< This is used for starting a WPS service from a plug-in. #LocModStatusCB, #LocModPositionExtCB and #LocModSatelliteCB(Not used) are given from a location framework to a plug-in for asynchronous signaling. */
 	int (*stop)(gpointer handle);                                                                                                   /*/< This is used for stopping a WPS service from a plug-in. */
 	int (*get_position)(gpointer handle, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy);   /*/< This is used for getting a position from a plug-in. */
 	int (*get_last_position)(gpointer handle, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy);   /*/< This is used for getting a last position from a plug-in. */
 	int (*set_option)(gpointer handle, const char *option);
 } LocModWpsOps;
+
+typedef struct {
+	int (*start)(gpointer handle, LocModStatusCB status_cb, LocModPositionExtCB pos_ext_cb, gpointer userdata);   /*/< This is used for starting a GPS device from a plug-in. #LocModStatusCB, #LocModPositionExtCB are given from a location framework to a plug-in for asynchronous signaling. */
+	int (*stop)(gpointer handle);   /*/< This is used for stopping a GPS device name from a plug-in. */
+#if 0 /* Mock doesn't support batch */
+	int (*start_batch)(gpointer handle, LocModBatchExtCB batch_ext_cb, guint batch_interval, guint batch_period, gpointer userdata);   /*/< This is used for starting a GPS batch mode from a plug-in. #LocModBatchExtCB are given from a location framework to a plug-in for asynchronous signaling. */
+	int (*stop_batch)(gpointer handle);   /*/< This is used for stopping a GPS batch mode from a plug-in. */
+#endif
+	int (*get_position)(gpointer handle, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy);   /*/< This is used for getting a position from a plug-in. */
+	int (*get_last_position)(gpointer handle, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy);   /*/< This is used for getting a last position from a plug-in. */
+	int (*set_option)(gpointer handle, const char *option);
+	//int (*set_position_update_interval)(gpointer handle, guint interval);
+	int (*set_mock_location)(gpointer handle, LocationPosition *position, LocationVelocity *velocity, LocationAccuracy *accuracy, LocModStatusCB status_cb, gpointer userdata);   /*/< This is used for getting a position from a plug-in. */
+	int (*clear_mock_location)(gpointer handle, LocModStatusCB status_cb, gpointer userdata);   /*/< This is used for getting a position from a plug-in. */
+} LocModMockOps;
 
 /**
  * @brief This is used for exported APIs in a plug-in for a location framework.

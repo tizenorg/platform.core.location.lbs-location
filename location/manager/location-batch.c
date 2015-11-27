@@ -59,21 +59,38 @@ location_set_batch_parse_details(LocationBatch *batch, char *location_info, int 
 	snprintf(location, sizeof(location), "%s", location_info);
 
 	last_location[index] = (char *)strtok_r(location, ";", &last);
-	while (last_location[index++] != NULL) {
-		if (index == MAX_BATCH_ITEM)
-			break;
+	while (last_location[index] != NULL) {
+		switch (index) {
+			case 0:
+				batch->batch_data[i].timestamp = strtod(last_location[index], NULL);
+				break;
+			case 1:
+				batch->batch_data[i].latitude = strtod(last_location[index], NULL);
+				break;
+			case 2:
+				batch->batch_data[i].longitude = strtod(last_location[index], NULL);
+				break;
+			case 3:
+				batch->batch_data[i].altitude = strtod(last_location[index], NULL);
+				break;
+			case 4:
+				batch->batch_data[i].speed = strtod(last_location[index], NULL);
+				break;
+			case 5:
+				batch->batch_data[i].direction = strtod(last_location[index], NULL);
+				break;
+			case 6:
+				batch->batch_data[i].horizontal_accuracy = strtod(last_location[index], NULL);
+				break;
+			case 7:
+				batch->batch_data[i].vertical_accuracy = strtod(last_location[index], NULL);
+				break;
+			default:
+				break;
+		}
+		if (++index == MAX_BATCH_ITEM) break;
 		last_location[index] = (char *)strtok_r(NULL, ";", &last);
 	}
-	index = 0;
-
-	batch->batch_data[i].timestamp			= strtod(last_location[index++], NULL);
-	batch->batch_data[i].latitude			= strtod(last_location[index++], NULL);
-	batch->batch_data[i].longitude			= strtod(last_location[index++], NULL);
-	batch->batch_data[i].altitude			= strtod(last_location[index++], NULL);
-	batch->batch_data[i].speed				= strtod(last_location[index++], NULL);
-	batch->batch_data[i].direction			= strtod(last_location[index++], NULL);
-	batch->batch_data[i].horizontal_accuracy = strtod(last_location[index++], NULL);
-	batch->batch_data[i].vertical_accuracy	= strtod(last_location[index++], NULL);
 
 	return TRUE;
 }

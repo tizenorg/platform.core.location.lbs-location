@@ -88,57 +88,6 @@ static char *__convert_event_from_vconf(const char *vconf)
 	return event;
 }
 
-static char *__convert_key_from_event(const char *event)
-{
-	char *key = NULL;
-	if (g_strcmp0(event, SYS_EVENT_LOCATION_ENABLE_STATE) == 0) {
-		key = g_strdup(EVT_KEY_LOCATION_ENABLE_STATE);
-	} else if (g_strcmp0(event, SYS_EVENT_GPS_ENABLE_STATE) == 0) {
-		key = g_strdup(EVT_KEY_GPS_ENABLE_STATE);
-	} else if (g_strcmp0(event, SYS_EVENT_NPS_ENABLE_STATE) == 0) {
-		key = g_strdup(EVT_KEY_NPS_ENABLE_STATE);
-	}
-	return key;
-}
-
-static char *__convert_event_value(const int val)
-{
-	char *value = NULL;
-	if (val == 1) {
-		value = g_strdup(EVT_VAL_GPS_ENABLED);
-	} else {
-		value = g_strdup(EVT_VAL_GPS_DISABLED);
-	}
-	return value;
-}
-
-gint location_setting_send_system_event(const char *path, const int val)
-{
-	g_return_val_if_fail(path, -1);
-
-	int ret = 0;
-	char *event = NULL;
-	char *key = NULL;
-	char *value = NULL;
-	bundle *b = NULL;
-
-	event = __convert_event_from_vconf(path);
-	key = __convert_key_from_event(event);
-	value = __convert_event_value(val);
-
-	b = bundle_create();
-	bundle_add_str(b, key, value);
-	ret = eventsystem_request_sending_system_event(event, b);
-	bundle_free(b);
-
-	LOCATION_SECLOG("[%s: %s]", key, value);
-
-	g_free(event);
-	g_free(key);
-	g_free(value);
-	return ret;
-}
-
 static void __event_handler(const char *event_name, bundle *data, void *self)
 {
 	const char *value = NULL;

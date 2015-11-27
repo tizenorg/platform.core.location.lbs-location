@@ -48,7 +48,6 @@
 typedef void (*SettingCB)(keynode_t *key, gpointer data);
 
 
-gint location_setting_send_system_event(const char *path, const int val);
 gint location_setting_get_key_val(keynode_t *key);
 gint location_setting_get_int(const gchar *path);
 gboolean location_setting_get_bool(const gchar *path);
@@ -68,4 +67,9 @@ gint location_state_ignore_notify(const gchar *path, SettingCB setting_cb);
 		}\
 	}
 
-#endif
+/* For test
+#define VCONFKEY_LOCATION_MOCK_ENABLED "db/location/setting/MockEnabled"
+#define VCONFKEY_LOCATION_MOCK_STATE "memory/location/mock/state"
+*/
+
+#endif	/* __LOCATION_SETTING_H__ */

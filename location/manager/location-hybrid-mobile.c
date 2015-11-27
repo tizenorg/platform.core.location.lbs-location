@@ -36,6 +36,8 @@
 
 #include "location-gps.h"
 #include "location-wps.h"
+/* Tizen 3.0 */
+#include "location-mock.h"
 
 typedef struct _LocationHybridPrivate {
 	gboolean		gps_enabled;
@@ -64,6 +66,10 @@ typedef struct _LocationHybridPrivate {
 	gboolean		set_noti;
 	guint			pos_timer;
 	guint			vel_timer;
+
+	/* Tizen 3.0 */
+	gboolean		mock_enabled;
+	LocationObject	*mock;
 } LocationHybridPrivate;
 
 enum {
@@ -78,6 +84,7 @@ enum {
     PROP_REMOVAL_BOUNDARY,
     PROP_MIN_INTERVAL,
     PROP_MIN_DISTANCE,
+    PROP_SERVICE_STATUS,
     PROP_MAX
 };
 
@@ -109,6 +116,8 @@ hybrid_set_current_method(LocationHybridPrivate *priv, GType g_type)
 		priv->current_method = LOCATION_METHOD_GPS;
 	} else if (g_type == LOCATION_TYPE_WPS) {
 		priv->current_method = LOCATION_METHOD_WPS;
+	} else if (g_type == LOCATION_TYPE_MOCK) {
+			priv->current_method = LOCATION_METHOD_MOCK;
 	} else if (g_type == LOCATION_TYPE_HYBRID) {
 		priv->current_method = LOCATION_METHOD_HYBRID;
 	} else
@@ -121,13 +130,19 @@ hybrid_set_current_method(LocationHybridPrivate *priv, GType g_type)
 static int
 hybrid_get_update_method(LocationHybridPrivate *priv)
 {
-	if (!priv->gps && !priv->wps) return -1;
+	if (!priv->gps && !priv->wps & !priv->mock) return -1;
 
 	if (priv->gps_enabled) {
 		hybrid_set_current_method(priv, LOCATION_TYPE_GPS);
+		priv->enabled = 1;
 	} else if (priv->wps_enabled) {
 		hybrid_set_current_method(priv, LOCATION_TYPE_WPS);
+		priv->enabled = 1;
+	} else if (priv->mock_enabled) {
+		hybrid_set_current_method(priv, LOCATION_TYPE_MOCK);
+		priv->enabled = 1;
 	} else {
+		priv->enabled = 0;
 		hybrid_set_current_method(priv, LOCATION_TYPE_HYBRID);
 	}
 
@@ -164,6 +179,9 @@ hybrid_compare_g_type_method(LocationHybridPrivate *priv, GType g_type)
 		return TRUE;
 	} else if (g_type == LOCATION_TYPE_WPS && hybrid_get_current_method(priv) == LOCATION_METHOD_WPS) {
 		hybrid_set_current_method(priv, LOCATION_TYPE_WPS);
+		return TRUE;
+	} else if (g_type == LOCATION_TYPE_MOCK && hybrid_get_current_method(priv) == LOCATION_METHOD_MOCK) {
+		hybrid_set_current_method(priv, LOCATION_TYPE_MOCK);
 		return TRUE;
 	}
 
@@ -355,6 +373,8 @@ hybrid_service_updated(GObject *obj,
 		return;
 	} else if (g_type == LOCATION_TYPE_WPS) {
 		LOCATION_LOGD("g_type is LOCATION_TYPE_WPS");
+	} else if (g_type == LOCATION_TYPE_MOCK) {
+		LOCATION_LOGD("g_type is LOCATION_TYPE_MOCK");
 	}
 
 	if (hybrid_compare_g_type_method(priv, g_type)) {
@@ -383,7 +403,8 @@ hybrid_service_updated(GObject *obj,
 
 		/* if receive GPS position then stop WPS.. */
 		if (priv->wps) g_object_get(priv->wps, "is_started", &wps_started, NULL);
-		if (LOCATION_TYPE_GPS == g_type && wps_started == TRUE) {
+		if (g_type == LOCATION_TYPE_GPS && wps_started == TRUE) {
+			LOCATION_LOGD("Calling WPS stop");
 			ret = location_stop(priv->wps);
 			if (ret != LOCATION_ERROR_NONE) {
 				LOCATION_LOGW("Fail hybrid location_stop : [%d]", ret);
@@ -426,14 +447,18 @@ hybrid_service_enabled(GObject *obj,
 	LOCATION_LOGD("hybrid_service_enabled");
 	LocationHybridPrivate *priv = GET_PRIVATE((LocationHybrid *)self);
 	g_return_if_fail(priv);
+
 	GType g_type = G_TYPE_FROM_INSTANCE(obj);
 	if (g_type == LOCATION_TYPE_GPS) {
 		priv->gps_enabled = TRUE;
 	} else if (g_type == LOCATION_TYPE_WPS) {
 		priv->wps_enabled = TRUE;
-	} else {
+	} else if (g_type == LOCATION_TYPE_MOCK) {
+		priv->mock_enabled = TRUE;
+	}
+	else {
 		LOCATION_LOGW("Undefined GType enabled");
-		return;
+        return;
 	}
 	hybrid_get_update_method(priv);
 }
@@ -461,6 +486,76 @@ hybrid_service_disabled(GObject *obj,
 
 }
 
+#if 0
+static void
+hybrid_status_changed(GObject *obj,
+                       guint status,
+                       gpointer self)
+{
+	LOCATION_LOGD("status = %d", status);
+	LocationHybridPrivate *priv = GET_PRIVATE((LocationHybrid *)self);
+	g_return_if_fail(priv);
+	GType g_type = G_TYPE_FROM_INSTANCE(obj);
+
+
+	switch (status) {
+		case LOCATION_STATUS_NO_FIX:
+			if (g_type == LOCATION_TYPE_GPS) {
+				priv->gps_enabled = FALSE;
+			} else if (g_type == LOCATION_TYPE_WPS) {
+				priv->wps_enabled = FALSE;
+			} else if (g_type == LOCATION_TYPE_MOCK) {
+				priv->mock_enabled = FALSE;
+			} else {
+				LOCATION_LOGW("Undefined GType disabled");
+				return;
+			}
+			hybrid_get_update_method(priv);
+			if (!priv->gps_enabled && !priv->wps_enabled)
+				enable_signaling(self, signals, &(priv->enabled), FALSE, status);
+			break;
+
+		case LOCATION_STATUS_2D_FIX:
+		case LOCATION_STATUS_3D_FIX:
+			if (g_type == LOCATION_TYPE_GPS) {
+				priv->gps_enabled = TRUE;
+			} else if (g_type == LOCATION_TYPE_WPS) {
+				priv->wps_enabled = TRUE;
+			} else if (g_type == LOCATION_TYPE_MOCK) {
+				priv->mock_enabled = TRUE;
+			} else {
+				LOCATION_LOGW("Undefined GType enabled");
+				return;
+			}
+			hybrid_get_update_method(priv);
+			break;
+
+		case LOCATION_STATUS_MOCK_SET:
+			LOCATION_LOGD("Succeeded set mock location!!!");
+			break;
+
+		case LOCATION_STATUS_MOCK_FAIL:
+			if (g_type == LOCATION_TYPE_GPS) {
+				priv->gps_enabled = FALSE;
+			} else if (g_type == LOCATION_TYPE_WPS) {
+				priv->wps_enabled = FALSE;
+			} else {
+				LOCATION_LOGW("Undefined GType disabled");
+				return;
+			}
+			hybrid_get_update_method(priv);
+			if (!priv->gps_enabled && !priv->wps_enabled)
+				enable_signaling(self, signals, &(priv->enabled), FALSE, status);
+			break;
+
+		default:
+				LOCATION_LOGW("Undefined status");
+			break;
+	}
+}
+#endif
+
+
 static int
 location_hybrid_start(LocationHybrid *self)
 {
@@ -468,8 +563,10 @@ location_hybrid_start(LocationHybrid *self)
 
 	int ret_gps = LOCATION_ERROR_NONE;
 	int ret_wps = LOCATION_ERROR_NONE;
+	int ret_mock = LOCATION_ERROR_NONE;
 	gboolean gps_started = FALSE;
 	gboolean wps_started = FALSE;
+	gboolean mock_started = FALSE;
 
 	LocationHybridPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
@@ -480,22 +577,24 @@ location_hybrid_start(LocationHybrid *self)
 
 	if (priv->gps) g_object_get(priv->gps, "is_started", &gps_started, NULL);
 	if (priv->wps) g_object_get(priv->wps, "is_started", &wps_started, NULL);
+	if (priv->mock) g_object_get(priv->mock, "is_started", &mock_started, NULL);
 
-	if ((gps_started == TRUE) || (wps_started == TRUE)) {
+	if ((gps_started == TRUE) || (wps_started == TRUE) || (mock_started == TRUE)) {
 		LOCATION_LOGD("Already started");
 		return LOCATION_ERROR_NONE;
 	}
 
 	if (priv->gps) ret_gps = location_start(priv->gps);
 	if (priv->wps) ret_wps = location_start(priv->wps);
+	if (priv->mock) ret_mock = location_start(priv->mock);
 
-	if ((ret_gps != LOCATION_ERROR_NONE) && (ret_wps != LOCATION_ERROR_NONE)) {
-		LOCATION_LOGD("ret_gps = %d, ret_wps = %d", ret_gps, ret_wps);
-		if (ret_gps == LOCATION_ERROR_SECURITY_DENIED || ret_wps == LOCATION_ERROR_SECURITY_DENIED) {
+	if (ret_gps != LOCATION_ERROR_NONE && ret_wps != LOCATION_ERROR_NONE && ret_mock != LOCATION_ERROR_NONE) {
+		LOCATION_LOGD("ret_gps = %d, ret_wps = %d, ret_mock = %d", ret_gps, ret_wps, ret_mock);
+		if (ret_gps == LOCATION_ERROR_SECURITY_DENIED || ret_wps == LOCATION_ERROR_SECURITY_DENIED || ret_mock == LOCATION_ERROR_SECURITY_DENIED) {
 			return LOCATION_ERROR_SECURITY_DENIED;
-		} else if (ret_gps == LOCATION_ERROR_SETTING_OFF || ret_wps == LOCATION_ERROR_SETTING_OFF) {
+		} else if (ret_gps == LOCATION_ERROR_SETTING_OFF || ret_wps == LOCATION_ERROR_SETTING_OFF || ret_mock == LOCATION_ERROR_SETTING_OFF) {
 			return LOCATION_ERROR_SETTING_OFF;
-		} else if (ret_gps == LOCATION_ERROR_NOT_ALLOWED || ret_wps == LOCATION_ERROR_NOT_ALLOWED) {
+		} else if (ret_gps == LOCATION_ERROR_NOT_ALLOWED || ret_wps == LOCATION_ERROR_NOT_ALLOWED || ret_mock == LOCATION_ERROR_NOT_ALLOWED) {
 			return LOCATION_ERROR_NOT_ALLOWED;
 		} else {
 			return LOCATION_ERROR_NOT_AVAILABLE;
@@ -522,20 +621,24 @@ location_hybrid_stop(LocationHybrid *self)
 
 	int ret_gps = LOCATION_ERROR_NOT_AVAILABLE;
 	int ret_wps = LOCATION_ERROR_NOT_AVAILABLE;
+	int ret_mock = LOCATION_ERROR_NOT_AVAILABLE;
 	gboolean gps_started = FALSE;
 	gboolean wps_started = FALSE;
+	gboolean mock_started = FALSE;
 
-	g_object_get(priv->gps, "is_started", &gps_started, NULL);
+	if (priv->gps) g_object_get(priv->gps, "is_started", &gps_started, NULL);
 	if (priv->wps) g_object_get(priv->wps, "is_started", &wps_started, NULL);
+	if (priv->mock) g_object_get(priv->mock, "is_started", &mock_started, NULL);
 
-	if ((gps_started == FALSE) && (wps_started == FALSE)) {
+	if ((gps_started == FALSE) && (wps_started == FALSE) && (mock_started == FALSE)) {
 		return LOCATION_ERROR_NONE;
 	}
 
 	if (priv->gps) ret_gps = location_stop(priv->gps);
 	if (priv->wps) ret_wps = location_stop(priv->wps);
+	if (priv->mock) ret_mock = location_stop(priv->mock);
 
-	if (ret_gps != LOCATION_ERROR_NONE && ret_wps != LOCATION_ERROR_NONE)
+	if (ret_gps != LOCATION_ERROR_NONE && ret_wps != LOCATION_ERROR_NONE && ret_mock != LOCATION_ERROR_NONE)
 		return LOCATION_ERROR_NOT_AVAILABLE;
 
 	if (priv->pos_timer) g_source_remove(priv->pos_timer);
@@ -547,6 +650,10 @@ location_hybrid_stop(LocationHybrid *self)
 		location_setting_ignore_notify(VCONFKEY_LOCATION_ENABLED, location_hybrid_gps_cb);
 		priv->set_noti = FALSE;
 	}
+
+	priv->gps_enabled = FALSE;
+	priv->wps_enabled = FALSE;
+	priv->mock_enabled = FALSE;
 
 	return LOCATION_ERROR_NONE;
 }
@@ -581,6 +688,7 @@ location_hybrid_finalize(GObject *gobject)
 	if (priv->gps) {
 		g_signal_handlers_disconnect_by_func(priv->gps, G_CALLBACK(hybrid_service_enabled), gobject);
 		g_signal_handlers_disconnect_by_func(priv->gps, G_CALLBACK(hybrid_service_disabled), gobject);
+		//g_signal_handlers_disconnect_by_func(priv->gps, G_CALLBACK(hybrid_status_changed), gobject);
 		g_signal_handlers_disconnect_by_func(priv->gps, G_CALLBACK(hybrid_service_updated), gobject);
 		g_signal_handlers_disconnect_by_func(priv->gps, G_CALLBACK(hybrid_location_updated), gobject);
 		location_free(priv->gps);
@@ -588,9 +696,19 @@ location_hybrid_finalize(GObject *gobject)
 	if (priv->wps) {
 		g_signal_handlers_disconnect_by_func(priv->wps, G_CALLBACK(hybrid_service_enabled), gobject);
 		g_signal_handlers_disconnect_by_func(priv->wps, G_CALLBACK(hybrid_service_disabled), gobject);
+		//g_signal_handlers_disconnect_by_func(priv->wps, G_CALLBACK(hybrid_status_changed), gobject);
 		g_signal_handlers_disconnect_by_func(priv->wps, G_CALLBACK(hybrid_service_updated), gobject);
 		g_signal_handlers_disconnect_by_func(priv->wps, G_CALLBACK(hybrid_location_updated), gobject);
 		location_free(priv->wps);
+	}
+
+	if (priv->mock) {
+		g_signal_handlers_disconnect_by_func(priv->mock, G_CALLBACK(hybrid_service_enabled), gobject);
+		g_signal_handlers_disconnect_by_func(priv->mock, G_CALLBACK(hybrid_service_disabled), gobject);
+		//g_signal_handlers_disconnect_by_func(priv->mock, G_CALLBACK(hybrid_status_changed), gobject);
+		g_signal_handlers_disconnect_by_func(priv->mock, G_CALLBACK(hybrid_service_updated), gobject);
+		g_signal_handlers_disconnect_by_func(priv->mock, G_CALLBACK(hybrid_location_updated), gobject);
+		location_free(priv->mock);
 	}
 
 	if (priv->boundary_list) {
@@ -803,6 +921,9 @@ location_hybrid_get_property(GObject *object,
 		case PROP_MIN_DISTANCE:
 			g_value_set_double(value, priv->min_distance);
 			break;
+		case PROP_SERVICE_STATUS:
+			g_value_set_int(value, priv->enabled);
+			break;
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
 			break;
@@ -917,17 +1038,26 @@ location_hybrid_get_last_position_ext(LocationHybrid *self,
 	LOCATION_LOGD("location_hybrid_get_last_position_ext");
 
 	int ret = LOCATION_ERROR_NONE;
-	LocationPosition *gps_pos = NULL, *wps_pos = NULL;
-	LocationVelocity *gps_vel = NULL, *wps_vel = NULL;
-	LocationAccuracy *gps_acc = NULL, *wps_acc = NULL;
+	LocationPosition *gps_pos = NULL, *wps_pos = NULL, *mock_pos = NULL;
+	LocationVelocity *gps_vel = NULL, *wps_vel = NULL, *mock_vel = NULL;
+	LocationAccuracy *gps_acc = NULL, *wps_acc = NULL, *mock_acc = NULL;
 	LocationHybridPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 
 	if (priv->gps) location_get_last_position_ext(priv->gps, &gps_pos, &gps_vel, &gps_acc);
 	if (priv->wps) location_get_last_position_ext(priv->wps, &wps_pos, &wps_vel, &wps_acc);
+	if (priv->mock) location_get_last_position_ext(priv->mock, &mock_pos, &mock_vel, &mock_acc);
 
 	if (gps_pos && wps_pos && gps_vel && wps_vel) {
-		if (wps_pos->timestamp > gps_pos->timestamp) {
+		if (mock_pos && mock_vel && mock_pos->timestamp > gps_pos->timestamp) {
+			*position = mock_pos;
+			*velocity = mock_vel;
+			*accuracy = mock_acc;
+			location_position_free(mock_pos);
+			location_velocity_free(mock_vel);
+			location_accuracy_free(mock_acc);
+		}
+		else if (wps_pos->timestamp > gps_pos->timestamp) {
 			*position = wps_pos;
 			*velocity = wps_vel;
 			*accuracy = wps_acc;
@@ -950,6 +1080,10 @@ location_hybrid_get_last_position_ext(LocationHybrid *self,
 		*position = wps_pos;
 		*velocity = wps_vel;
 		*accuracy = wps_acc;
+	} else if (wps_pos && wps_vel) {
+		*position = mock_pos;
+		*velocity = mock_vel;
+		*accuracy = mock_acc;
 	} else {
 		ret = LOCATION_ERROR_NOT_AVAILABLE;
 	}
@@ -993,14 +1127,21 @@ location_hybrid_get_last_velocity(LocationHybrid *self,
 	int ret = LOCATION_ERROR_NONE;
 	LocationHybridPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
-	LocationVelocity *gps_vel = NULL, *wps_vel = NULL;
-	LocationAccuracy *gps_acc = NULL, *wps_acc = NULL;
+	LocationVelocity *gps_vel = NULL, *wps_vel = NULL, *mock_vel = NULL;
+	LocationAccuracy *gps_acc = NULL, *wps_acc = NULL, *mock_acc = NULL;
 
 	if (priv->gps) location_get_last_velocity(priv->gps, &gps_vel, &gps_acc);
 	if (priv->wps) location_get_last_velocity(priv->wps, &wps_vel, &wps_acc);
+	if (priv->mock) location_get_last_velocity(priv->mock, &mock_vel, &mock_acc);
 
 	if (gps_vel && wps_vel) {
-		if (wps_vel->timestamp > gps_vel->timestamp) {
+		if (mock_vel && mock_vel->timestamp > gps_vel->timestamp) {
+			*velocity = mock_vel;
+			*accuracy = mock_acc;
+			location_velocity_free(mock_vel);
+			location_accuracy_free(mock_acc);
+		}
+		else if (wps_vel->timestamp > gps_vel->timestamp) {
 			*velocity = wps_vel;
 			*accuracy = wps_acc;
 			location_velocity_free(gps_vel);
@@ -1017,6 +1158,9 @@ location_hybrid_get_last_velocity(LocationHybrid *self,
 	} else if (wps_vel) {
 		*velocity = wps_vel;
 		*accuracy = wps_acc;
+	} else if (mock_vel) {
+		*velocity = mock_vel;
+		*accuracy = mock_acc;
 	} else {
 		*velocity = NULL;
 		*accuracy = NULL;
@@ -1092,12 +1236,15 @@ location_hybrid_request_single_location(LocationHybrid *self, int timeout)
 	LocationHybridPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 
-	int ret = LOCATION_ERROR_NONE;
+	int ret = LOCATION_ERROR_NOT_AVAILABLE;
 
 	if (priv->gps) {
 		ret = location_request_single_location(priv->gps, timeout);
-	} else {
+	} else if (priv->wps) {
 		ret = location_request_single_location(priv->wps, timeout);
+	}
+	else if (priv->mock) {
+		ret = location_request_single_location(priv->mock, timeout);
 	}
 
 	return ret;
@@ -1170,18 +1317,28 @@ location_hybrid_init(LocationHybrid *self)
 
 	if (location_is_supported_method(LOCATION_METHOD_GPS)) priv->gps = location_new(LOCATION_METHOD_GPS);
 	if (location_is_supported_method(LOCATION_METHOD_WPS)) priv->wps = location_new(LOCATION_METHOD_WPS);
+	if (location_is_supported_method(LOCATION_METHOD_MOCK)) priv->mock = location_new(LOCATION_METHOD_MOCK);
 
 	if (priv->gps) {
 		g_signal_connect(priv->gps, "service-enabled", G_CALLBACK(hybrid_service_enabled), self);
 		g_signal_connect(priv->gps, "service-disabled", G_CALLBACK(hybrid_service_disabled), self);
+		//g_signal_connect(priv->gps, "status-changed", G_CALLBACK(hybrid_status_changed), self);
 		g_signal_connect(priv->gps, "service-updated", G_CALLBACK(hybrid_service_updated), self);
 		g_signal_connect(priv->gps, "location-updated", G_CALLBACK(hybrid_location_updated), self);
 	}
 	if (priv->wps) {
 		g_signal_connect(priv->wps, "service-enabled", G_CALLBACK(hybrid_service_enabled), self);
 		g_signal_connect(priv->wps, "service-disabled", G_CALLBACK(hybrid_service_disabled), self);
+		//g_signal_connect(priv->wps, "status-changed", G_CALLBACK(hybrid_status_changed), self);
 		g_signal_connect(priv->wps, "service-updated", G_CALLBACK(hybrid_service_updated), self);
 		g_signal_connect(priv->wps, "location-updated", G_CALLBACK(hybrid_location_updated), self);
+	}
+	if (priv->mock) {
+		g_signal_connect(priv->mock, "service-enabled", G_CALLBACK(hybrid_service_enabled), self);
+		g_signal_connect(priv->mock, "service-disabled", G_CALLBACK(hybrid_service_disabled), self);
+		//g_signal_connect(priv->mock, "status-changed", G_CALLBACK(hybrid_status_changed), self);
+		g_signal_connect(priv->mock, "service-updated", G_CALLBACK(hybrid_service_updated), self);
+		g_signal_connect(priv->mock, "location-updated", G_CALLBACK(hybrid_location_updated), self);
 	}
 
 	hybrid_set_current_method(priv, LOCATION_TYPE_HYBRID);
@@ -1229,11 +1386,23 @@ location_hybrid_class_init(LocationHybridClass *klass)
 	                                         G_TYPE_NONE, 1,
 	                                         G_TYPE_UINT);
 
+#if 0 // They are integrated to STATUS_CHANGED.
+	signals[STATUS_CHANGED] = g_signal_new("status-changed",
+	                                        G_TYPE_FROM_CLASS(klass),
+	                                        G_SIGNAL_RUN_FIRST |
+	                                        G_SIGNAL_NO_RECURSE,
+	                                        G_STRUCT_OFFSET(LocationHybridClass, status_changed),
+	                                        NULL, NULL,
+	                                        location_VOID__UINT,
+	                                        G_TYPE_NONE, 1,
+	                                        G_TYPE_UINT);
+#endif
+
 	signals[SERVICE_UPDATED] = g_signal_new("service-updated",
 	                                        G_TYPE_FROM_CLASS(klass),
 	                                        G_SIGNAL_RUN_FIRST |
 	                                        G_SIGNAL_NO_RECURSE,
-	                                        G_STRUCT_OFFSET(LocationHybridClass, updated),
+	                                        G_STRUCT_OFFSET(LocationHybridClass, service_updated),
 	                                        NULL, NULL,
 	                                        location_VOID__INT_POINTER_POINTER_POINTER,
 	                                        G_TYPE_NONE, 4,
@@ -1349,6 +1518,15 @@ location_hybrid_class_init(LocationHybridClass *klass)
 	                                                       "hybrid removal boundary data",
 	                                                       LOCATION_TYPE_BOUNDARY,
 	                                                       G_PARAM_READWRITE);
+
+	/* Tizen 3.0 */
+	properties[PROP_SERVICE_STATUS] = g_param_spec_int("service-status",
+	                                                "location service status prop",
+	                                                "location service status data",
+	                                                LOCATION_STATUS_NO_FIX,
+	                                                LOCATION_STATUS_3D_FIX,
+	                                                LOCATION_STATUS_NO_FIX,
+	                                                G_PARAM_READABLE);
 
 	g_object_class_install_properties(gobject_class,
 	                                  PROP_MAX,

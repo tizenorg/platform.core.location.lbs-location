@@ -39,14 +39,20 @@ enable_signaling(LocationObject *obj,
 	g_return_if_fail(obj);
 	g_return_if_fail(signals);
 	g_return_if_fail(prev_enabled);
+
 	if (*prev_enabled == TRUE && enabled == FALSE) {
 		*prev_enabled = FALSE;
-		LOCATION_LOGD("Signal emit: SERVICE_DISABLED");
+		LOCATION_LOGD("Signal emit: SERVICE_DISABLED, status = %d", status);
 		g_signal_emit(obj, signals[SERVICE_DISABLED], 0, LOCATION_STATUS_NO_FIX);
+		//g_signal_emit(obj, signals[STATUS_CHANGED], 0, LOCATION_STATUS_NO_FIX);
 	} else if (*prev_enabled == FALSE && enabled == TRUE) {
 		*prev_enabled = TRUE;
-		LOCATION_LOGD("Signal emit: SERVICE_ENABLED");
+		LOCATION_LOGD("Signal emit: SERVICE_ENABLED, status = %d", status);
 		g_signal_emit(obj, signals[SERVICE_ENABLED], 0, status);
+		//g_signal_emit(obj, signals[STATUS_CHANGED], 0, status);
+	} else if (*prev_enabled != enabled) {
+		LOCATION_LOGD("Signal emit: prev_enabled = %d, enabled = %d, status = %d", *prev_enabled, enabled, status);
+		//g_signal_emit(obj, signals[STATUS_CHANGED], 0, status);
 	}
 }
 
@@ -201,6 +207,7 @@ location_signaling(LocationObject *obj,
 	*prev_vel = location_velocity_copy(cur_vel);
 	*prev_acc = location_accuracy_copy(cur_acc);
 
+	LOCATION_LOGD("status = %d", cur_pos->status);
 	enable_signaling(obj, signals, prev_enabled, enabled, cur_pos->status);
 	position_velocity_signaling(obj, signals, pos_interval, vel_interval, loc_interval, prev_pos_timestamp, prev_vel_timestamp, prev_loc_timestamp, boundary_list, cur_pos, cur_vel, cur_acc);
 }

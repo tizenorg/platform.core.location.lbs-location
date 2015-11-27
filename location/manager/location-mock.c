@@ -28,7 +28,7 @@
 
 #include "module-internal.h"
 
-#include "location-wps.h"
+#include "location-mock.h"
 #include "location-marshal.h"
 #include "location-ielement.h"
 #include "location-signaling-util.h"
@@ -41,8 +41,8 @@
  * forward definitions
  */
 
-typedef struct _LocationWpsPrivate {
-	LocationWpsMod		*mod;
+typedef struct _LocationMockPrivate {
+	LocationMockMod		*mod;
 	GMutex				mutex;
 	gboolean			is_started;
 	guint				app_type;
@@ -62,7 +62,7 @@ typedef struct _LocationWpsPrivate {
 	LocationVelocity	*vel;
 	LocationAccuracy	*acc;
 	GList				*boundary_list;
-} LocationWpsPrivate;
+} LocationMockPrivate;
 
 enum {
     PROP_0,
@@ -83,16 +83,16 @@ enum {
 static guint32 signals[LAST_SIGNAL] = {0, };
 static GParamSpec *properties[PROP_MAX] = {NULL, };
 
-#define GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), LOCATION_TYPE_WPS, LocationWpsPrivate))
+#define GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), LOCATION_TYPE_MOCK, LocationMockPrivate))
 
 static void location_ielement_interface_init(LocationIElementInterface *iface);
 
-G_DEFINE_TYPE_WITH_CODE(LocationWps, location_wps, G_TYPE_OBJECT,
+G_DEFINE_TYPE_WITH_CODE(LocationMock, location_mock, G_TYPE_OBJECT,
                         G_IMPLEMENT_INTERFACE(LOCATION_TYPE_IELEMENT,
                                               location_ielement_interface_init));
 
 static void
-__reset_pos_data_from_priv(LocationWpsPrivate *priv)
+__reset_pos_data_from_priv(LocationMockPrivate *priv)
 {
 	LOCATION_LOGD("__reset_pos_data_from_priv");
 	g_return_if_fail(priv);
@@ -116,7 +116,7 @@ __reset_pos_data_from_priv(LocationWpsPrivate *priv)
 static gboolean
 __get_started(gpointer self)
 {
-	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, FALSE);
 
 	return priv->is_started;
@@ -125,7 +125,7 @@ __get_started(gpointer self)
 static int
 __set_started(gpointer self, gboolean started)
 {
-	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, -1);
 
 	if (priv->is_started != started) {
@@ -138,13 +138,13 @@ __set_started(gpointer self, gboolean started)
 }
 
 static void
-wps_status_cb(gboolean enabled,
+mock_status_cb(gboolean enabled,
               LocationStatus status,
               gpointer self)
 {
-	LOCATION_LOGD("status = %d, status");
+	LOCATION_LOGD("mock_status_cb");
 	g_return_if_fail(self);
-	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(priv);
 	if (priv->enabled == TRUE && enabled == FALSE) {
 		__set_started(self, FALSE);
@@ -153,7 +153,7 @@ wps_status_cb(gboolean enabled,
 }
 
 static void
-wps_location_cb(gboolean enabled,
+mock_location_cb(gboolean enabled,
                 LocationPosition *pos,
                 LocationVelocity *vel,
                 LocationAccuracy *acc,
@@ -163,7 +163,7 @@ wps_location_cb(gboolean enabled,
 	g_return_if_fail(pos);
 	g_return_if_fail(vel);
 	g_return_if_fail(acc);
-	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(priv);
 
 	if (priv->min_interval != LOCATION_UPDATE_INTERVAL_NONE) {
@@ -181,6 +181,9 @@ wps_location_cb(gboolean enabled,
 		                                  &(priv->vel),
 		                                  &(priv->acc));
 	}
+
+	LOCATION_LOGD("Calling location_signaling, status =%d", pos->status);
+
 	location_signaling(self,
 	                   signals,
 	                   enabled,
@@ -201,13 +204,13 @@ wps_location_cb(gboolean enabled,
 }
 
 static void
-location_setting_wps_cb(keynode_t *key,
+location_setting_mock_cb(keynode_t *key,
                         gpointer self)
 {
-	LOCATION_LOGD("location_setting_wps_cb");
+	LOCATION_LOGD("location_setting_mock_cb");
 	g_return_if_fail(key);
 	g_return_if_fail(self);
-	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(priv);
 	g_return_if_fail(priv->mod);
 	g_return_if_fail(priv->mod->handler);
@@ -223,10 +226,10 @@ location_setting_wps_cb(keynode_t *key,
 			}
 		}
 	} else {
-		if (1 == location_setting_get_int(VCONFKEY_LOCATION_NETWORK_ENABLED) && priv->mod->ops.start && !__get_started(self)) {
+		if (location_setting_get_int(VCONFKEY_LOCATION_MOCK_ENABLED) == 1 && priv->mod->ops.start && !__get_started(self)) {
 			LOCATION_LOGD("location resumed by setting");
 			__set_started(self, TRUE);
-			ret = priv->mod->ops.start(priv->mod->handler, wps_status_cb, wps_location_cb, self);
+			ret = priv->mod->ops.start(priv->mod->handler, mock_status_cb, mock_location_cb, self);
 			if (ret != LOCATION_ERROR_NONE) {
 				__set_started(self, FALSE);
 				LOCATION_LOGD("Fail to start. Error[%d]", ret);
@@ -237,10 +240,10 @@ location_setting_wps_cb(keynode_t *key,
 }
 
 static int
-location_wps_start(LocationWps *self)
+location_mock_start(LocationMock *self)
 {
-	LOCATION_LOGD("location_wps_start");
-	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	LOCATION_LOGD("ENTER >>>");
+	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod->handler, LOCATION_ERROR_NOT_AVAILABLE);
@@ -250,31 +253,32 @@ location_wps_start(LocationWps *self)
 
 	int ret = LOCATION_ERROR_NONE;
 
-	if (!location_setting_get_int(VCONFKEY_LOCATION_NETWORK_ENABLED)) {
+	if (!location_setting_get_int(VCONFKEY_LOCATION_MOCK_ENABLED)) {
 		ret = LOCATION_ERROR_SETTING_OFF;
 	} else {
 		__set_started(self, TRUE);
-		ret = priv->mod->ops.start(priv->mod->handler, wps_status_cb, wps_location_cb, self);
+		ret = priv->mod->ops.start(priv->mod->handler, mock_status_cb, mock_location_cb, self);
 		if (ret != LOCATION_ERROR_NONE) {
 			__set_started(self, FALSE);
-			LOCATION_LOGE("Fail to start wps. Error[%d]", ret);
+			LOCATION_LOGE("Failed to start mock. Error[%d]", ret);
 			return ret;
 		}
 	}
 
 	if (priv->app_type != CPPAPP && priv->set_noti == FALSE) {
-		location_setting_add_notify(VCONFKEY_LOCATION_NETWORK_ENABLED, location_setting_wps_cb, self);
+		location_setting_add_notify(VCONFKEY_LOCATION_MOCK_ENABLED, location_setting_mock_cb, self);
 		priv->set_noti = TRUE;
 	}
+	LOCATION_LOGD("EXIT <<<");
 
 	return ret;
 }
 
 static int
-location_wps_stop(LocationWps *self)
+location_mock_stop(LocationMock *self)
 {
-	LOCATION_LOGD("location_wps_stop");
-	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	LOCATION_LOGD("location_mock_stop");
+	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod->handler, LOCATION_ERROR_NOT_AVAILABLE);
@@ -291,7 +295,7 @@ location_wps_stop(LocationWps *self)
 	}
 
 	if (priv->app_type != CPPAPP && priv->set_noti == TRUE) {
-		location_setting_ignore_notify(VCONFKEY_LOCATION_NETWORK_ENABLED, location_setting_wps_cb);
+		location_setting_ignore_notify(VCONFKEY_LOCATION_MOCK_ENABLED, location_setting_mock_cb);
 		priv->set_noti = FALSE;
 	}
 
@@ -301,30 +305,30 @@ location_wps_stop(LocationWps *self)
 }
 
 static void
-location_wps_dispose(GObject *gobject)
+location_mock_dispose(GObject *gobject)
 {
-	LOCATION_LOGD("location_wps_dispose");
+	LOCATION_LOGD("location_mock_dispose");
 
-	LocationWpsPrivate *priv = GET_PRIVATE(gobject);
+	LocationMockPrivate *priv = GET_PRIVATE(gobject);
 	g_return_if_fail(priv);
 
 	g_mutex_clear(&priv->mutex);
 	if (priv->app_type != CPPAPP && priv->set_noti == TRUE) {
-		location_setting_ignore_notify(VCONFKEY_LOCATION_NETWORK_ENABLED, location_setting_wps_cb);
+		location_setting_ignore_notify(VCONFKEY_LOCATION_MOCK_ENABLED, location_setting_mock_cb);
 		priv->set_noti = FALSE;
 
 	}
 
-	G_OBJECT_CLASS(location_wps_parent_class)->dispose(gobject);
+	G_OBJECT_CLASS(location_mock_parent_class)->dispose(gobject);
 }
 
 static void
-location_wps_finalize(GObject *gobject)
+location_mock_finalize(GObject *gobject)
 {
-	LOCATION_LOGD("location_wps_finalize");
-	LocationWpsPrivate *priv = GET_PRIVATE(gobject);
+	LOCATION_LOGD("location_mock_finalize");
+	LocationMockPrivate *priv = GET_PRIVATE(gobject);
 	g_return_if_fail(priv);
-	module_free(priv->mod, "wps");
+	module_free(priv->mod, "mock");
 
 	if (priv->boundary_list) {
 		g_list_free_full(priv->boundary_list, free_boundary_list);
@@ -345,16 +349,17 @@ location_wps_finalize(GObject *gobject)
 		location_accuracy_free(priv->acc);
 		priv->acc = NULL;
 	}
-	G_OBJECT_CLASS(location_wps_parent_class)->finalize(gobject);
+
+	G_OBJECT_CLASS(location_mock_parent_class)->finalize(gobject);
 }
 
 static void
-location_wps_set_property(GObject *object,
+location_mock_set_property(GObject *object,
                           guint property_id,
                           const GValue *value,
                           GParamSpec *pspec)
 {
-	LocationWpsPrivate *priv = GET_PRIVATE(object);
+	LocationMockPrivate *priv = GET_PRIVATE(object);
 	g_return_if_fail(priv);
 	int ret = 0;
 
@@ -435,12 +440,6 @@ location_wps_set_property(GObject *object,
 
 				break;
 			}
-		case PROP_SERVICE_STATUS: {
-				gint enabled = g_value_get_int(value);
-				LOCATION_LOGD("Set prop>> PROP_SERVICE_STATUS: %u", enabled);
-				priv->min_distance = enabled;
-				break;
-			}
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
 			break;
@@ -448,17 +447,17 @@ location_wps_set_property(GObject *object,
 }
 
 static void
-location_wps_get_property(GObject *object,
+location_mock_get_property(GObject *object,
                           guint property_id,
                           GValue *value,
                           GParamSpec *pspec)
 {
-	LocationWpsPrivate *priv = GET_PRIVATE(object);
+	LocationMockPrivate *priv = GET_PRIVATE(object);
 	g_return_if_fail(priv);
 
 	switch (property_id) {
 		case PROP_METHOD_TYPE:
-			g_value_set_int(value, LOCATION_METHOD_WPS);
+			g_value_set_int(value, LOCATION_METHOD_MOCK);
 			break;
 		case PROP_IS_STARTED:
 			g_value_set_boolean(value, __get_started(object));
@@ -486,6 +485,8 @@ location_wps_get_property(GObject *object,
 			break;
 		case PROP_SERVICE_STATUS:
 			g_value_set_int(value, priv->enabled);
+			break;
+
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
 			break;
@@ -493,16 +494,16 @@ location_wps_get_property(GObject *object,
 }
 
 static int
-location_wps_get_position(LocationWps *self,
+location_mock_get_position(LocationMock *self,
                           LocationPosition **position,
                           LocationAccuracy **accuracy)
 {
 	int ret = LOCATION_ERROR_NOT_AVAILABLE;
 
-	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
-	setting_retval_if_fail(VCONFKEY_LOCATION_NETWORK_ENABLED);
+	setting_retval_if_fail(VCONFKEY_LOCATION_MOCK_ENABLED);
 
 	if (__get_started(self) != TRUE) {
 		LOCATION_LOGE("location is not started");
@@ -520,17 +521,17 @@ location_wps_get_position(LocationWps *self,
 }
 
 static int
-location_wps_get_position_ext(LocationWps *self,
+location_mock_get_position_ext(LocationMock *self,
                               LocationPosition **position,
                               LocationVelocity **velocity,
                               LocationAccuracy **accuracy)
 {
 	int ret = LOCATION_ERROR_NOT_AVAILABLE;
 
-	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
-	setting_retval_if_fail(VCONFKEY_LOCATION_NETWORK_ENABLED);
+	setting_retval_if_fail(VCONFKEY_LOCATION_MOCK_ENABLED);
 
 	if (__get_started(self) != TRUE) {
 		LOCATION_LOGE("location is not started");
@@ -550,19 +551,19 @@ location_wps_get_position_ext(LocationWps *self,
 
 
 static int
-location_wps_get_last_position(LocationWps *self,
+location_mock_get_last_position(LocationMock *self,
                                LocationPosition **position,
                                LocationAccuracy **accuracy)
 {
-	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
-	setting_retval_if_fail(VCONFKEY_LOCATION_NETWORK_ENABLED);
+	setting_retval_if_fail(VCONFKEY_LOCATION_MOCK_ENABLED);
 
 	int ret = LOCATION_ERROR_NONE;
 	LocationVelocity *_velocity = NULL;
 
-	LocModWpsOps ops = priv->mod->ops;
+	LocModMockOps ops = priv->mod->ops;
 	g_return_val_if_fail(priv->mod->handler, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(ops.get_last_position, LOCATION_ERROR_NOT_AVAILABLE);
 
@@ -573,17 +574,17 @@ location_wps_get_last_position(LocationWps *self,
 }
 
 static int
-location_wps_get_last_position_ext(LocationWps *self,
+location_mock_get_last_position_ext(LocationMock *self,
                                    LocationPosition **position,
                                    LocationVelocity **velocity,
                                    LocationAccuracy **accuracy)
 {
-	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
-	setting_retval_if_fail(VCONFKEY_LOCATION_NETWORK_ENABLED);
+	setting_retval_if_fail(VCONFKEY_LOCATION_MOCK_ENABLED);
 
-	LocModWpsOps ops = priv->mod->ops;
+	LocModMockOps ops = priv->mod->ops;
 	g_return_val_if_fail(priv->mod->handler, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(ops.get_last_position, LOCATION_ERROR_NOT_AVAILABLE);
 
@@ -592,16 +593,16 @@ location_wps_get_last_position_ext(LocationWps *self,
 
 
 static int
-location_wps_get_velocity(LocationWps *self,
+location_mock_get_velocity(LocationMock *self,
                           LocationVelocity **velocity,
                           LocationAccuracy **accuracy)
 {
 	int ret = LOCATION_ERROR_NOT_AVAILABLE;
 
-	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
-	setting_retval_if_fail(VCONFKEY_LOCATION_NETWORK_ENABLED);
+	setting_retval_if_fail(VCONFKEY_LOCATION_MOCK_ENABLED);
 
 	if (__get_started(self) != TRUE) {
 		LOCATION_LOGE("location is not started");
@@ -619,19 +620,19 @@ location_wps_get_velocity(LocationWps *self,
 }
 
 static int
-location_wps_get_last_velocity(LocationWps *self,
+location_mock_get_last_velocity(LocationMock *self,
                                LocationVelocity **velocity,
                                LocationAccuracy **accuracy)
 {
-	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
-	setting_retval_if_fail(VCONFKEY_LOCATION_NETWORK_ENABLED);
+	setting_retval_if_fail(VCONFKEY_LOCATION_MOCK_ENABLED);
 
 	int ret = LOCATION_ERROR_NONE;
 	LocationPosition *_position = NULL;
 
-	LocModWpsOps ops = priv->mod->ops;
+	LocModMockOps ops = priv->mod->ops;
 	g_return_val_if_fail(priv->mod->handler, LOCATION_ERROR_NOT_AVAILABLE);
 	ret = ops.get_last_position(priv->mod->handler, &_position, velocity, accuracy);
 	if (!_position) location_position_free(_position);
@@ -642,8 +643,8 @@ location_wps_get_last_velocity(LocationWps *self,
 static gboolean __single_location_timeout_cb(void *data)
 {
 	LOCATION_LOGD("__single_location_timeout_cb");
-	LocationWps *self = (LocationWps *)data;
-	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	LocationMock *self = (LocationMock *)data;
+	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, FALSE);
 
 	LocationPosition *pos = location_position_new(0, 0.0, 0.0, 0.0, LOCATION_STATUS_NO_FIX);
@@ -654,26 +655,26 @@ static gboolean __single_location_timeout_cb(void *data)
 	priv->loc_timeout = 0;
 
 	g_signal_emit(self, signals[LOCATION_UPDATED], 0, LOCATION_ERROR_NOT_AVAILABLE, pos, vel, acc);
-	location_wps_stop(self);
+	location_mock_stop(self);
 
 	return FALSE;
 }
 
 
 static void
-wps_single_location_cb(gboolean enabled,
+mock_single_location_cb(gboolean enabled,
                        LocationPosition *pos,
                        LocationVelocity *vel,
                        LocationAccuracy *acc,
                        gpointer self)
 {
-	LOCATION_LOGD("wps_single_location_cb");
+	LOCATION_LOGD("mock_single_location_cb");
 	g_return_if_fail(self);
 	g_return_if_fail(pos);
 	g_return_if_fail(vel);
 	g_return_if_fail(acc);
 
-	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(priv);
 
 	g_signal_emit(self, signals[LOCATION_UPDATED], 0, LOCATION_ERROR_NONE, pos, vel, acc);
@@ -681,14 +682,14 @@ wps_single_location_cb(gboolean enabled,
 		g_source_remove(priv->loc_timeout);
 		priv->loc_timeout = 0;
 	}
-	location_wps_stop(self);
+	location_mock_stop(self);
 }
 
 static int
-location_wps_request_single_location(LocationWps *self, int timeout)
+location_mock_request_single_location(LocationMock *self, int timeout)
 {
-	LOCATION_LOGD("location_wps_request_single_location");
-	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	LOCATION_LOGD("location_mock_request_single_location");
+	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod->handler, LOCATION_ERROR_NOT_AVAILABLE);
@@ -699,7 +700,7 @@ location_wps_request_single_location(LocationWps *self, int timeout)
 	int ret = LOCATION_ERROR_NONE;
 
 	__set_started(self, TRUE);
-	ret = priv->mod->ops.start(priv->mod->handler, wps_status_cb, wps_single_location_cb, self);
+	ret = priv->mod->ops.start(priv->mod->handler, mock_status_cb, mock_single_location_cb, self);
 	if (ret != LOCATION_ERROR_NONE) {
 		LOCATION_LOGE("Fail to start request single. Error[%d]", ret);
 		__set_started(self, FALSE);
@@ -715,63 +716,146 @@ location_wps_request_single_location(LocationWps *self, int timeout)
 }
 
 static int
-location_wps_get_satellite(LocationWps *self,
+location_mock_get_satellite(LocationMock *self,
                            LocationSatellite **satellite)
 {
 	return LOCATION_ERROR_NOT_SUPPORTED;
 }
 
 static int
-location_wps_get_last_satellite(LocationWps *self,
+location_mock_get_last_satellite(LocationMock *self,
                                 LocationSatellite **satellite)
 {
 	return LOCATION_ERROR_NOT_SUPPORTED;
 }
 
 static int
-location_wps_set_option(LocationWps *self, const char *option)
+location_mock_set_option(LocationMock *self, const char *option)
 {
-	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod->handler, LOCATION_ERROR_NOT_AVAILABLE);
+	g_return_val_if_fail(priv->mod->ops.start, LOCATION_ERROR_NOT_AVAILABLE);
 
-	return LOCATION_ERROR_NONE;
+	int ret = LOCATION_ERROR_NONE;
+
+	ret = priv->mod->ops.set_option(priv->mod->handler, option);
+	if (ret != LOCATION_ERROR_NONE) {
+		LOCATION_LOGE("Failed to set_option. Error[%d]", ret);
+	}
+
+	return ret;
 }
 
 static int
-location_wps_get_nmea(LocationWps *self,
+location_mock_get_nmea(LocationMock *self,
                       char **nmea_data)
 {
 	return LOCATION_ERROR_NOT_SUPPORTED;
 }
 
+
+/* Tizen 3.0 */
+
+static int
+location_mock_get_status(LocationMock *self, int *status)
+{
+	LocationMockPrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(priv->mod->handler, LOCATION_ERROR_NOT_AVAILABLE);
+
+	if (__get_started(self) == TRUE)
+		*status = 1;
+	else
+		*status = 0;
+
+	return LOCATION_ERROR_NONE;
+}
+
+
+static void
+__set_mock_location_cb(gboolean enabled,
+              LocationStatus status,
+              gpointer self)
+{
+	g_return_if_fail(self);
+	LocationObject *obj = (LocationObject *) self;
+	LocationMockPrivate *priv = GET_PRIVATE(obj);
+	g_return_if_fail(priv);
+
+	LOCATION_LOGD("ENTER >>>");
+	LOCATION_LOGD("status = %d");
+	if (status == LOCATION_STATUS_MOCK_FAIL) {
+		g_signal_emit(obj, signals[SERVICE_DISABLED], 0, LOCATION_STATUS_NO_FIX);
+		g_signal_emit(obj, signals[STATUS_CHANGED], 0, LOCATION_STATUS_MOCK_FAIL);
+	}
+
+	LOCATION_LOGD("EXIT <<<");
+}
+
+static int
+location_mock_set_mock_location(LocationMock *self,
+							  LocationPosition *position,
+							  LocationVelocity *velocity,
+							  LocationAccuracy *accuracy)
+{
+	LocationMockPrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(priv->mod->handler, LOCATION_ERROR_NOT_AVAILABLE);
+	g_return_val_if_fail(priv->mod->ops.set_mock_location, LOCATION_ERROR_NOT_AVAILABLE);
+
+	LOCATION_LOGD("ENTER >>>");
+
+	int ret = LOCATION_ERROR_NONE;
+
+	if (!location_setting_get_int(VCONFKEY_LOCATION_MOCK_ENABLED)) {
+		ret = LOCATION_ERROR_SETTING_OFF;
+	} else {
+		ret = priv->mod->ops.set_mock_location(priv->mod->handler, position, velocity, accuracy, __set_mock_location_cb, self);
+		if (ret != LOCATION_ERROR_NONE) {
+			LOCATION_LOGE("Failed to set_mock_location. Error[%d]", ret);
+		}
+	}
+
+	LOCATION_LOGD("EXIT <<<");
+	return ret;
+}
+
+static void _glib_log(const gchar *log_domain, GLogLevelFlags log_level,
+					const gchar *msg, gpointer user_data)
+{
+	LOCATION_LOGD("GLIB[%d]: %s", log_level, msg);
+}
+
+
 static void
 location_ielement_interface_init(LocationIElementInterface *iface)
 {
-	iface->start = (TYPE_START_FUNC)location_wps_start;
-	iface->stop = (TYPE_STOP_FUNC)location_wps_stop;
-	iface->get_position = (TYPE_GET_POSITION)location_wps_get_position;
-	iface->get_position_ext = (TYPE_GET_POSITION_EXT)location_wps_get_position_ext;
-	iface->get_last_position = (TYPE_GET_POSITION)location_wps_get_last_position;
-	iface->get_last_position_ext = (TYPE_GET_POSITION_EXT)location_wps_get_last_position_ext;
-	iface->get_velocity = (TYPE_GET_VELOCITY)location_wps_get_velocity;
-	iface->get_last_velocity = (TYPE_GET_VELOCITY)location_wps_get_last_velocity;
-	iface->get_satellite = (TYPE_GET_SATELLITE)location_wps_get_satellite;
-	iface->get_last_satellite = (TYPE_GET_SATELLITE)location_wps_get_last_satellite;
-	iface->set_option = (TYPE_SET_OPTION)location_wps_set_option;
-	iface->request_single_location = (TYPE_REQUEST_SINGLE_LOCATION)location_wps_request_single_location;
-	iface->get_nmea = (TYPE_GET_NMEA)location_wps_get_nmea;
+	iface->start = (TYPE_START_FUNC)location_mock_start;
+	iface->stop = (TYPE_STOP_FUNC)location_mock_stop;
+	iface->get_position = (TYPE_GET_POSITION)location_mock_get_position;
+	iface->get_position_ext = (TYPE_GET_POSITION_EXT)location_mock_get_position_ext;
+	iface->get_last_position = (TYPE_GET_POSITION)location_mock_get_last_position;
+	iface->get_last_position_ext = (TYPE_GET_POSITION_EXT)location_mock_get_last_position_ext;
+	iface->get_velocity = (TYPE_GET_VELOCITY)location_mock_get_velocity;
+	iface->get_last_velocity = (TYPE_GET_VELOCITY)location_mock_get_last_velocity;
+	iface->get_satellite = (TYPE_GET_SATELLITE)location_mock_get_satellite;
+	iface->get_last_satellite = (TYPE_GET_SATELLITE)location_mock_get_last_satellite;
+	iface->set_option = (TYPE_SET_OPTION)location_mock_set_option;
+	iface->request_single_location = (TYPE_REQUEST_SINGLE_LOCATION)location_mock_request_single_location;
+	iface->get_nmea = (TYPE_GET_NMEA)location_mock_get_nmea;
+
+	iface->get_status = (TYPE_GET_STATUS) location_mock_get_status;
+	iface->set_mock_location = (TYPE_SET_MOCK_LOCATION) location_mock_set_mock_location;
 }
 
 static void
-location_wps_init(LocationWps *self)
+location_mock_init(LocationMock *self)
 {
-	LOCATION_LOGD("location_wps_init");
-	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	LOCATION_LOGD("location_mock_init");
+	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(priv);
 
-	priv->mod = (LocationWpsMod *)module_new("wps");
+	priv->mod = (LocationMockMod *)module_new("mock");
 	if (!priv->mod) LOCATION_LOGW("module loading failed");
 
 	g_mutex_init(&priv->mutex);
@@ -802,56 +886,64 @@ location_wps_init(LocationWps *self)
 }
 
 static void
-location_wps_class_init(LocationWpsClass *klass)
+location_mock_class_init(LocationMockClass *klass)
 {
-	LOCATION_LOGD("location_wps_class_init");
+	LOCATION_LOGD("location_mock_class_init");
+
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
-	gobject_class->set_property = location_wps_set_property;
-	gobject_class->get_property = location_wps_get_property;
+	g_log_set_default_handler(_glib_log, NULL);
 
-	gobject_class->dispose = location_wps_dispose;
-	gobject_class->finalize = location_wps_finalize;
 
-	g_type_class_add_private(klass, sizeof(LocationWpsPrivate));
+	gobject_class->set_property = location_mock_set_property;
+	gobject_class->get_property = location_mock_get_property;
+
+	gobject_class->dispose = location_mock_dispose;
+	gobject_class->finalize = location_mock_finalize;
+
+	g_type_class_add_private(klass, sizeof(LocationMockPrivate));
+
+
 
 	signals[SERVICE_ENABLED] = g_signal_new("service-enabled",
 	                                        G_TYPE_FROM_CLASS(klass),
 	                                        G_SIGNAL_RUN_FIRST |
 	                                        G_SIGNAL_NO_RECURSE,
-	                                        G_STRUCT_OFFSET(LocationWpsClass, enabled),
+	                                        G_STRUCT_OFFSET(LocationMockClass, enabled),
 	                                        NULL, NULL,
 	                                        location_VOID__UINT,
 	                                        G_TYPE_NONE, 1,
 	                                        G_TYPE_UINT);
 
-#if 0 // integrated with SERVICE_ENABLED.
+
 
 	signals[SERVICE_DISABLED] = g_signal_new("service-disabled",
 	                                         G_TYPE_FROM_CLASS(klass),
 	                                         G_SIGNAL_RUN_FIRST |
 	                                         G_SIGNAL_NO_RECURSE,
-	                                         G_STRUCT_OFFSET(LocationWpsClass, disabled),
+	                                         G_STRUCT_OFFSET(LocationMockClass, disabled),
 	                                         NULL, NULL,
 	                                         location_VOID__UINT,
 	                                         G_TYPE_NONE, 1,
 	                                         G_TYPE_UINT);
-#endif
+
+#if 0 // integrated with STATUS_CHANGED.
 	signals[STATUS_CHANGED] = g_signal_new("status-changed",
 	                                        G_TYPE_FROM_CLASS(klass),
 	                                        G_SIGNAL_RUN_FIRST |
 	                                        G_SIGNAL_NO_RECURSE,
-	                                        G_STRUCT_OFFSET(LocationWpsClass, status_changed),
+	                                        G_STRUCT_OFFSET(LocationMockClass, status_changed),
 	                                        NULL, NULL,
 	                                        location_VOID__UINT,
 	                                        G_TYPE_NONE, 1,
 	                                        G_TYPE_UINT);
+#endif
 
 	signals[SERVICE_UPDATED] = g_signal_new("service-updated",
 	                                        G_TYPE_FROM_CLASS(klass),
 	                                        G_SIGNAL_RUN_FIRST |
 	                                        G_SIGNAL_NO_RECURSE,
-	                                        G_STRUCT_OFFSET(LocationWpsClass, service_updated),
+	                                        G_STRUCT_OFFSET(LocationMockClass, service_updated),
 	                                        NULL, NULL,
 	                                        location_VOID__INT_POINTER_POINTER_POINTER,
 	                                        G_TYPE_NONE, 4,
@@ -864,7 +956,7 @@ location_wps_class_init(LocationWpsClass *klass)
 	                                         G_TYPE_FROM_CLASS(klass),
 	                                         G_SIGNAL_RUN_FIRST |
 	                                         G_SIGNAL_NO_RECURSE,
-	                                         G_STRUCT_OFFSET(LocationWpsClass, location_updated),
+	                                         G_STRUCT_OFFSET(LocationMockClass, location_updated),
 	                                         NULL, NULL,
 	                                         location_VOID__INT_POINTER_POINTER_POINTER,
 	                                         G_TYPE_NONE, 4,
@@ -877,7 +969,7 @@ location_wps_class_init(LocationWpsClass *klass)
 	                                G_TYPE_FROM_CLASS(klass),
 	                                G_SIGNAL_RUN_FIRST |
 	                                G_SIGNAL_NO_RECURSE,
-	                                G_STRUCT_OFFSET(LocationWpsClass, zone_in),
+	                                G_STRUCT_OFFSET(LocationMockClass, zone_in),
 	                                NULL, NULL,
 	                                location_VOID__POINTER_POINTER_POINTER,
 	                                G_TYPE_NONE, 3,
@@ -889,7 +981,7 @@ location_wps_class_init(LocationWpsClass *klass)
 	                                 G_TYPE_FROM_CLASS(klass),
 	                                 G_SIGNAL_RUN_FIRST |
 	                                 G_SIGNAL_NO_RECURSE,
-	                                 G_STRUCT_OFFSET(LocationWpsClass, zone_out),
+	                                 G_STRUCT_OFFSET(LocationMockClass, zone_out),
 	                                 NULL, NULL,
 	                                 location_VOID__POINTER_POINTER_POINTER,
 	                                 G_TYPE_NONE, 3,
@@ -900,34 +992,34 @@ location_wps_class_init(LocationWpsClass *klass)
 	properties[PROP_METHOD_TYPE] = g_param_spec_int("method",
 	                                                "method type",
 	                                                "location method type name",
-	                                                LOCATION_METHOD_WPS,
-	                                                LOCATION_METHOD_WPS,
-	                                                LOCATION_METHOD_WPS,
+	                                                LOCATION_METHOD_MOCK,
+	                                                LOCATION_METHOD_MOCK,
+	                                                LOCATION_METHOD_MOCK,
 	                                                G_PARAM_READABLE);
 
 	properties[PROP_IS_STARTED] = g_param_spec_boolean("is_started",
-	                                                   "wps is started prop",
-	                                                   "wps is started status",
+	                                                   "mock is started prop",
+	                                                   "mock is started status",
 	                                                   FALSE,
 	                                                   G_PARAM_READWRITE);
 
 	properties[PROP_LAST_POSITION] = g_param_spec_boxed("last-position",
-	                                                    "wps last position prop",
-	                                                    "wps last position data",
+	                                                    "mock last position prop",
+	                                                    "mock last position data",
 	                                                    LOCATION_TYPE_POSITION,
 	                                                    G_PARAM_READABLE);
 
 	properties[PROP_POS_INTERVAL] = g_param_spec_uint("pos-interval",
-	                                                  "wps position interval prop",
-	                                                  "wps position interval data",
+	                                                  "mock position interval prop",
+	                                                  "mock position interval data",
 	                                                  LOCATION_UPDATE_INTERVAL_MIN,
 	                                                  LOCATION_UPDATE_INTERVAL_MAX,
 	                                                  LOCATION_UPDATE_INTERVAL_DEFAULT,
 	                                                  G_PARAM_READWRITE);
 
 	properties[PROP_VEL_INTERVAL] = g_param_spec_uint("vel-interval",
-	                                                  "wps velocity interval prop",
-	                                                  "wps velocity interval data",
+	                                                  "mock velocity interval prop",
+	                                                  "mock velocity interval data",
 	                                                  LOCATION_UPDATE_INTERVAL_MIN,
 	                                                  LOCATION_UPDATE_INTERVAL_MAX,
 	                                                  LOCATION_UPDATE_INTERVAL_DEFAULT,
@@ -942,40 +1034,31 @@ location_wps_class_init(LocationWpsClass *klass)
 	                                                  G_PARAM_READWRITE);
 
 	properties[PROP_MIN_INTERVAL] = g_param_spec_uint("min-interval",
-	                                                  "wps distance-based interval prop",
-	                                                  "wps distance-based interval data",
+	                                                  "mock distance-based interval prop",
+	                                                  "mock distance-based interval data",
 	                                                  LOCATION_MIN_INTERVAL_MIN,
 	                                                  LOCATION_MIN_INTERVAL_MAX,
 	                                                  LOCATION_MIN_INTERVAL_DEFAULT,
 	                                                  G_PARAM_READWRITE);
 
 	properties[PROP_MIN_DISTANCE] = g_param_spec_double("min-distance",
-	                                                    "wps distance-based distance prop",
-	                                                    "wps distance-based distance data",
+	                                                    "mock distance-based distance prop",
+	                                                    "mock distance-based distance data",
 	                                                    LOCATION_MIN_DISTANCE_MIN,
 	                                                    LOCATION_MIN_DISTANCE_MAX,
 	                                                    LOCATION_MIN_DISTANCE_DEFAULT,
 	                                                    G_PARAM_READWRITE);
 
 	properties[PROP_BOUNDARY] = g_param_spec_pointer("boundary",
-	                                                 "wps boundary prop",
-	                                                 "wps boundary data",
+	                                                 "mock boundary prop",
+	                                                 "mock boundary data",
 	                                                 G_PARAM_READWRITE);
 
 	properties[PROP_REMOVAL_BOUNDARY] = g_param_spec_boxed("removal-boundary",
-	                                                       "wps removal boundary prop",
-	                                                       "wps removal boundary data",
+	                                                       "mock removal boundary prop",
+	                                                       "mock removal boundary data",
 	                                                       LOCATION_TYPE_BOUNDARY,
 	                                                       G_PARAM_READWRITE);
-
-	/* Tizen 3.0 */
-	properties[PROP_SERVICE_STATUS] = g_param_spec_int("service-status",
-	                                                "location service status prop",
-	                                                "location service status data",
-	                                                LOCATION_STATUS_NO_FIX,
-	                                                LOCATION_STATUS_3D_FIX,
-	                                                LOCATION_STATUS_NO_FIX,
-	                                                G_PARAM_READABLE);
 
 	g_object_class_install_properties(gobject_class,
 	                                  PROP_MAX,

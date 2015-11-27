@@ -68,4 +68,9 @@ gint location_state_ignore_notify(const gchar *path, SettingCB setting_cb);
 		}\
 	}
 
+// for testing
+#define VCONFKEY_LOCATION_MOCK_ENABLED "db/location/setting/MockEnabled"
+#define VCONFKEY_LOCATION_MOCK_GPS_ENABLED "db/location/setting/MockGpsEngabled"
+#define VCONFKEY_LOCATION_MOCK_NETWORK_ENABLED "db/location/setting/MockNetworkEnabled"
+
 #endif

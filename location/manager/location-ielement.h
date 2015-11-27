@@ -54,6 +54,9 @@ enum {
     ZONE_OUT,
     LOCATION_UPDATED,
     BATCH_UPDATED,
+    MOCK_LOCATION_SET,
+    MOCK_LOCATION_FAIL,
+    STATUS_CHANGED,
     LAST_SIGNAL,
 };
 
@@ -69,6 +72,11 @@ typedef int (*TYPE_GET_BATCH)(LocationIElement *self, LocationBatch **batch);
 typedef int (*TYPE_START_BATCH)(LocationIElement *self);
 typedef int (*TYPE_STOP_BATCH)(LocationIElement *self);
 typedef int (*TYPE_GET_NMEA)(LocationIElement *self, char **nmea);
+
+/* Tizen 3.0 */
+typedef int (*TYPE_GET_STATUS)(LocationIElement *self, int *status);
+typedef int (*TYPE_SET_MOCK_LOCATION)(LocationIElement *self, const LocationPosition *position, const LocationVelocity *velocity, const LocationAccuracy *accuracy);
+
 
 
 struct _LocationIElementInterface {
@@ -90,6 +98,10 @@ struct _LocationIElementInterface {
 	TYPE_START_BATCH start_batch;
 	TYPE_STOP_BATCH stop_batch;
 	TYPE_GET_NMEA get_nmea;
+
+	/* Tizen 3.0 */
+	TYPE_GET_STATUS get_status;
+	TYPE_SET_MOCK_LOCATION set_mock_location;
 };
 
 GType location_ielement_get_type(void);
@@ -110,6 +122,10 @@ int location_ielement_get_batch(LocationIElement *self, LocationBatch **batch);
 int location_ielement_start_batch(LocationIElement *self);
 int location_ielement_stop_batch(LocationIElement *self);
 int location_ielement_get_nmea(LocationIElement *self, char **nmea);
+
+/* Tizen 3.0 */
+int location_ielement_get_status(LocationIElement *self, int *state);
+int location_ielement_set_mock_location(LocationIElement *self, const LocationPosition *position, const LocationVelocity *velocity, const LocationAccuracy *accuracy);
 
 
 G_END_DECLS

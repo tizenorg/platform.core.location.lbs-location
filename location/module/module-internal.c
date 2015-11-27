@@ -50,7 +50,7 @@ static GMod *gmod_new(const char *module_name, gboolean is_resident)
 
 	char *module_path = g_strndup(MODULE_PATH_PREFIX, strlen(MODULE_PATH_PREFIX)+1);
 	/* gmod->path = g_module_build_path(MODULE_PATH_PREFIX, gmod->name); */
-	gmod->path = g_module_build_path(module_path, gmod->name); 
+	gmod->path = g_module_build_path(module_path, gmod->name);
 	if (!gmod->path) {
 		g_free(gmod->name);
 		g_free(gmod);
@@ -147,6 +147,18 @@ static gpointer mod_new(const char *module_name)
 			ret_mod = NULL;
 		} else
 			ret_mod = (gpointer) _mod;
+	} else if (g_str_has_prefix(module_name, "mock")) {
+		LocationMockMod *_mod = g_new0(LocationMockMod, 1);
+		_mod->gmod = gmod;
+		_mod->init = init;
+		_mod->shutdown = shutdown;
+		_mod->handler = _mod->init(&(_mod->ops));
+		if (!_mod->handler) {
+			LOCATION_LOGW("module init failed");
+			gmod_free(_mod->gmod);
+			ret_mod = NULL;
+		} else
+			ret_mod = (gpointer) _mod;
 	} else {
 		LOCATION_LOGW("module name (%s) is wrong", module_name);
 		ret_mod = NULL;
@@ -179,8 +191,19 @@ static void mod_free(gpointer mod, const char *module_name)
 		_mod->shutdown = NULL;
 		gmod_free(_mod->gmod);
 		_mod->gmod = NULL;
-	} else
+	} else if (0 == g_strcmp0(module_name, "mock")) {
+		LocationMockMod *_mod = (LocationMockMod *) mod;
+		if (_mod->shutdown && _mod->handler) {
+			_mod->shutdown(_mod->handler);
+		}
+		_mod->handler = NULL;
+		_mod->init = NULL;
+		_mod->shutdown = NULL;
+		gmod_free(_mod->gmod);
+		_mod->gmod = NULL;
+	} else {
 		LOCATION_LOGW("module name (%s) is wrong", module_name);
+	}
 
 	g_free(mod);
 }
@@ -217,10 +240,12 @@ gpointer module_new(const char *module_name)
 {
 	if (!module_name)
 		return NULL;
-	int index = 0;
 	char name[256];
 
 	gpointer mod = NULL;
+#if 0
+	int index = 0;
+
 	for (index = -1; index < MAX_MODULE_INDEX; index++) {
 		if (index >= 0) {
 			if (0 >= g_snprintf(name, 256, "%s%d", module_name, index)) {
@@ -239,6 +264,16 @@ gpointer module_new(const char *module_name)
 			break;
 		}
 		LOCATION_LOGW("module (%s) open failed", name);
+	}
+#endif
+	if (0 >= g_snprintf(name, 256, "%s", module_name)) {
+			LOCATION_LOGW("module name(%s) is wrong", name);
+	} else {
+		mod = mod_new(name);
+		if (mod)
+			LOCATION_LOGW("module (%s) open success", name);
+		else
+			LOCATION_LOGW("module (%s) open failed", name);
 	}
 	return mod;
 }

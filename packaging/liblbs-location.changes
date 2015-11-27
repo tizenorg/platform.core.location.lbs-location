@@ -1,3 +1,10 @@
+[Version]	libslp-location_1.0.0
+[Date]		19 January 2016
+[Changes]	Supported mock location
+[Developer]	Young-Ae Kang <youngae.kang@samsung.com>
+
+================================================================================
+
 [Version]	libslp-location_0.12.0
 [Date]		10 Jun 2015
 [Changes]	Code synchronization with tizen_2.4
@@ -5,7 +12,6 @@
 [Developer]	Young-Ae Kang <youngae.kang@samsung.com>
 
 ================================================================================
-
 
 [Version]	libslp-location_0.11.0
 [Date]		29 May 2015

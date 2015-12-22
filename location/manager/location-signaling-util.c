@@ -39,6 +39,7 @@ enable_signaling(LocationObject *obj,
 	g_return_if_fail(obj);
 	g_return_if_fail(signals);
 	g_return_if_fail(prev_enabled);
+
 	if (*prev_enabled == TRUE && enabled == FALSE) {
 		*prev_enabled = FALSE;
 		LOCATION_LOGD("Signal emit: SERVICE_DISABLED");
@@ -137,6 +138,10 @@ distance_based_position_signaling(LocationObject *obj,
                                   LocationVelocity **prev_vel,
                                   LocationAccuracy **prev_acc)
 {
+	g_return_if_fail(obj);
+	g_return_if_fail(signals);
+	g_return_if_fail(cur_pos);
+
 	if (!cur_pos->timestamp) {
 		LOCATION_LOGE("Invalid location with timestamp, 0");
 		return;
@@ -149,7 +154,12 @@ distance_based_position_signaling(LocationObject *obj,
 		*prev_dist_timestamp = cur_pos->timestamp;
 
 		if (*prev_pos) location_position_free(*prev_pos);
+		if (*prev_vel) location_velocity_free(*prev_vel);
+		if (*prev_acc) location_accuracy_free(*prev_acc);
+
 		*prev_pos = location_position_copy(cur_pos);
+		*prev_vel = location_velocity_copy(cur_vel);
+		*prev_acc = location_accuracy_copy(cur_acc);
 
 	} else {
 		gulong distance;
@@ -159,12 +169,17 @@ distance_based_position_signaling(LocationObject *obj,
 			return;
 		}
 
-		if (distance > min_distance) {
+		if (distance >= min_distance) {
 			g_signal_emit(obj, signals[SERVICE_UPDATED], 0, DISTANCE_UPDATED, cur_pos, cur_vel, cur_acc);
 			*prev_dist_timestamp = cur_pos->timestamp;
 
 			if (*prev_pos) location_position_free(*prev_pos);
+			if (*prev_vel) location_velocity_free(*prev_vel);
+			if (*prev_acc) location_accuracy_free(*prev_acc);
+
 			*prev_pos = location_position_copy(cur_pos);
+			*prev_vel = location_velocity_copy(cur_vel);
+			*prev_acc = location_accuracy_copy(cur_acc);
 		}
 	}
 }
@@ -188,6 +203,10 @@ location_signaling(LocationObject *obj,
                    LocationVelocity **prev_vel,
                    LocationAccuracy **prev_acc)
 {
+	g_return_if_fail(obj);
+	g_return_if_fail(signals);
+	g_return_if_fail(cur_pos);
+
 	if (!cur_pos->timestamp) {
 		LOCATION_LOGD("Invalid location with timestamp, 0");
 		return;

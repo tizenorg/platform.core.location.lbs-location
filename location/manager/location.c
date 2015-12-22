@@ -386,8 +386,8 @@ location_enable_method(const LocationMethod method, const int enable)
 				LOCATION_SECLOG("[%s]:[%d]", _key, ret);
 			 	ret = location_setting_send_system_event(_key, enable);
 				if (ret != LOCATION_ERROR_NONE) {
-					g_free(_key);
 					LOCATION_SECLOG("Fail to send system event [%s], error [%d]", _key, ret);
+					g_free(_key);
 					return LOCATION_ERROR_NOT_ALLOWED;
 				}
 			}

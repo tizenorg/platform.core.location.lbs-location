@@ -367,18 +367,20 @@ hybrid_service_updated(GObject *obj,
 		if (vel) priv->vel = location_velocity_copy(vel);
 		if (acc) priv->acc = location_accuracy_copy(acc);
 
-		if (!priv->enabled && pos) {
-			enable_signaling(self, signals, &(priv->enabled), TRUE, pos->status);
-		}
+		if (pos) {
+			if (!priv->enabled) {
+				enable_signaling(self, signals, &(priv->enabled), TRUE, pos->status);
+			}
 
-		if (type == DISTANCE_UPDATED) {
-			distance_based_position_signaling(self, signals, priv->enabled, pos, vel, acc,
-			                                  priv->min_interval, priv->min_distance, &(priv->enabled),
-			                                  &(priv->dist_updated_timestamp), &(priv->pos), &(priv->vel), &(priv->acc));
-		} else {
-			position_velocity_signaling(self, signals, priv->pos_interval, priv->vel_interval, priv->loc_interval,
-			                            &(priv->pos_updated_timestamp), &(priv->vel_updated_timestamp), &(priv->loc_updated_timestamp),
-			                            priv->boundary_list, pos, vel, acc);
+			if (type == DISTANCE_UPDATED) {
+				distance_based_position_signaling(self, signals, priv->enabled, pos, vel, acc,
+								  priv->min_interval, priv->min_distance, &(priv->enabled),
+								  &(priv->dist_updated_timestamp), &(priv->pos), &(priv->vel), &(priv->acc));
+			} else {
+				position_velocity_signaling(self, signals, priv->pos_interval, priv->vel_interval, priv->loc_interval,
+							    &(priv->pos_updated_timestamp), &(priv->vel_updated_timestamp), &(priv->loc_updated_timestamp),
+							    priv->boundary_list, pos, vel, acc);
+			}
 		}
 
 		/* if receive GPS position then stop WPS.. */
@@ -400,20 +402,22 @@ hybrid_service_updated(GObject *obj,
 		if (pos) priv->pos = location_position_copy(pos);
 		if (vel) priv->vel = location_velocity_copy(vel);
 		if (acc) priv->acc = location_accuracy_copy(acc);
+	
+		if (pos) {
+			if (!priv->enabled) {
+				enable_signaling(self, signals, &(priv->enabled), TRUE, pos->status);
+			}
 
-		if (!priv->enabled && pos) {
-			enable_signaling(self, signals, &(priv->enabled), TRUE, pos->status);
-		}
-
-		if (type == DISTANCE_UPDATED) {
-			distance_based_position_signaling(self, signals, priv->enabled, pos, vel, acc,
-											  priv->min_interval, priv->min_distance, &(priv->enabled),
-											  &(priv->dist_updated_timestamp), &(priv->pos), &(priv->vel), &(priv->acc));
-		} else {
-			LOCATION_LOGD("position_velocity_signaling");
-			position_velocity_signaling(self, signals, priv->pos_interval, priv->vel_interval, priv->loc_interval,
-										&(priv->pos_updated_timestamp), &(priv->vel_updated_timestamp), &(priv->loc_updated_timestamp),
-										priv->boundary_list, pos, vel, acc);
+			if (type == DISTANCE_UPDATED) {
+				distance_based_position_signaling(self, signals, priv->enabled, pos, vel, acc,
+												  priv->min_interval, priv->min_distance, &(priv->enabled),
+												  &(priv->dist_updated_timestamp), &(priv->pos), &(priv->vel), &(priv->acc));
+			} else {
+				LOCATION_LOGD("position_velocity_signaling");
+				position_velocity_signaling(self, signals, priv->pos_interval, priv->vel_interval, priv->loc_interval,
+											&(priv->pos_updated_timestamp), &(priv->vel_updated_timestamp), &(priv->loc_updated_timestamp),
+											priv->boundary_list, pos, vel, acc);
+			}
 		}
 	}
 }

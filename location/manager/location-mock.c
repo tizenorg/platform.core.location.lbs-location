@@ -1084,6 +1084,15 @@ location_mock_class_init(LocationMockClass *klass)
 	                                                       LOCATION_TYPE_BOUNDARY,
 	                                                       G_PARAM_READWRITE);
 
+	/* Tizen 3.0 */
+	properties[PROP_SERVICE_STATUS] = g_param_spec_int("service-status",
+	                                                "location service status prop",
+	                                                "location service status data",
+	                                                LOCATION_STATUS_NO_FIX,
+	                                                LOCATION_STATUS_3D_FIX,
+	                                                LOCATION_STATUS_NO_FIX,
+	                                                G_PARAM_READABLE);
+
 	g_object_class_install_properties(gobject_class,
 	                                  PROP_MAX,
 	                                  properties);

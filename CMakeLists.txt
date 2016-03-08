@@ -26,7 +26,7 @@ ENDIF(FEATURE_PROFILE_TV)
 
 pkg_check_modules(pkgs REQUIRED glib-2.0 gthread-2.0 gobject-2.0 gmodule-2.0
 		capi-appfw-app-manager capi-appfw-package-manager pkgmgr-info
-		dlog vconf json-glib-1.0 bundle eventsystem ${PRIVACY_PKG})
+		dlog vconf json-glib-1.0 bundle eventsystem libtzplatform-config ${PRIVACY_PKG})
 
 FOREACH(flag ${pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")

@@ -25,11 +25,11 @@
 
 #define MAX_BATCH_ITEM		8
 #define BATCH_SENTENCE_SIZE	256
-#define BATCH_LOG			"/opt/usr/media/lbs-server/location_batch.log"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <tzplatform_config.h>
 #include "location-batch.h"
 #include "location-log.h"
 
@@ -102,7 +102,8 @@ location_get_batch_file(int num_of_location)
 	LocationBatch *batch = location_batch_new(num_of_location);
 	batch->num_of_location = num_of_location;
 
-	FILE *fd = fopen(BATCH_LOG, "r");
+	const char *batch_path = tzplatform_mkpath(TZ_USER_CONTENT, "lbs-server/location_batch.log");
+	FILE *fd = fopen(batch_path, "r");
 	if (fd != NULL) {
 		char buf[BATCH_SENTENCE_SIZE] = { 0, };
 		int i = 0;

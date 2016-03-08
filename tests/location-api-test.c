@@ -23,14 +23,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <glib/gprintf.h>
+#include <tzplatform_config.h>
 #include <location.h>
 #include "location-api-test-util.h"
 
 #define STR_MAX	128
 LocationObject *location_obj = NULL;
 static GMainLoop *g_mainloop = NULL;
-
-#define LOCATION_API_TEST_JSON_FILE "/opt/data/location-api-test.json"
 
 static gpointer GmainThread(gpointer data)
 {
@@ -432,7 +431,8 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-	json_util_init(LOCATION_API_TEST_JSON_FILE);
+	const char *json_path = tzplatform_mkpath(TZ_SYS_DATA, "location-api-test.json");
+	json_util_init(json_path);
 	g_printf("--- Start LBS Test App ---\n");
 	while (1) {
 		print_menu();

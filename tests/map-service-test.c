@@ -31,8 +31,6 @@
 LocationMapObject *map_obj = NULL;
 static GMainLoop *g_mainloop = NULL;
 
-#define LOCATION_API_TEST_JSON_FILE "/opt/data/location-api-test.json"
-
 static gpointer GmainThread(gpointer data)
 {
 	g_mainloop = g_main_loop_new(NULL, FALSE);

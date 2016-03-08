@@ -22,6 +22,7 @@ BuildRequires:  pkgconfig(privacy-manager-client)
 BuildRequires:  pkgconfig(json-glib-1.0)
 BuildRequires:  pkgconfig(bundle)
 BuildRequires:  pkgconfig(eventsystem)
+BuildRequires:  pkgconfig(libtzplatform-config)
 
 %description
 Location Based Service Library

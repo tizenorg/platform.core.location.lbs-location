@@ -1,6 +1,6 @@
 Name: liblbs-location
 Summary: Location Based Service Library
-Version: 1.0.0
+Version: 1.1.0
 Release: 1
 Group: Location/Libraries
 License: Apache-2.0
@@ -14,10 +14,9 @@ BuildRequires:  pkgconfig(gmodule-2.0)
 BuildRequires:  pkgconfig(dlog)
 BuildRequires:  pkgconfig(vconf)
 BuildRequires:  pkgconfig(capi-appfw-app-manager)
-BuildRequires:  pkgconfig(capi-appfw-package-manager)
-BuildRequires:  pkgconfig(pkgmgr-info)
 %if "%{profile}" != "tv"
-BuildRequires:  pkgconfig(privacy-manager-client)
+BuildRequires:  pkgconfig(cynara-client)
+BuildRequires:  pkgconfig(cynara-session)
 %endif
 BuildRequires:  pkgconfig(json-glib-1.0)
 BuildRequires:  pkgconfig(bundle)

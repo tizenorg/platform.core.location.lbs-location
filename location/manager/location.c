@@ -119,10 +119,6 @@ int location_init(void)
 	if (FALSE == module_init())
 		return LOCATION_ERROR_NOT_AVAILABLE;
 
-#ifndef TIZEN_PROFILE_TV
-	location_privacy_initialize();
-#endif
-
 	return LOCATION_ERROR_NONE;
 }
 
@@ -156,10 +152,6 @@ EXPORT_API int
 location_free(LocationObject *obj)
 {
 	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
-
-#ifndef TIZEN_PROFILE_TV
-	location_privacy_finalize();
-#endif
 	g_object_unref(obj);
 	return LOCATION_ERROR_NONE;
 }
@@ -170,15 +162,6 @@ location_request_single_location(LocationObject *obj, int timeout)
 	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
 
 	int ret = LOCATION_ERROR_NONE;
-
-#ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
-#endif
-
 	ret = location_ielement_request_single_location(LOCATION_IELEMENT(obj), timeout);
 	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to request single location. Error [%d]", ret);
 
@@ -193,7 +176,7 @@ location_start(LocationObject *obj)
 	int ret = LOCATION_ERROR_NONE;
 
 #ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
+	ret = location_check_cynara(LOCATION_PRIVILEGE);
 	if (ret != LOCATION_ERROR_NONE) {
 		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
 		return LOCATION_ERROR_NOT_ALLOWED;
@@ -212,14 +195,6 @@ location_stop(LocationObject *obj)
 	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
 	int ret = LOCATION_ERROR_NONE;
 
-#ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
-#endif
-
 	ret = location_ielement_stop(LOCATION_IELEMENT(obj));
 	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to stop. Error [%d]", ret);
 
@@ -233,7 +208,7 @@ location_start_batch(LocationObject *obj)
 	int ret = LOCATION_ERROR_NONE;
 
 #ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
+	ret = location_check_cynara(LOCATION_PRIVILEGE);
 	if (ret != LOCATION_ERROR_NONE) {
 		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
 		return LOCATION_ERROR_NOT_ALLOWED;
@@ -251,15 +226,6 @@ location_stop_batch(LocationObject *obj)
 {
 	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
 	int ret = LOCATION_ERROR_NONE;
-
-#ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
-#endif
-
 	ret = location_ielement_stop_batch(LOCATION_IELEMENT(obj));
 	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to Batch stop. Error [%d]", ret);
 
@@ -327,7 +293,7 @@ location_enable_method(const LocationMethod method, const int enable)
 	char *_key = NULL;
 
 #ifndef TIZEN_PROFILE_TV
-	ret = location_check_privilege(LOCATION_ENABLE_PRIVILEGE);
+	ret = location_check_cynara(LOCATION_ENABLE_PRIVILEGE);
 	if (ret != LOCATION_ERROR_NONE) {
 		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
 		return LOCATION_ERROR_NOT_ALLOWED;
@@ -439,7 +405,7 @@ location_get_position(LocationObject *obj,
 	int ret = LOCATION_ERROR_NONE;
 
 #ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
+	ret = location_check_cynara(LOCATION_PRIVILEGE);
 	if (ret != LOCATION_ERROR_NONE) {
 		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
 		return LOCATION_ERROR_NOT_ALLOWED;
@@ -466,7 +432,7 @@ location_get_position_ext(LocationObject *obj,
 	int ret = LOCATION_ERROR_NONE;
 
 #ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
+	ret = location_check_cynara(LOCATION_PRIVILEGE);
 	if (ret != LOCATION_ERROR_NONE) {
 		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
 		return LOCATION_ERROR_NOT_ALLOWED;
@@ -491,7 +457,7 @@ location_get_last_position(LocationObject *obj,
 	int ret = LOCATION_ERROR_NONE;
 
 #ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
+	ret = location_check_cynara(LOCATION_PRIVILEGE);
 	if (ret != LOCATION_ERROR_NONE) {
 		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
 		return LOCATION_ERROR_NOT_ALLOWED;
@@ -518,7 +484,7 @@ location_get_last_position_ext(LocationObject *obj,
 	int ret = LOCATION_ERROR_NONE;
 
 #ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
+	ret = location_check_cynara(LOCATION_PRIVILEGE);
 	if (ret != LOCATION_ERROR_NONE) {
 		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
 		return LOCATION_ERROR_NOT_ALLOWED;
@@ -538,17 +504,10 @@ location_get_nmea(LocationObject *obj, char **nmea)
 	g_return_val_if_fail(nmea, LOCATION_ERROR_PARAMETER);
 
 	int ret = LOCATION_ERROR_NONE;
-
-#ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
-#endif
-
 	ret = location_ielement_get_nmea(LOCATION_IELEMENT(obj), nmea);
-	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to get_nmea. Error [%d]", ret);
+	if (ret != LOCATION_ERROR_NONE) {
+		LOCATION_LOGE("Fail to get_nmea. Error [%d]", ret);
+	}
 
 	return ret;
 }
@@ -563,7 +522,7 @@ location_get_satellite(LocationObject *obj, LocationSatellite **satellite)
 	int ret = LOCATION_ERROR_NONE;
 
 #ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
+	ret = location_check_cynara(LOCATION_PRIVILEGE);
 	if (ret != LOCATION_ERROR_NONE) {
 		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
 		return LOCATION_ERROR_NOT_ALLOWED;
@@ -571,7 +530,9 @@ location_get_satellite(LocationObject *obj, LocationSatellite **satellite)
 #endif
 
 	ret = location_ielement_get_satellite(LOCATION_IELEMENT(obj), satellite);
-	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to get_satellite. Error [%d]", ret);
+	if (ret != LOCATION_ERROR_NONE) {
+		LOCATION_LOGE("Fail to get_satellite. Error [%d]", ret);
+	}
 
 	return ret;
 }
@@ -585,7 +546,7 @@ location_get_batch(LocationObject *obj, LocationBatch **batch)
 	int ret = LOCATION_ERROR_NONE;
 
 #ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
+	ret = location_check_cynara(LOCATION_PRIVILEGE);
 	if (ret != LOCATION_ERROR_NONE) {
 		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
 		return LOCATION_ERROR_NOT_ALLOWED;
@@ -607,7 +568,7 @@ location_get_last_satellite(LocationObject *obj, LocationSatellite **satellite)
 	int ret = LOCATION_ERROR_NONE;
 
 #ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
+	ret = location_check_cynara(LOCATION_PRIVILEGE);
 	if (ret != LOCATION_ERROR_NONE) {
 		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
 		return LOCATION_ERROR_NOT_ALLOWED;
@@ -632,7 +593,7 @@ location_get_velocity(LocationObject *obj,
 	int ret = LOCATION_ERROR_NONE;
 
 #ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
+	ret = location_check_cynara(LOCATION_PRIVILEGE);
 	if (ret != LOCATION_ERROR_NONE) {
 		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
 		return LOCATION_ERROR_NOT_ALLOWED;
@@ -657,7 +618,7 @@ location_get_last_velocity(LocationObject *obj,
 	int ret = LOCATION_ERROR_NONE;
 
 #ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
+	ret = location_check_cynara(LOCATION_PRIVILEGE);
 	if (ret != LOCATION_ERROR_NONE) {
 		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
 		return LOCATION_ERROR_NOT_ALLOWED;
@@ -729,7 +690,7 @@ location_set_option(LocationObject *obj, const char *option)
 	int ret = LOCATION_ERROR_NONE;
 
 #ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
+	ret = location_check_cynara(LOCATION_PRIVILEGE);
 	if (ret != LOCATION_ERROR_NONE) {
 		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
 		return LOCATION_ERROR_NOT_ALLOWED;
@@ -754,15 +715,6 @@ location_get_service_state(LocationObject *obj, int *state)
 	g_return_val_if_fail(state, LOCATION_ERROR_PARAMETER);
 
 	int ret = LOCATION_ERROR_NONE;
-
-#ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
-#endif
-
 	ret = location_ielement_get_status(LOCATION_IELEMENT(obj), state);
 	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to get_position. Error [%d]", ret);
 
@@ -781,7 +733,7 @@ location_enable_mock(const LocationMethod method, const int enable)
 	}
 
 #ifndef TIZEN_PROFILE_TV
-	ret = location_check_privilege(LOCATION_PRIVILEGE);
+	ret = location_check_cynara(LOCATION_PRIVILEGE);
 	if (ret != LOCATION_ERROR_NONE) {
 		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
 		return LOCATION_ERROR_NOT_ALLOWED;
@@ -881,15 +833,6 @@ location_set_mock_location(LocationObject *obj, const LocationPosition *position
 	g_return_val_if_fail(accuracy, LOCATION_ERROR_PARAMETER);
 
 	int ret = LOCATION_ERROR_NONE;
-
-#ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
-#endif
-
 	ret = location_ielement_set_mock_location(LOCATION_IELEMENT(obj), position, velocity, accuracy);
 	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to location_ielement_set_mock_location. Error [%d]", ret);
 
@@ -902,15 +845,6 @@ location_clear_mock_location(LocationObject *obj)
 	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
 
 	int ret = LOCATION_ERROR_NONE;
-
-#ifndef TIZEN_PROFILE_TV
-	ret = location_get_privacy(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
-#endif
-
 	ret = location_ielement_clear_mock_location(LOCATION_IELEMENT(obj));
 	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to location_ielement_set_mock_location. Error [%d]", ret);
 

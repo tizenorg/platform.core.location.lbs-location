@@ -22,223 +22,59 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <glib.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <app_manager.h>
-#include <package_manager.h>
-#include <pkgmgr-info.h>
-#include <privacy_checker_client.h>
+#include <cynara-client.h>
+#include <cynara-session.h>
 
 #include "location-common-util.h"
 #include "location-types.h"
 #include "location-log.h"
 #include "location-privacy.h"
 
-typedef struct _location_privilege_s {
-	char *name;
-	bool found;
-} location_privilege_s;
-
-
-
-void
-location_privacy_initialize(void)
+int location_check_cynara(const char *privilege_name)
 {
-	int ret = 0;
-	pid_t pid = 0;
-	char *app_id = NULL;
-	char *package_id = NULL;
-	pkgmgrinfo_appinfo_h pkgmgrinfo_appinfo;
+	cynara *cynara = NULL;
+	int ret = LOCATION_ERROR_NONE;
+	FILE *fp = NULL;
+	char uid[16];
+	char *session = NULL;
+	char smack_label[100] = "/proc/self/attr/current";
 
-	pid = getpid();
-	ret = app_manager_get_app_id(pid, &app_id);
-	if (ret != APP_MANAGER_ERROR_NONE) {
-		LOCATION_LOGE("Fail to get app_id. Err[%d]", ret);
-		return;
-	}
-
-	ret = pkgmgrinfo_appinfo_get_appinfo(app_id, &pkgmgrinfo_appinfo);
-	if (ret != PACKAGE_MANAGER_ERROR_NONE) {
-		LOCATION_LOGE("Fail to get appinfo for [%s]. Err[%d]", app_id, ret);
-		free(app_id);
-		return;
-	}
-
-	ret = pkgmgrinfo_appinfo_get_pkgname(pkgmgrinfo_appinfo, &package_id);
-	if (ret != PACKAGE_MANAGER_ERROR_NONE) {
-		LOCATION_LOGE("Fail to get package_id for [%s]. Err[%d]", app_id, ret);
-		pkgmgrinfo_appinfo_destroy_appinfo(pkgmgrinfo_appinfo);
-		free(app_id);
-		return;
-	}
-
-	ret = privacy_checker_initialize(package_id);
-	if (ret != PRIV_MGR_ERROR_SUCCESS) {
-		LOCATION_LOGE("Fail to initialize privacy checker. err[%d]", ret);
-		pkgmgrinfo_appinfo_destroy_appinfo(pkgmgrinfo_appinfo);
-		free(app_id);
-		return;
-	}
-
-	LOCATION_LOGD("Success to initialize privacy checker");
-
-	free(app_id);
-	pkgmgrinfo_appinfo_destroy_appinfo(pkgmgrinfo_appinfo);
-}
-
-void
-location_privacy_finalize(void)
-{
-	int ret = 0;
-	ret = privacy_checker_finalize();
-	if (ret != PRIV_MGR_ERROR_SUCCESS) {
-		LOCATION_LOGE("Fail to finalize privacy_cehecker. Err[%d]", ret);
-		return;
-	}
-
-	LOCATION_LOGD("Success to finalize privacy checker");
-}
-
-int
-location_get_privacy(const char *privilege_name)
-{
-	int ret = 0;
-	pid_t pid = 0;
-	char *app_id = NULL;
-	char *package_id = NULL;
-	int app_type = 0;
-	pkgmgrinfo_appinfo_h pkgmgrinfo_appinfo;
-
-	pid = getpid();
-	ret = app_manager_get_app_id(pid, &app_id);
-	if (ret != APP_MANAGER_ERROR_NONE) {
-		LOCATION_LOGE("Fail to get app_id. Err[%d]", ret);
-		return LOCATION_ERROR_NONE;
-	}
-
-	app_type = location_get_app_type(app_id);
-	if (app_type == CPPAPP) {
-		LOCATION_LOGE("CPPAPP use location");
-		g_free(app_id);
-		return LOCATION_ERROR_NONE;
-	}
-
-	ret = pkgmgrinfo_appinfo_get_appinfo(app_id, &pkgmgrinfo_appinfo);
-	if (ret != PACKAGE_MANAGER_ERROR_NONE) {
-		LOCATION_LOGE("Fail to get appinfo for [%s]. Err[%d]", app_id, ret);
-		g_free(app_id);
+	if (cynara_initialize(&cynara, NULL) != CYNARA_API_SUCCESS)
+	{
+		LOCATION_LOGE("cynara initialize failed");
+		cynara = NULL;
 		return LOCATION_ERROR_NOT_ALLOWED;
 	}
 
-	ret = pkgmgrinfo_appinfo_get_pkgname(pkgmgrinfo_appinfo, &package_id);
-	if (ret != PACKAGE_MANAGER_ERROR_NONE) {
-		LOCATION_LOGE("Fail to get package_id for [%s]. Err[%d]", app_id, ret);
-		g_free(app_id);
-		pkgmgrinfo_appinfo_destroy_appinfo(pkgmgrinfo_appinfo);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
-
-#ifdef TIZEN_PROFILE_WERABLE
-	if (app_type == WEBAPP) {
-		LOCATION_LOGI("WEBAPP use location");
-		if (location_get_webapp_privilege(package_id, privilege_name) == 0) {
-			g_free(package_id);
-			g_free(app_id);
-			return LOCATION_ERROR_NONE;
+	fp = fopen("/proc/self/attr/current", "r");
+	if (fp != NULL) {
+		if (fread(smack_label, 1, sizeof(smack_label), fp) <= 0) {
+			LOCATION_LOGE("fread failed");
 		}
-	}
-#endif
-
-	ret = privacy_checker_check_package_by_privilege(package_id, privilege_name);
-	if (ret != PRIV_MGR_ERROR_SUCCESS) {
-		LOCATION_LOGE("Fail to get privilege for [%s]. Err[%d]", package_id, ret);
-		pkgmgrinfo_appinfo_destroy_appinfo(pkgmgrinfo_appinfo);
-		g_free(app_id);
-		return LOCATION_ERROR_NOT_ALLOWED;
+		fclose(fp);
 	}
 
-	pkgmgrinfo_appinfo_destroy_appinfo(pkgmgrinfo_appinfo);
-	g_free(app_id);
+	pid_t pid = getpid();
+	session = cynara_session_from_pid(pid);
+	snprintf(uid, 16, "%d", getuid());
+	ret = cynara_check(cynara, smack_label, session, uid, privilege_name);
 
-	return LOCATION_ERROR_NONE;
-}
-
-
-int
-location_check_privilege(const char *privilege_name)
-{
-	int ret = 0;
-	pid_t pid = 0;
-	char *app_id = NULL;
-	char *package_id = NULL;
-	int app_type = 0;
-	pkgmgrinfo_appinfo_h pkgmgrinfo_appinfo;
-
-	pid = getpid();
-	ret = app_manager_get_app_id(pid, &app_id);
-	if (ret != APP_MANAGER_ERROR_NONE) {
-		LOCATION_LOGE("Fail to get app_id. Err[%d]", ret);
-		return LOCATION_ERROR_NONE;
+	if (session) {
+		free(session);
 	}
 
-	app_type = location_get_app_type(app_id);
-	if (app_type == CPPAPP) {
-		LOCATION_LOGE("CPPAPP use location");
-		g_free(app_id);
-		return LOCATION_ERROR_NONE;
+	if (cynara) {
+		cynara_finish(cynara);
 	}
 
-	ret = pkgmgrinfo_appinfo_get_appinfo(app_id, &pkgmgrinfo_appinfo);
-	if (ret != PACKAGE_MANAGER_ERROR_NONE) {
-		LOCATION_LOGE("Fail to get appinfo for [%s]. Err[%d]", app_id, ret);
-		g_free(app_id);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
-
-	ret = pkgmgrinfo_appinfo_get_pkgname(pkgmgrinfo_appinfo, &package_id);
-	if (ret != PACKAGE_MANAGER_ERROR_NONE) {
-		LOCATION_LOGE("Fail to get package_id for [%s]. Err[%d]", app_id, ret);
-		g_free(app_id);
-		pkgmgrinfo_appinfo_destroy_appinfo(pkgmgrinfo_appinfo);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
-
-#ifdef TIZEN_WERABLE
-	if (app_type == WEBAPP) {
-		LOCATION_LOGE("WEBAPP use location");
-		if (location_get_webapp_privilege(package_id, privilege_name) == 0) {
-			g_free(package_id);
-			g_free(app_id);
-			return LOCATION_ERROR_NONE;
-		}
-	}
-#endif
-
-	ret = privacy_checker_initialize(package_id);
-	if (ret != PRIV_MGR_ERROR_SUCCESS) {
-		LOCATION_LOGE("Fail to initialize privacy checker. err[%d]", ret);
-		pkgmgrinfo_appinfo_destroy_appinfo(pkgmgrinfo_appinfo);
-		g_free(app_id);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
-
-	ret = privacy_checker_check_package_by_privilege(package_id, privilege_name);
-	if (ret != PRIV_MGR_ERROR_SUCCESS) {
-		LOCATION_LOGE("Fail to get privilege for [%s]. Err[%d]", package_id, ret);
-		pkgmgrinfo_appinfo_destroy_appinfo(pkgmgrinfo_appinfo);
-		g_free(app_id);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
-
-	pkgmgrinfo_appinfo_destroy_appinfo(pkgmgrinfo_appinfo);
-	g_free(app_id);
-
-	ret = privacy_checker_finalize();
-	if (ret != PRIV_MGR_ERROR_SUCCESS) {
-		LOCATION_LOGE("Fail to finalize privacy_cehecker. Err[%d]", ret);
+	if (ret != CYNARA_API_ACCESS_ALLOWED) {
+		LOCATION_LOGE("cynara_check failed [%d]", ret);
 		return LOCATION_ERROR_NOT_ALLOWED;
 	}
 
 	return LOCATION_ERROR_NONE;
 }
-

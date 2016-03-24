@@ -14,7 +14,7 @@ IF(FEATURE_PROFILE_TV)
         ADD_DEFINITIONS("-DTIZEN_PROFILE_TV")
 	SET(PRIVACY_PKG "")
 ELSE(FEATURE_PROFILE_TV)
-	SET(PRIVACY_PKG "privacy-manager-client")
+	SET(PRIVACY_PKG "cynara-client cynara-session")
 
 	IF(FEATURE_PROFILE_WEARABLE)
 		MESSAGE("<<< Wearable Profile >>>")
@@ -24,8 +24,7 @@ ELSE(FEATURE_PROFILE_TV)
 	ENDIF(FEATURE_PROFILE_WEARABLE)
 ENDIF(FEATURE_PROFILE_TV)
 
-pkg_check_modules(pkgs REQUIRED glib-2.0 gthread-2.0 gobject-2.0 gmodule-2.0
-		capi-appfw-app-manager capi-appfw-package-manager pkgmgr-info
+pkg_check_modules(pkgs REQUIRED glib-2.0 gthread-2.0 gobject-2.0 gmodule-2.0 capi-appfw-app-manager
 		dlog vconf json-glib-1.0 bundle eventsystem libtzplatform-config ${PRIVACY_PKG})
 
 FOREACH(flag ${pkgs_CFLAGS})

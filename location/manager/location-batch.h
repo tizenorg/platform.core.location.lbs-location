@@ -23,6 +23,7 @@
 #define __LOCATION_BATCH_H_
 
 #include <location-types.h>
+#include <sensor.h>
 
 G_BEGIN_DECLS
 
@@ -63,6 +64,7 @@ typedef struct {
  */
 struct _LocationBatch {
 	guint num_of_location;	/*/< The number of location batch. */
+	time_t start_time;
 	LocationBatchDetail *batch_data;
 };
 
@@ -79,6 +81,10 @@ LocationBatch *location_batch_copy(const LocationBatch *batch);
 LocationBatch *location_get_batch_file(int num_of_location);
 
 void location_batch_free(LocationBatch *batch);
+
+#ifdef TIZEN_DEVICE
+gboolean location_set_sensor_batch(LocationBatch *batch, sensor_event_s *event);
+#endif
 
 /**
  * @} @}

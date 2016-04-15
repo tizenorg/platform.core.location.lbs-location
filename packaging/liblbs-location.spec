@@ -22,6 +22,7 @@ BuildRequires:  pkgconfig(json-glib-1.0)
 BuildRequires:  pkgconfig(bundle)
 BuildRequires:  pkgconfig(eventsystem)
 BuildRequires:  pkgconfig(libtzplatform-config)
+BuildRequires:  pkgconfig(capi-system-sensor)
 
 %description
 Location Based Service Library
@@ -46,6 +47,12 @@ cp %{SOURCE1001} .
 export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE"
 export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
 export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
+
+%ifarch %arm aarch64
+export CFLAGS="$CFLAGS -DTIZEN_DEVICE"
+export CXXFLAGS="$CXXFLAGS -DTIZEN_DEVICE"
+export FFLAGS="$FFLAGS -DTIZEN_DEVICE"
+%endif
 
 # Call make instruction with smp support
 MAJORVER=`echo %{version} | awk 'BEGIN {FS="."}{print $1}'`

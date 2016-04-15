@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <tzplatform_config.h>
+#include <sensor.h>
 #include "location-batch.h"
 #include "location-log.h"
 
@@ -120,6 +121,32 @@ location_get_batch_file(int num_of_location)
 	}
 	return batch;
 }
+
+#ifdef TIZEN_DEVICE
+EXPORT_API gboolean location_set_sensor_batch(LocationBatch *batch, sensor_event_s *event)
+{
+	g_return_val_if_fail(batch, FALSE);
+	g_return_val_if_fail(event, FALSE);
+	g_return_val_if_fail(batch->num_of_location > event->values[4], FALSE);
+	unsigned long long timestamp = event->timestamp;
+	float latitude  = event->values[0];
+	float longitude = event->values[1];
+	float altitude  = event->values[2];
+	float speed     = event->values[3];
+	int idx   = (int)(event->values[4]);
+
+	batch->batch_data[idx].timestamp = batch->start_time - (time_t)((timestamp / 1001000) % 100000);
+	batch->batch_data[idx].latitude = latitude;
+	batch->batch_data[idx].longitude = longitude;
+	batch->batch_data[idx].altitude = altitude;
+	batch->batch_data[idx].speed = speed;
+	batch->batch_data[idx].direction = 0;
+	batch->batch_data[idx].horizontal_accuracy = 0;
+	batch->batch_data[idx].vertical_accuracy = 0;
+
+	return TRUE;
+}
+#endif
 
 EXPORT_API LocationBatch *
 location_batch_copy(const LocationBatch *batch)

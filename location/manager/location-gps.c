@@ -24,6 +24,7 @@
 #endif
 
 #include <app_manager.h>
+#include <sensor.h>
 #include "location-setting.h"
 #include "location-log.h"
 
@@ -42,6 +43,7 @@ typedef struct _LocationGpsPrivate {
 	LocationGpsMod		*mod;
 	GMutex				mutex;
 	gboolean			is_started;
+	gboolean			is_batch_invoked;
 	guint				app_type;
 	gboolean			set_noti;
 	gboolean			enabled;
@@ -69,6 +71,10 @@ typedef struct _LocationGpsPrivate {
 #ifdef TIZEN_PROFILE_MOBILE
 	guint				pos_searching_timer;
 	guint				vel_searching_timer;
+#endif
+#ifdef TIZEN_DEVICE
+	sensor_h sensor;
+	sensor_listener_h sensor_listener;
 #endif
 } LocationGpsPrivate;
 
@@ -316,6 +322,7 @@ gps_location_cb(gboolean enabled,
 	                   &(priv->acc));
 }
 
+#ifndef TIZEN_DEVICE
 static void
 gps_batch_cb(gboolean enabled,
              guint num_of_location,
@@ -332,6 +339,7 @@ gps_batch_cb(gboolean enabled,
 
 	g_signal_emit(self, signals[BATCH_UPDATED], 0, num_of_location);
 }
+#endif
 
 static void
 gps_satellite_cb(gboolean enabled,
@@ -485,6 +493,101 @@ location_gps_stop(LocationGps *self)
 	return ret;
 }
 
+#ifdef TIZEN_DEVICE
+static void __sensor_event_cb(sensor_h s, sensor_event_s *event, void *data)
+{
+	LocationGpsPrivate *priv = GET_PRIVATE(data);
+	g_return_if_fail(priv);
+	g_return_if_fail(event);
+
+	int remain_idx = (int)(event->values[4]);
+
+	if (priv->is_batch_invoked) {
+		location_batch_free(priv->batch);
+		priv->is_batch_invoked = FALSE;
+		priv->batch = NULL;
+	}
+
+	if (priv->batch == NULL) {
+		g_return_if_fail(event->value_count <= 5);
+		priv->batch = location_batch_new(remain_idx + 1);
+		g_return_if_fail(priv->batch);
+		priv->batch->num_of_location = remain_idx + 1;
+		time_t start;
+		time(&start);
+		priv->batch->start_time = start + (time_t)((event->timestamp / 1001000) % 100000);
+	}
+
+	location_set_sensor_batch(priv->batch, event);
+
+	if (remain_idx == 0) {
+		g_signal_emit(data, signals[BATCH_UPDATED], 0, priv->batch->num_of_location);
+		priv->is_batch_invoked = TRUE;
+	}
+}
+
+static int __set_sensor_batch(LocationGps *self, int batch_interval)
+{
+	LOCATION_LOGD("__set_sensor_batch");
+	LocationGpsPrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
+
+	if (priv->batch != NULL) {
+		location_batch_free(priv->batch);
+		priv->batch = NULL;
+	}
+
+	int update_interval = batch_interval * 1000;	/* in ms */
+	int ret = 0;
+	bool supported = false;
+
+	ret = sensor_is_supported((sensor_type_e)0x1A02, &supported);
+	if (ret != SENSOR_ERROR_NONE) {
+		LOCATION_LOGD("sensor_is_supported() failed");
+		return LOCATION_ERROR_NOT_AVAILABLE;
+	}
+
+	if (!supported) {
+		LOCATION_LOGD("Not supported");
+		return LOCATION_ERROR_NOT_SUPPORTED;
+	}
+
+	ret = sensor_get_default_sensor((sensor_type_e)0x1A02, &priv->sensor);
+	if (ret != SENSOR_ERROR_NONE) {
+		LOCATION_LOGD("sensor_get_default_sensor() failed (%d)", ret);
+		return LOCATION_ERROR_NOT_AVAILABLE;
+	}
+
+	ret = sensor_create_listener(priv->sensor, &priv->sensor_listener);
+	if (ret != SENSOR_ERROR_NONE) {
+		LOCATION_LOGD("sensor_create_listener() failed (%d)", ret);
+		return LOCATION_ERROR_NOT_AVAILABLE;
+	}
+
+	ret = sensor_listener_set_event_cb(priv->sensor_listener, update_interval, __sensor_event_cb, self);
+	if (ret != SENSOR_ERROR_NONE) {
+		LOCATION_LOGD("sensor_listener_set_event_cb() failed");
+		sensor_destroy_listener(priv->sensor_listener);
+		return LOCATION_ERROR_NOT_AVAILABLE;
+	}
+
+	ret = sensor_listener_set_option(priv->sensor_listener, SENSOR_OPTION_ALWAYS_ON);
+	if (ret != SENSOR_ERROR_NONE) {
+		LOCATION_LOGD("sensor_listener_set_option() failed");
+		sensor_destroy_listener(priv->sensor_listener);
+		return LOCATION_ERROR_NOT_AVAILABLE;
+	}
+	ret = sensor_listener_start(priv->sensor_listener);
+	if (ret != SENSOR_ERROR_NONE) {
+		LOCATION_LOGD("sensor_listener_set_event_cb() failed");
+		sensor_destroy_listener(priv->sensor_listener);
+		return LOCATION_ERROR_NOT_AVAILABLE;
+	}
+
+	return LOCATION_ERROR_NONE;
+}
+#endif
+
 static int
 location_gps_start_batch(LocationGps *self)
 {
@@ -502,6 +605,9 @@ location_gps_start_batch(LocationGps *self)
 	if (!location_setting_get_int(VCONFKEY_LOCATION_ENABLED)) {
 		ret = LOCATION_ERROR_SETTING_OFF;
 	} else {
+#ifdef TIZEN_DEVICE
+		return  __set_sensor_batch(self, priv->batch_interval);
+#else
 		__set_started(self, TRUE);
 		ret = priv->mod->ops.start_batch(priv->mod->handler, gps_batch_cb, priv->batch_interval, priv->batch_period, self);
 		if (ret != LOCATION_ERROR_NONE) {
@@ -509,6 +615,7 @@ location_gps_start_batch(LocationGps *self)
 			__set_started(self, FALSE);
 			return ret;
 		}
+#endif
 	}
 
 	return ret;
@@ -526,6 +633,21 @@ location_gps_stop_batch(LocationGps *self)
 
 	int ret = LOCATION_ERROR_NONE;
 
+#ifdef TIZEN_DEVICE
+	ret = sensor_listener_stop(priv->sensor_listener);
+	if (ret != SENSOR_ERROR_NONE) {
+		LOCATION_LOGD("sensor_listener_stop() failed (%d)", ret);
+		return LOCATION_ERROR_NOT_AVAILABLE;
+	}
+	ret = sensor_listener_unset_event_cb(priv->sensor_listener);
+	if (ret != SENSOR_ERROR_NONE) {
+		LOCATION_LOGD("sensor_listener_unset_event_cb() failed (%d)", ret);
+	}
+	ret = sensor_destroy_listener(priv->sensor_listener);
+	if (ret != SENSOR_ERROR_NONE) {
+		LOCATION_LOGD("sensor_destroy_listener() failed (%d)", ret);
+	}
+#else
 	if (__get_started(self) == TRUE) {
 		__set_started(self, FALSE);
 		ret = priv->mod->ops.stop_batch(priv->mod->handler);
@@ -535,6 +657,7 @@ location_gps_stop_batch(LocationGps *self)
 	} else {
 		return LOCATION_ERROR_NONE;
 	}
+#endif
 
 	__reset_pos_data_from_priv(priv);
 
@@ -719,10 +842,10 @@ location_gps_set_property(GObject *object,
 				guint interval = g_value_get_uint(value);
 				LOCATION_LOGD("Set prop>> PROP_BATCH_INTERVAL: %u", interval);
 				if (interval > 0) {
-					if (interval < LOCATION_UPDATE_INTERVAL_MAX)
+					if (interval < LOCATION_BATCH_INTERVAL_MAX)
 						priv->batch_interval = interval;
 					else
-						priv->batch_interval = (guint)LOCATION_UPDATE_INTERVAL_MAX;
+						priv->batch_interval = (guint)LOCATION_BATCH_INTERVAL_MAX;
 				} else
 					priv->batch_interval = (guint)LOCATION_UPDATE_INTERVAL_DEFAULT;
 
@@ -1113,10 +1236,12 @@ location_gps_get_batch(LocationGps *self,
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
 	setting_retval_if_fail(VCONFKEY_LOCATION_ENABLED);
 
+#ifndef TIZEN_DEVICE
 	if (__get_started(self) != TRUE) {
 		LOCATION_LOGE("location is not started");
 		return LOCATION_ERROR_NOT_AVAILABLE;
 	}
+#endif
 
 	if (priv->batch) {
 		*batch = location_batch_copy(priv->batch);
@@ -1213,6 +1338,7 @@ location_gps_init(LocationGps *self)
 
 	g_mutex_init(&priv->mutex);
 	priv->is_started = FALSE;
+	priv->is_batch_invoked = FALSE;
 	priv->set_noti = FALSE;
 	priv->enabled = FALSE;
 	priv->signal_type = 0;
@@ -1242,6 +1368,11 @@ location_gps_init(LocationGps *self)
 	priv->vel_searching_timer = 0;
 #endif
 	priv->loc_timeout = 0;
+
+#ifdef TIZEN_DEVICE
+	priv->sensor = NULL;
+	priv->sensor_listener = NULL;
+#endif
 
 	priv->app_type = location_get_app_type(NULL);
 	if (priv->app_type == 0) {
@@ -1411,7 +1542,7 @@ location_gps_class_init(LocationGpsClass *klass)
 	                                                    "gps batch interval interval prop",
 	                                                    "gps batch interval interval data",
 	                                                    LOCATION_UPDATE_INTERVAL_MIN,
-	                                                    LOCATION_UPDATE_INTERVAL_MAX,
+	                                                    LOCATION_BATCH_INTERVAL_MAX,
 	                                                    LOCATION_UPDATE_INTERVAL_DEFAULT,
 	                                                    G_PARAM_READWRITE);
 

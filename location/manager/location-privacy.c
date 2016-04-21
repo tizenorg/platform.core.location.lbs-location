@@ -41,7 +41,7 @@ int location_check_cynara(const char *privilege_name)
 	FILE *fp = NULL;
 	char uid[16];
 	char *session = NULL;
-	char smack_label[100] = "/proc/self/attr/current";
+	char smack_label[100] = {0, };
 
 	if (cynara_initialize(&cynara, NULL) != CYNARA_API_SUCCESS)
 	{
@@ -52,8 +52,11 @@ int location_check_cynara(const char *privilege_name)
 
 	fp = fopen("/proc/self/attr/current", "r");
 	if (fp != NULL) {
-		if (fread(smack_label, 1, sizeof(smack_label), fp) <= 0) {
-			LOCATION_LOGE("fread failed");
+		int ch = 0;
+		int idx = 0;
+		while (EOF != (ch = fgetc(fp))) {
+			smack_label[idx] = ch;
+			idx++;
 		}
 		fclose(fp);
 	}

@@ -32,19 +32,16 @@ location_velocity_get_type(void)
 	static volatile gsize type_volatile = 0;
 	if (g_once_init_enter(&type_volatile)) {
 		GType type = g_boxed_type_register_static(
-		                 g_intern_static_string("LocationVelocity"),
-		                 (GBoxedCopyFunc) location_velocity_copy,
-		                 (GBoxedFreeFunc) location_velocity_free);
+						g_intern_static_string("LocationVelocity"),
+						(GBoxedCopyFunc) location_velocity_copy,
+						(GBoxedFreeFunc) location_velocity_free);
 		g_once_init_leave(&type_volatile, type);
 	}
 	return type_volatile;
 }
 
 EXPORT_API LocationVelocity *
-location_velocity_new(guint timestamp,
-                      gdouble speed,
-                      gdouble direction,
-                      gdouble climb)
+location_velocity_new(guint timestamp, gdouble speed, gdouble direction, gdouble climb)
 {
 	LocationVelocity *velocity = g_slice_new0(LocationVelocity);
 	g_return_val_if_fail(velocity, NULL);
@@ -70,9 +67,9 @@ location_velocity_equal(const LocationVelocity *velocity1, const LocationVelocit
 	g_return_val_if_fail(velocity2, FALSE);
 
 	if (velocity1->timestamp == velocity2->timestamp &&
-	    velocity1->speed == velocity2->speed &&
-	    velocity1->direction == velocity2->direction &&
-	    velocity1->climb == velocity2->climb)
+		velocity1->speed == velocity2->speed &&
+		velocity1->direction == velocity2->direction &&
+		velocity1->climb == velocity2->climb)
 		return TRUE;
 	return FALSE;
 }
@@ -84,10 +81,7 @@ location_velocity_copy(const LocationVelocity *velocity)
 
 	LocationVelocity *new_velocity = NULL;
 
-	new_velocity = location_velocity_new(velocity->timestamp,
-	                                     velocity->speed,
-	                                     velocity->direction,
-	                                     velocity->climb);
+	new_velocity = location_velocity_new(velocity->timestamp, velocity->speed, velocity->direction, velocity->climb);
 
 	return new_velocity;
 }

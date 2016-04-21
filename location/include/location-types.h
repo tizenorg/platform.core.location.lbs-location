@@ -42,52 +42,52 @@ G_BEGIN_DECLS
  * @brief This represents the returned error code of used functions.
  */
 typedef enum {
-    LOCATION_ERROR_NONE = 0,				/*/< Success. */
-    LOCATION_ERROR_NOT_ALLOWED,				/*/< Location servie is not allowed from privacy settings. */
-    LOCATION_ERROR_NOT_AVAILABLE,			/*/< Location service is not available. */
-    LOCATION_ERROR_NETWORK_FAILED,			/*/< Network is not available. */
-    LOCATION_ERROR_NETWORK_NOT_CONNECTED,	/*/< Network is not connected. */
-    LOCATION_ERROR_CONFIGURATION,			/*/< Configuration setting is not correct. */
-    LOCATION_ERROR_PARAMETER,				/*/< Input parameter is not correct. */
-    LOCATION_ERROR_NOT_FOUND,				/*/< Output is not found. */
-    LOCATION_ERROR_NOT_SUPPORTED,			/*/< Not supported. */
-    LOCATION_ERROR_UNKNOWN,					/*/< Unknown error. */
-    LOCATION_ERROR_SETTING_OFF,				/*/< Location service(GPS/WPS) is off in location settings. */
-    LOCATION_ERROR_SECURITY_DENIED,			/*/< System disables location service. */
+	LOCATION_ERROR_NONE = 0,				/*/< Success. */
+	LOCATION_ERROR_NOT_ALLOWED,				/*/< Location servie is not allowed from privacy settings. */
+	LOCATION_ERROR_NOT_AVAILABLE,			/*/< Location service is not available. */
+	LOCATION_ERROR_NETWORK_FAILED,			/*/< Network is not available. */
+	LOCATION_ERROR_NETWORK_NOT_CONNECTED,	/*/< Network is not connected. */
+	LOCATION_ERROR_CONFIGURATION,			/*/< Configuration setting is not correct. */
+	LOCATION_ERROR_PARAMETER,				/*/< Input parameter is not correct. */
+	LOCATION_ERROR_NOT_FOUND,				/*/< Output is not found. */
+	LOCATION_ERROR_NOT_SUPPORTED,			/*/< Not supported. */
+	LOCATION_ERROR_UNKNOWN,					/*/< Unknown error. */
+	LOCATION_ERROR_SETTING_OFF,				/*/< Location service(GPS/WPS) is off in location settings. */
+	LOCATION_ERROR_SECURITY_DENIED,			/*/< System disables location service. */
 } LocationError;
 
 /**
  * @brief This represents location method to be used.
  */
 typedef enum {
-    LOCATION_METHOD_NONE = -1,			/*/< Undefined method. */
-    LOCATION_METHOD_HYBRID = 0,			/*/< This method selects best method. */
-    LOCATION_METHOD_GPS,				/*/< This method uses Global Positioning System. */
-    LOCATION_METHOD_WPS,				/*/< This method uses Wifi Positioning System. */
-    LOCATION_METHOD_MOCK,				/* < This method is for mock location */
-    LOCATION_METHOD_MOCK_GPS,				/* < This method is for mock location */
-    LOCATION_METHOD_MOCK_WPS,				/* < This method is for mock location */
-    LOCATION_METHOD_MAX,		/*/< The numer of methods */
+	LOCATION_METHOD_NONE = -1,			/*/< Undefined method. */
+	LOCATION_METHOD_HYBRID = 0,			/*/< This method selects best method. */
+	LOCATION_METHOD_GPS,				/*/< This method uses Global Positioning System. */
+	LOCATION_METHOD_WPS,				/*/< This method uses Wifi Positioning System. */
+	LOCATION_METHOD_MOCK,				/* < This method is for mock location */
+	LOCATION_METHOD_MOCK_GPS,				/* < This method is for mock location */
+	LOCATION_METHOD_MOCK_WPS,				/* < This method is for mock location */
+	LOCATION_METHOD_MAX,		/*/< The numer of methods */
 } LocationMethod;
 
 /**
  * @brief This represents the update type given by signal callback.
  */
 typedef enum {
-    POSITION_UPDATED	= 0x01,						/*/< This type is used when position information is updated. */
-    VELOCITY_UPDATED	= POSITION_UPDATED << 0x01,	/*/< This type is used when velocity information is updated. */
-    SATELLITE_UPDATED	= POSITION_UPDATED << 0x02,	/*/< This type is used when satellite information is updated. */
-    DISTANCE_UPDATED	= POSITION_UPDATED << 0x03,	/*/< This type is used when distance information is updated. */
-    LOCATION_CHANGED	= POSITION_UPDATED << 0x04,	/*/< This type is used when location information is updated. */
+	POSITION_UPDATED	= 0x01,						/*/< This type is used when position information is updated. */
+	VELOCITY_UPDATED	= POSITION_UPDATED << 0x01,	/*/< This type is used when velocity information is updated. */
+	SATELLITE_UPDATED	= POSITION_UPDATED << 0x02,	/*/< This type is used when satellite information is updated. */
+	DISTANCE_UPDATED	= POSITION_UPDATED << 0x03,	/*/< This type is used when distance information is updated. */
+	LOCATION_CHANGED	= POSITION_UPDATED << 0x04,	/*/< This type is used when location information is updated. */
 } LocationUpdateType;
 
 /**
  * @brief This represents the state whether an application is able to use location service
  */
 typedef enum {
-    LOCATION_ACCESS_NONE,		/*/< An application is not registered. */
-    LOCATION_ACCESS_DENIED,		/*/< An application is not permited to use location service. */
-    LOCATION_ACCESS_ALLOWED,	/*/< An application is able to use location service. */
+	LOCATION_ACCESS_NONE,		/*/< An application is not registered. */
+	LOCATION_ACCESS_DENIED,		/*/< An application is not permited to use location service. */
+	LOCATION_ACCESS_ALLOWED,	/*/< An application is able to use location service. */
 } LocationAccessState;
 
 /**

@@ -28,7 +28,7 @@
 G_BEGIN_DECLS
 
 GType location_boundary_get_type(void);
-#define LOCATION_TYPE_BOUNDARY (location_boundary_get_type ())
+#define LOCATION_TYPE_BOUNDARY (location_boundary_get_type())
 
 /**
  * @file location-boundary.h
@@ -53,10 +53,10 @@ typedef void (*LocationBoundaryFunc)(LocationBoundary *boundary, gpointer user_d
  * @brief This represents used geographical type, and supports rectangle or circle area.
  */
 typedef enum {
-    LOCATION_BOUNDARY_NONE = 0,		/*/< Undefined geographical area type. */
-    LOCATION_BOUNDARY_RECT,			/*/< Rectangular geographical area type. */
-    LOCATION_BOUNDARY_CIRCLE,		/*/< Circle geographical area type. */
-    LOCATION_BOUNDARY_POLYGON		/*/< Polygon geographical area type. */
+	LOCATION_BOUNDARY_NONE = 0,		/*/< Undefined geographical area type. */
+	LOCATION_BOUNDARY_RECT,			/*/< Rectangular geographical area type. */
+	LOCATION_BOUNDARY_CIRCLE,		/*/< Circle geographical area type. */
+	LOCATION_BOUNDARY_POLYGON		/*/< Polygon geographical area type. */
 } LocationBoundaryType;
 
 /**

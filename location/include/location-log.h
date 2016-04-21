@@ -36,10 +36,11 @@
 #define LOG_TAG TAG_LOCATION_FWK
 #endif
 
-#define LOCATION_LOGD(fmt,args...)		LOGD(fmt, ##args)
-#define LOCATION_LOGW(fmt,args...)		LOGW(fmt, ##args)
-#define LOCATION_LOGI(fmt,args...)		LOGI(fmt, ##args)
-#define LOCATION_LOGE(fmt,args...)		LOGE(fmt, ##args)
-#define LOCATION_SECLOG(fmt,args...)	SECURE_LOGD(fmt, ##args)
+#define LOCATION_LOGD(fmt, args...)		LOGD(fmt, ##args)
+#define LOCATION_LOGW(fmt, args...)		LOGW(fmt, ##args)
+#define LOCATION_LOGI(fmt, args...)		LOGI(fmt, ##args)
+#define LOCATION_LOGE(fmt, args...)		LOGE(fmt, ##args)
+#define LOCATION_SECLOG(fmt, args...)	SECURE_LOGD(fmt, ##args)
+
 
 #endif

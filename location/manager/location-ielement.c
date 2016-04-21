@@ -103,9 +103,7 @@ location_ielement_request_single_location(LocationIElement *self, int timeout)
 }
 
 int
-location_ielement_get_position(LocationIElement *self,
-                               LocationPosition **position,
-                               LocationAccuracy **accuracy)
+location_ielement_get_position(LocationIElement *self, LocationPosition **position, LocationAccuracy **accuracy)
 {
 	g_return_val_if_fail(LOCATION_IS_IELEMENT(self), LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail(position, LOCATION_ERROR_PARAMETER);
@@ -117,10 +115,7 @@ location_ielement_get_position(LocationIElement *self,
 }
 
 int
-location_ielement_get_position_ext(LocationIElement *self,
-                                   LocationPosition **position,
-                                   LocationVelocity **velocity,
-                                   LocationAccuracy **accuracy)
+location_ielement_get_position_ext(LocationIElement *self, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy)
 {
 	g_return_val_if_fail(LOCATION_IS_IELEMENT(self), LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail(position, LOCATION_ERROR_PARAMETER);
@@ -134,9 +129,7 @@ location_ielement_get_position_ext(LocationIElement *self,
 
 
 int
-location_ielement_get_last_position(LocationIElement *self,
-                                    LocationPosition **position,
-                                    LocationAccuracy **accuracy)
+location_ielement_get_last_position(LocationIElement *self, LocationPosition **position, LocationAccuracy **accuracy)
 {
 	g_return_val_if_fail(LOCATION_IS_IELEMENT(self), LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail(position, LOCATION_ERROR_PARAMETER);
@@ -148,10 +141,7 @@ location_ielement_get_last_position(LocationIElement *self,
 }
 
 int
-location_ielement_get_last_position_ext(LocationIElement *self,
-                                        LocationPosition **position,
-                                        LocationVelocity **velocity,
-                                        LocationAccuracy **accuracy)
+location_ielement_get_last_position_ext(LocationIElement *self, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy)
 {
 	g_return_val_if_fail(LOCATION_IS_IELEMENT(self), LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail(position, LOCATION_ERROR_PARAMETER);
@@ -177,7 +167,7 @@ location_ielement_get_batch(LocationIElement *self, LocationBatch **batch)
 
 int
 location_ielement_get_satellite(LocationIElement *self,
-                                LocationSatellite **satellite)
+								LocationSatellite **satellite)
 {
 	g_return_val_if_fail(LOCATION_IS_IELEMENT(self), LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail(satellite, LOCATION_ERROR_PARAMETER);
@@ -188,8 +178,7 @@ location_ielement_get_satellite(LocationIElement *self,
 }
 
 int
-location_ielement_get_last_satellite(LocationIElement *self,
-                                     LocationSatellite **satellite)
+location_ielement_get_last_satellite(LocationIElement *self, LocationSatellite **satellite)
 {
 	g_return_val_if_fail(LOCATION_IS_IELEMENT(self), LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail(satellite, LOCATION_ERROR_PARAMETER);
@@ -200,9 +189,7 @@ location_ielement_get_last_satellite(LocationIElement *self,
 }
 
 int
-location_ielement_get_velocity(LocationIElement *self,
-                               LocationVelocity **velocity,
-                               LocationAccuracy **accuracy)
+location_ielement_get_velocity(LocationIElement *self, LocationVelocity **velocity, LocationAccuracy **accuracy)
 {
 	g_return_val_if_fail(LOCATION_IS_IELEMENT(self), LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail(velocity, LOCATION_ERROR_PARAMETER);
@@ -212,9 +199,7 @@ location_ielement_get_velocity(LocationIElement *self,
 }
 
 int
-location_ielement_get_last_velocity(LocationIElement *self,
-                                    LocationVelocity **velocity,
-                                    LocationAccuracy **accuracy)
+location_ielement_get_last_velocity(LocationIElement *self, LocationVelocity **velocity, LocationAccuracy **accuracy)
 {
 	g_return_val_if_fail(LOCATION_IS_IELEMENT(self), LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail(velocity, LOCATION_ERROR_PARAMETER);
@@ -232,8 +217,7 @@ location_ielement_set_option(LocationIElement *self, const char *option)
 }
 
 int
-location_ielement_get_nmea(LocationIElement *self,
-                           char **nmea)
+location_ielement_get_nmea(LocationIElement *self, char **nmea)
 {
 	g_return_val_if_fail(LOCATION_IS_IELEMENT(self), LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail(nmea, LOCATION_ERROR_PARAMETER);

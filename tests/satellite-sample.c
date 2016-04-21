@@ -4,7 +4,7 @@
  * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
- *          Genie Kim <daejins.kim@samsung.com>
+ *		  Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,10 +35,10 @@ exit_program(gpointer data)
 
 static void
 cb_service_updated(GObject *self,
-                   guint type,
-                   gpointer data,
-                   gpointer accuracy,
-                   gpointer userdata)
+				   guint type,
+				   gpointer data,
+				   gpointer accuracy,
+				   gpointer userdata)
 {
 	g_debug("cb_service_updated: type(%d) userdata(0x%x)", type, (unsigned int)userdata);
 
@@ -58,7 +58,7 @@ cb_service_updated(GObject *self,
 			gint snr;
 			location_satellite_get_satellite_details(sat, idx, &prn, &used, &elevation, &azimuth, &snr);
 			g_debug("\t\t[%02d] used: %d, prn: %d, elevation: %d, azimuth: %d, snr: %d",
-			        idx, used, prn, elevation, azimuth, snr);
+					idx, used, prn, elevation, azimuth, snr);
 		}
 		location_satellite_free(sat);
 	} else g_warning("SYNC>> Current Sattelite> failed");
@@ -66,16 +66,16 @@ cb_service_updated(GObject *self,
 
 static void
 cb_service_enabled(GObject *self,
-                   guint status,
-                   gpointer userdata)
+				   guint status,
+				   gpointer userdata)
 {
 	g_debug("cb_service_enabled: status(%d) userdata(0x%x)", status, (unsigned int)userdata);
 }
 
 static void
 cb_service_disabled(GObject *self,
-                    guint status,
-                    gpointer userdata)
+					guint status,
+					gpointer userdata)
 {
 	g_debug("cb_service_disabled: status(%d) userdata(0x%x)", status, (unsigned int)userdata);
 }

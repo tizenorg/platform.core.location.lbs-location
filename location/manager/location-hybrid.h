@@ -34,12 +34,12 @@ G_BEGIN_DECLS
 typedef struct _LocationHybrid			LocationHybrid;
 typedef struct _LocationHybridClass		LocationHybridClass;
 
-#define LOCATION_TYPE_HYBRID				(location_hybrid_get_type ())
-#define LOCATION_HYBRID(obj)				(G_TYPE_CHECK_INSTANCE_CAST ((obj), LOCATION_TYPE_HYBRID, LocationHybrid))
-#define LOCATION_IS_HYBRID(obj)				(G_TYPE_CHECK_INSTANCE_TYPE ((obj), LOCATION_TYPE_HYBRID))
-#define LOCATION_HYBRID_CLASS(klass)		(G_TYPE_CHECK_CLASS_CAST ((klass), LOCATION_TYPE_HYBRID, LocationHybridClass))
-#define LOCATION_IS_HYBRID_CLASS(klass)		(G_TYPE_CHECK_CLASS_TYPE ((klass), LOCATION_TYPE_HYBRID))
-#define LOCATION_HYBRID_GET_CLASS(obj)		(G_TYPE_INSTANCE_GET_CLASS ((obj), LOCATION_TYPE_HYBRID, LocationHybridClass))
+#define LOCATION_TYPE_HYBRID				(location_hybrid_get_type())
+#define LOCATION_HYBRID(obj)				(G_TYPE_CHECK_INSTANCE_CAST((obj), LOCATION_TYPE_HYBRID, LocationHybrid))
+#define LOCATION_IS_HYBRID(obj)				(G_TYPE_CHECK_INSTANCE_TYPE((obj), LOCATION_TYPE_HYBRID))
+#define LOCATION_HYBRID_CLASS(klass)		(G_TYPE_CHECK_CLASS_CAST((klass), LOCATION_TYPE_HYBRID, LocationHybridClass))
+#define LOCATION_IS_HYBRID_CLASS(klass)		(G_TYPE_CHECK_CLASS_TYPE((klass), LOCATION_TYPE_HYBRID))
+#define LOCATION_HYBRID_GET_CLASS(obj)		(G_TYPE_INSTANCE_GET_CLASS((obj), LOCATION_TYPE_HYBRID, LocationHybridClass))
 
 struct _LocationHybrid {
 	GObject parent_instance;
@@ -48,13 +48,13 @@ struct _LocationHybrid {
 struct _LocationHybridClass {
 	GObjectClass parent_class;
 
-	void (* enabled)(guint type);
-	void (* disabled)(guint type);
-	void (* service_updated)(gint type, gpointer data, gpointer velocity, gpointer accuracy);
-	void (* location_updated)(gint error, gpointer position, gpointer velocity, gpointer accuracy);
-	void (* zone_in)(gpointer boundary, gpointer position, gpointer accuracy);
-	void (* zone_out)(gpointer boundary, gpointer position, gpointer accuracy);
-	void (* status_changed)(guint type);
+	void (*enabled)(guint type);
+	void (*disabled)(guint type);
+	void (*service_updated)(gint type, gpointer data, gpointer velocity, gpointer accuracy);
+	void (*location_updated)(gint error, gpointer position, gpointer velocity, gpointer accuracy);
+	void (*zone_in)(gpointer boundary, gpointer position, gpointer accuracy);
+	void (*zone_out)(gpointer boundary, gpointer position, gpointer accuracy);
+	void (*status_changed)(guint type);
 };
 
 GType location_hybrid_get_type(void);

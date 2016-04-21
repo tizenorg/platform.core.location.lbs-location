@@ -4,7 +4,7 @@
  * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
- *          Genie Kim <daejins.kim@samsung.com>
+ *		  Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,37 +45,37 @@ static gpointer GmainThread(gpointer data)
 static void GetLocationError(char str[STR_MAX], int ret)
 {
 	switch (ret) {
-		case LOCATION_ERROR_NONE:
+	case LOCATION_ERROR_NONE:
 			g_utf8_strncpy(str, "LOCATION_ERROR_NONE", STR_MAX);
 			break;
-		case LOCATION_ERROR_NOT_ALLOWED:
+	case LOCATION_ERROR_NOT_ALLOWED:
 			g_utf8_strncpy(str, "LOCATION_ERROR_NOT_ALLOWED", STR_MAX);
 			break;
-		case LOCATION_ERROR_NOT_AVAILABLE:
+	case LOCATION_ERROR_NOT_AVAILABLE:
 			g_utf8_strncpy(str, "LOCATION_ERROR_NOT_AVAILABLE", STR_MAX);
 			break;
-		case LOCATION_ERROR_NETWORK_FAILED:
+	case LOCATION_ERROR_NETWORK_FAILED:
 			g_utf8_strncpy(str, "LOCATION_ERROR_NETWORK_FAILED", STR_MAX);
 			break;
-		case LOCATION_ERROR_NETWORK_NOT_CONNECTED:
+	case LOCATION_ERROR_NETWORK_NOT_CONNECTED:
 			g_utf8_strncpy(str, "LOCATION_ERROR_NETWORK_NOT_CONNECTED", STR_MAX);
 			break;
-		case LOCATION_ERROR_CONFIGURATION:
+	case LOCATION_ERROR_CONFIGURATION:
 			g_utf8_strncpy(str, "LOCATION_ERROR_CONFIGURATION", STR_MAX);
 			break;
-		case LOCATION_ERROR_PARAMETER:
+	case LOCATION_ERROR_PARAMETER:
 			g_utf8_strncpy(str, "LOCATION_ERROR_PARAMETER", STR_MAX);
 			break;
-		case LOCATION_ERROR_UNKNOWN:
+	case LOCATION_ERROR_UNKNOWN:
 			g_utf8_strncpy(str, "LOCATION_ERROR_UNKNOWN", STR_MAX);
 			break;
-		case LOCATION_ERROR_SETTING_OFF:
+	case LOCATION_ERROR_SETTING_OFF:
 			g_utf8_strncpy(str, "LOCATION_ERROR_SETTING_OFF", STR_MAX);
 			break;
-		case LOCATION_ERROR_SECURITY_DENIED:
+	case LOCATION_ERROR_SECURITY_DENIED:
 			g_utf8_strncpy(str, "LOCATION_ERROR_SECURITY_DENIED", STR_MAX);
 			break;
-		default:
+	default:
 			g_utf8_strncpy(str, "Error: undefined error code", STR_MAX);
 	}
 }
@@ -83,16 +83,16 @@ static void GetLocationError(char str[STR_MAX], int ret)
 static void GetStatus(char str[STR_MAX], LocationStatus acc_level)
 {
 	switch (acc_level) {
-		case LOCATION_STATUS_NO_FIX:
+	case LOCATION_STATUS_NO_FIX:
 			g_utf8_strncpy(str, "LOCATION_STATUS_NO_FIX", STR_MAX);
 			break;
-		case LOCATION_STATUS_2D_FIX:
+	case LOCATION_STATUS_2D_FIX:
 			g_utf8_strncpy(str, "LOCATION_STATUS_2D_FIX", STR_MAX);
 			break;
-		case LOCATION_STATUS_3D_FIX:
+	case LOCATION_STATUS_3D_FIX:
 			g_utf8_strncpy(str, "LOCATION_STATUS_3D_FIX", STR_MAX);
 			break;
-		default:
+	default:
 			g_utf8_strncpy(str, "Error: undefined status code", STR_MAX);
 	}
 }
@@ -100,16 +100,16 @@ static void GetStatus(char str[STR_MAX], LocationStatus acc_level)
 static void GetMethod(char str[STR_MAX], LocationMethod method)
 {
 	switch (method) {
-		case LOCATION_METHOD_HYBRID:
+	case LOCATION_METHOD_HYBRID:
 			g_utf8_strncpy(str, "LOCATION_METHOD_HYBRID", STR_MAX);
 			break;
-		case LOCATION_METHOD_GPS:
+	case LOCATION_METHOD_GPS:
 			g_utf8_strncpy(str, "LOCATION_METHOD_GPS", STR_MAX);
 			break;
-		case LOCATION_METHOD_WPS:
+	case LOCATION_METHOD_WPS:
 			g_utf8_strncpy(str, "LOCATION_METHOD_WPS", STR_MAX);
 			break;
-		default:
+	default:
 			g_utf8_strncpy(str, "Error: undefined method", STR_MAX);
 	}
 }
@@ -117,28 +117,28 @@ static void GetMethod(char str[STR_MAX], LocationMethod method)
 static void GetAccuracyLevel(char str[STR_MAX], LocationAccuracyLevel acc_level)
 {
 	switch (acc_level) {
-		case LOCATION_ACCURACY_LEVEL_NONE:
+	case LOCATION_ACCURACY_LEVEL_NONE:
 			g_utf8_strncpy(str, "LOCATION_ACCURACY_LEVEL_NONE", STR_MAX);
 			break;
-		case LOCATION_ACCURACY_LEVEL_COUNTRY:
+	case LOCATION_ACCURACY_LEVEL_COUNTRY:
 			g_utf8_strncpy(str, "LOCATION_ACCURACY_LEVEL_COUNTRY", STR_MAX);
 			break;
-		case LOCATION_ACCURACY_LEVEL_REGION:
+	case LOCATION_ACCURACY_LEVEL_REGION:
 			g_utf8_strncpy(str, "LOCATION_ACCURACY_LEVEL_REGION", STR_MAX);
 			break;
-		case LOCATION_ACCURACY_LEVEL_LOCALITY:
+	case LOCATION_ACCURACY_LEVEL_LOCALITY:
 			g_utf8_strncpy(str, "LOCATION_ACCURACY_LEVEL_LOCALITY", STR_MAX);
 			break;
-		case LOCATION_ACCURACY_LEVEL_POSTALCODE:
+	case LOCATION_ACCURACY_LEVEL_POSTALCODE:
 			g_utf8_strncpy(str, "LOCATION_ACCURACY_LEVEL_POSTALCODE", STR_MAX);
 			break;
-		case LOCATION_ACCURACY_LEVEL_STREET:
+	case LOCATION_ACCURACY_LEVEL_STREET:
 			g_utf8_strncpy(str, "LOCATION_ACCURACY_LEVEL_STREET", STR_MAX);
 			break;
-		case LOCATION_ACCURACY_LEVEL_DETAILED:
+	case LOCATION_ACCURACY_LEVEL_DETAILED:
 			g_utf8_strncpy(str, "LOCATION_ACCURACY_LEVEL_DETAILED", STR_MAX);
 			break;
-		default:
+	default:
 			g_utf8_strncpy(str, "Error: undefined accuracy level", STR_MAX);
 	}
 }
@@ -149,9 +149,9 @@ static void SelectOpt(char *buf)
 	int iLen = 0;
 	char *str = NULL;
 	str = fgets(buf, 255, stdin);
-	if (NULL == str) {
+	if (NULL == str)
 		g_printf("fgets return NULL. \n");
-	}
+
 	iLen = g_utf8_strlen(buf, -1);
 	buf[iLen - 1] = '\0';
 }
@@ -162,9 +162,9 @@ static int PromptInt()
 	int ret;
 	char *str = NULL;
 	str = fgets(buf, 255, stdin);
-	if (NULL == str) {
+	if (NULL == str)
 		g_printf("fgets return NULL. \n");
-	}
+
 	buf[strlen(buf) - 1] = '\0';
 	ret = g_ascii_strtoll(buf, NULL, 10);
 	return ret;
@@ -187,11 +187,11 @@ static void PrintBoundary(LocationBoundary *boundary, void *user_data)
 	if (boundary == NULL) return;
 	if (boundary->type == LOCATION_BOUNDARY_CIRCLE) {
 		g_printf("\n\tCIRCLE: center[%lf %lf %lf] radius[%lf]",
-		         boundary->circle.center->latitude, boundary->circle.center->longitude, boundary->circle.center->altitude, boundary->circle.radius);
+				 boundary->circle.center->latitude, boundary->circle.center->longitude, boundary->circle.center->altitude, boundary->circle.radius);
 	} else if (boundary->type == LOCATION_BOUNDARY_RECT) {
 		g_printf("\n\tRECT: left_top[%lf %lf %lf] right_bottom[%lf %lf %lf]",
-		         boundary->rect.left_top->latitude, boundary->rect.left_top->longitude, boundary->rect.left_top->altitude,
-		         boundary->rect.right_bottom->latitude, boundary->rect.right_bottom->longitude, boundary->rect.right_bottom->altitude);
+				 boundary->rect.left_top->latitude, boundary->rect.left_top->longitude, boundary->rect.left_top->altitude,
+				 boundary->rect.right_bottom->latitude, boundary->rect.right_bottom->longitude, boundary->rect.right_bottom->altitude);
 	} else if (boundary->type == LOCATION_BOUNDARY_POLYGON) {
 		g_printf("\n\tPOLYGON: ");
 
@@ -229,7 +229,7 @@ static void PrintProperty(LocationObject *loc)
 	if (ret == LOCATION_ERROR_NONE) {
 		GetStatus(status_str, pos->status);
 		g_printf("\nLast position [time(%d) lat(%f) long(%f) alt(%f) status(%s)]",
-		         pos->timestamp, pos->latitude, pos->longitude, pos->altitude, status_str);
+				 pos->timestamp, pos->latitude, pos->longitude, pos->altitude, status_str);
 		location_position_free(pos);
 		location_accuracy_free(acc);
 	}
@@ -267,88 +267,76 @@ static void cb_service_enabled(GObject *self, guint status, gpointer userdata)
 
 	if (LOCATION_ERROR_NONE == location_get_position(loc, &pos, &acc)) {
 		g_printf("SYNC>> Current position> time: %d, lat: %f, long: %f, alt: %f, status: %d\n",
-		         pos->timestamp, pos->latitude, pos->longitude, pos->altitude, pos->status);
+				 pos->timestamp, pos->latitude, pos->longitude, pos->altitude, pos->status);
 		g_printf("\tAccuracy level %d (%.0f meters %.0f meters)\n",
-		         acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
+				 acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
 		location_position_free(pos);
 		location_accuracy_free(acc);
 	} else g_warning("SYNC>> Current position> failed");
 	if (LOCATION_ERROR_NONE == location_get_velocity(loc, &vel, &acc)) {
 		g_printf("SYNC>> Current velocity> time: %d, speed: %f, direction:%f, climb:%f\n",
-		         vel->timestamp, vel->speed, vel->direction, vel->climb);
+				 vel->timestamp, vel->speed, vel->direction, vel->climb);
 		g_printf("\tAccuracy level %d (%.0f meters %.0f meters)\n",
-		         acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
+				 acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
 		location_velocity_free(vel);
 		location_accuracy_free(acc);
 	} else g_warning("SYNC>> Current velocity> failed\n");
 }
 
 static void
-cb_service_disabled(GObject *self,
-                    guint status,
-                    gpointer userdata)
+cb_service_disabled(GObject *self, guint status, gpointer userdata)
 {
 	g_printf("cb_service_disabled: status(%d) userdata(0x%x)\n", status, (unsigned int)userdata);
 }
 
 static void
-cb_zone_in(GObject *self,
-           gpointer boundary,
-           gpointer position,
-           gpointer accuracy)
+cb_zone_in(GObject *self, gpointer boundary, gpointer position, gpointer accuracy)
 {
 	LocationPosition *pos = (LocationPosition *) position;
 	LocationAccuracy *acc = (LocationAccuracy *) accuracy;
 
 	g_printf("ASYNC>> ZoneIn> Current position: time: %d, lat: %f, long: %f, alt: %f\n",
-	         pos->timestamp, pos->latitude, pos->longitude, pos->altitude);
+			 pos->timestamp, pos->latitude, pos->longitude, pos->altitude);
 	g_printf("\tAccuracy level %d (%.0f meters %.0f meters)\n",
-	         acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
+			 acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
 }
 
 static void
-cb_zone_out(GObject *self,
-            gpointer boundary,
-            gpointer position,
-            gpointer accuracy)
+cb_zone_out(GObject *self, gpointer boundary, gpointer position, gpointer accuracy)
 {
 	LocationPosition *pos = (LocationPosition *) position;
 	LocationAccuracy *acc = (LocationAccuracy *) accuracy;
 
 	g_printf("ASYNC>> ZoneOut> Current position: time: %d, lat: %f, long: %f, alt: %f\n",
-	         pos->timestamp, pos->latitude, pos->longitude, pos->altitude);
+			 pos->timestamp, pos->latitude, pos->longitude, pos->altitude);
 	g_printf("\tAccuracy level %d (%.0f meters %.0f meters)\n",
-	         acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
+			 acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
 }
 
 static void
-cb_service_updated(GObject *self,
-                   guint type,
-                   gpointer data,
-                   gpointer accuracy,
-                   gpointer userdata)
+cb_service_updated(GObject *self, guint type, gpointer data, gpointer accuracy, gpointer userdata)
 {
 	g_printf("cb_service_updated: type(%d) userdata(0x%x)", type, (unsigned int)userdata);
 
 	LocationAccuracy *acc = (LocationAccuracy *) accuracy;
 	switch (type) {
-		case POSITION_UPDATED: {
+	case POSITION_UPDATED: {
 				LocationPosition *pos = (LocationPosition *) data;
 				g_printf("ASYNC>> Current position> time: %d, lat: %f, long: %f, alt: %f, status: %d\n",
-				         pos->timestamp, pos->latitude, pos->longitude, pos->altitude, pos->status);
+						 pos->timestamp, pos->latitude, pos->longitude, pos->altitude, pos->status);
 				g_printf("\tAccuracy level %d (%.0f meters %.0f meters)\n",
-				         acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
+						 acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
 			}
 			break;
-		case VELOCITY_UPDATED: {
+	case VELOCITY_UPDATED: {
 				LocationVelocity *vel = (LocationVelocity *) data;
 				g_printf("ASYNC>> Current velocity> time: %d, speed: %f, direction:%f, climb:%f\n",
-				         vel->timestamp, vel->speed, vel->direction, vel->climb);
+						 vel->timestamp, vel->speed, vel->direction, vel->climb);
 				g_printf("\tAccuracy level %d (%.0f meters %.0f meters)\n",
-				         acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
+						 acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
 			}
 			break;
-		case SATELLITE_UPDATED: {
+	case SATELLITE_UPDATED: {
 				int idx = 0;
 				guint prn;
 				gboolean used;
@@ -365,7 +353,7 @@ cb_service_updated(GObject *self,
 				}
 			}
 			break;
-		default:
+	default:
 			g_warning("ASYNC>> Undefined update type");
 			break;
 	}
@@ -396,7 +384,7 @@ static void print_menu()
 	g_printf("a?.  signals:(1)'service-enabled',(2)'service-disabled',(3)'service-updated',(4)'zone-in',(5)'zone-out'\n");
 	g_printf("b?.  disconnect signals:(1)'service-enabled',(2)'service-disabled',(3)'service-updated',(4)'zone-in',(5)'zone-out'\n");
 	g_printf("c?. (1)Set boundary, (2)Get boundary, (3) Remove boundary, (4) Remove all boundaries, \n");
-	g_printf("    (5)Set position interval (6) Set velocity interval (7) Set satellite interval\n");
+	g_printf("	(5)Set position interval (6) Set velocity interval (7) Set satellite interval\n");
 	g_printf("==================================== Property ====================================\n");
 	PrintProperty(location_obj);
 	g_printf("\n==================================================================================\n");
@@ -412,21 +400,20 @@ int main(int argc, char **argv)
 	/* If application is executed by AUL, this is not needed. */
 	g_setenv("PKG_NAME", "com.samsung.location-api-test", 1);
 
-#if !GLIB_CHECK_VERSION (2, 35, 0)
+#if !GLIB_CHECK_VERSION(2, 35, 0)
 	g_type_init();
 #endif
 
-#if !GLIB_CHECK_VERSION (2, 31, 0)
-	if (!g_thread_supported()) {
+#if !GLIB_CHECK_VERSION(2, 31, 0)
+	if (!g_thread_supported())
 		g_thread_init(NULL);
-	}
 #endif
 
 	GThread *g_main;
 	g_main = g_thread_create(GmainThread, NULL, TRUE, &gerr);
 	if (!g_main) {
 		g_printf("Error create gmain thread: Err domain[%d] Err code[%d] Err msg[%s]",
-		         gerr->domain, gerr->code, gerr->message);
+				 gerr->domain, gerr->code, gerr->message);
 		g_error_free(gerr);
 		return 0;
 	}
@@ -455,7 +442,7 @@ int main(int argc, char **argv)
 			LocationMethod method = PromptInt();
 			location_obj = location_new(method);
 			if (location_obj) g_printf("Success\n");
-			else             g_printf("Failed\n");
+			else			 g_printf("Failed\n");
 		} else if (0 == g_strcmp0("3", strOpt)) {
 			ret = location_free(location_obj);
 			location_obj = NULL;
@@ -498,9 +485,9 @@ int main(int argc, char **argv)
 			g_printf("location_get_last_position: returned value [%s]\n", str);
 			if (ret == LOCATION_ERROR_NONE) {
 				g_printf("SYNC>> Last position> time: %d, lat: %f, long: %f, alt: %f, status: %d",
-				         last_pos->timestamp, last_pos->latitude, last_pos->longitude, last_pos->altitude, last_pos->status);
+						 last_pos->timestamp, last_pos->latitude, last_pos->longitude, last_pos->altitude, last_pos->status);
 				g_printf("\tAccuracy level %d (%.0f meters %.0f meters)",
-				         last_acc->level, last_acc->horizontal_accuracy, last_acc->vertical_accuracy);
+						 last_acc->level, last_acc->horizontal_accuracy, last_acc->vertical_accuracy);
 				location_position_free(last_pos);
 				location_accuracy_free(last_acc);
 			}
@@ -526,9 +513,9 @@ int main(int argc, char **argv)
 			g_printf("location_get_last_velocity: returned value [%s]\n", str);
 			if (ret == LOCATION_ERROR_NONE) {
 				g_printf("SYNC>> Last velocity> time: %d, speed: %f, direction:%f, climb:%f",
-				         last_vel->timestamp, last_vel->speed, last_vel->direction, last_vel->climb);
+						last_vel->timestamp, last_vel->speed, last_vel->direction, last_vel->climb);
 				g_printf("\tAccuracy level %d (%.0f meters %.0f meters)",
-				         last_acc->level, last_acc->horizontal_accuracy, last_acc->vertical_accuracy);
+						last_acc->level, last_acc->horizontal_accuracy, last_acc->vertical_accuracy);
 				location_velocity_free(last_vel);
 				location_accuracy_free(last_acc);
 			}
@@ -607,18 +594,18 @@ int main(int argc, char **argv)
 			str = fgets(input, 8, stdin);
 			method = atoi(input);
 			switch (method) {
-				case LOCATION_METHOD_HYBRID:
+			case LOCATION_METHOD_HYBRID:
 					is_supported = location_is_supported_method(LOCATION_METHOD_HYBRID);
 					break;
 
-				case LOCATION_METHOD_GPS:
+			case LOCATION_METHOD_GPS:
 					is_supported = location_is_supported_method(LOCATION_METHOD_GPS);
 					break;
 
-				case LOCATION_METHOD_WPS:
+			case LOCATION_METHOD_WPS:
 					is_supported = location_is_supported_method(LOCATION_METHOD_WPS);
 					break;
-				default:
+			default:
 					break;
 
 			}
@@ -653,25 +640,20 @@ int main(int argc, char **argv)
 				g_printf("Fail to send command[%s]. Error[%d]", str, ret);
 #endif
 		} else if (0 == g_strcmp0("a1", strOpt)) {
-			if (location_obj && !g_sig_enable) {
+			if (location_obj && !g_sig_enable)
 				g_sig_enable = g_signal_connect(location_obj, "service-enabled", G_CALLBACK(cb_service_enabled), location_obj);
-			}
 		} else if (0 == g_strcmp0("a2", strOpt)) {
-			if (location_obj && !g_sig_disable) {
+			if (location_obj && !g_sig_disable)
 				g_sig_disable = g_signal_connect(location_obj, "service-disabled", G_CALLBACK(cb_service_disabled), location_obj);
-			}
 		} else if (0 == g_strcmp0("a3", strOpt)) {
-			if (location_obj && !g_sig_update) {
+			if (location_obj && !g_sig_update)
 				g_sig_update = g_signal_connect(location_obj, "service-updated", G_CALLBACK(cb_service_updated), location_obj);
-			}
 		} else if (0 == g_strcmp0("a4", strOpt)) {
-			if (location_obj && !g_sig_zonein) {
+			if (location_obj && !g_sig_zonein)
 				g_sig_zonein = g_signal_connect(location_obj, "zone-in", G_CALLBACK(cb_zone_in), location_obj);
-			}
 		} else if (0 == g_strcmp0("a5", strOpt)) {
-			if (location_obj && !g_sig_zoneout) {
+			if (location_obj && !g_sig_zoneout)
 				g_sig_zoneout = g_signal_connect(location_obj, "zone-out", G_CALLBACK(cb_zone_out), location_obj);
-			}
 		} else if (0 == g_strcmp0("b1", strOpt)) {
 			if (location_obj && g_sig_enable) {
 				g_signal_handler_disconnect(location_obj, g_sig_enable);

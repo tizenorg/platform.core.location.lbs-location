@@ -32,18 +32,16 @@ location_accuracy_get_type(void)
 	static volatile gsize type_volatile = 0;
 	if (g_once_init_enter(&type_volatile)) {
 		GType type = g_boxed_type_register_static(
-		                 g_intern_static_string("LocationAccuracy"),
-		                 (GBoxedCopyFunc) location_accuracy_copy,
-		                 (GBoxedFreeFunc) location_accuracy_free);
+						g_intern_static_string("LocationAccuracy"),
+						(GBoxedCopyFunc) location_accuracy_copy,
+						(GBoxedFreeFunc) location_accuracy_free);
 		g_once_init_leave(&type_volatile, type);
 	}
 	return type_volatile;
 }
 
 EXPORT_API LocationAccuracy *
-location_accuracy_new(LocationAccuracyLevel level,
-                      gdouble horizontal_accuracy,
-                      gdouble vertical_accuracy)
+location_accuracy_new(LocationAccuracyLevel level, gdouble horizontal_accuracy, gdouble vertical_accuracy)
 {
 	LocationAccuracy *accuracy = g_slice_new0(LocationAccuracy);
 	g_return_val_if_fail(accuracy, NULL);
@@ -103,7 +101,5 @@ EXPORT_API LocationAccuracy *
 location_accuracy_copy(const LocationAccuracy *accuracy)
 {
 	g_return_val_if_fail(accuracy, NULL);
-	return location_accuracy_new(accuracy->level,
-	                             accuracy->horizontal_accuracy,
-	                             accuracy->vertical_accuracy);
+	return location_accuracy_new(accuracy->level, accuracy->horizontal_accuracy, accuracy->vertical_accuracy);
 }

@@ -39,9 +39,9 @@ location_position_get_type(void)
 	static volatile gsize type_volatile = 0;
 	if (g_once_init_enter(&type_volatile)) {
 		GType type = g_boxed_type_register_static(
-		                 g_intern_static_string("LocationPosition"),
-		                 (GBoxedCopyFunc) location_position_copy,
-		                 (GBoxedFreeFunc) location_position_free);
+						g_intern_static_string("LocationPosition"),
+						(GBoxedCopyFunc) location_position_copy,
+						(GBoxedFreeFunc) location_position_free);
 		g_once_init_leave(&type_volatile, type);
 	}
 	return type_volatile;
@@ -49,10 +49,10 @@ location_position_get_type(void)
 
 EXPORT_API LocationPosition *
 location_position_new(guint timestamp,
-                      gdouble latitude,
-                      gdouble longitude,
-                      gdouble altitude,
-                      LocationStatus status)
+					gdouble latitude,
+					gdouble longitude,
+					gdouble altitude,
+					LocationStatus status)
 {
 	if (latitude < -90 || latitude > 90) return NULL;
 	if (longitude < -180 || longitude > 180) return NULL;
@@ -82,8 +82,8 @@ location_position_equal(const LocationPosition *position1, const LocationPositio
 	g_return_val_if_fail(position2, FALSE);
 
 	if (position1->latitude == position2->latitude &&
-	    position1->longitude == position2->longitude &&
-	    position1->altitude == position2->altitude)
+		position1->longitude == position2->longitude &&
+		position1->altitude == position2->altitude)
 		return TRUE;
 	return FALSE;
 }
@@ -96,10 +96,10 @@ location_position_copy(const LocationPosition *position)
 	LocationPosition *new_position = NULL;
 
 	new_position = location_position_new(position->timestamp,
-	                                     position->latitude,
-	                                     position->longitude,
-	                                     position->altitude,
-	                                     position->status);
+										position->latitude,
+										position->longitude,
+										position->altitude,
+										position->status);
 
 	return new_position;
 
@@ -137,8 +137,8 @@ location_get_distance(const LocationPosition *pos1, const LocationPosition *pos2
 		cos_lambda = cos(lambda);
 
 		sin_sigma = sqrt((cos_u2 * sin_lambda) * (cos_u2 * sin_lambda) + \
-		                 (cos_u1 * sin_u2 - sin_u1 * cos_u2 * cos_lambda) * \
-		                 (cos_u1 * sin_u2 - sin_u1 * cos_u2 * cos_lambda));
+						 (cos_u1 * sin_u2 - sin_u1 * cos_u2 * cos_lambda) * \
+						 (cos_u1 * sin_u2 - sin_u1 * cos_u2 * cos_lambda));
 
 		if (sin_sigma == 0)
 			return LOCATION_ERROR_NONE;	/* co-incident points */
@@ -157,7 +157,7 @@ location_get_distance(const LocationPosition *pos1, const LocationPosition *pos2
 
 		lambdaP = lambda;
 		lambda = delta_lon + (1.0 - C) * f * sin_alpha * \
-		         (sigma + C * sin_sigma * (cos_2sigma + C * cos_sigma * (-1.0 + 2.0 * cos_2sigma * cos_2sigma)));
+				 (sigma + C * sin_sigma * (cos_2sigma + C * cos_sigma * (-1.0 + 2.0 * cos_2sigma * cos_2sigma)));
 
 	} while (abs(lambda - lambdaP) > 1e-12 && --iter_limit > 0);
 
@@ -169,7 +169,7 @@ location_get_distance(const LocationPosition *pos1, const LocationPosition *pos2
 	cal2 = sq_u / 1024.0 * (256.0 + sq_u * (-128.0 + sq_u * (74.0 - 47.0 * sq_u)));
 
 	delta_sigma = cal2 * sin_sigma * (cos_2sigma + cal2 / 4.0 * (cos_sigma * (-1.0 + 2.0 * cos_2sigma * cos_2sigma) - \
-	                                                             cal2 / 6.0 * cos_2sigma * (-3.0 + 4.0 * sin_sigma * sin_sigma) * (-3.0 + 4.0 * cos_2sigma * cos_2sigma)));
+																 cal2 / 6.0 * cos_2sigma * (-3.0 + 4.0 * sin_sigma * sin_sigma) * (-3.0 + 4.0 * cos_2sigma * cos_2sigma)));
 	cal_dist = b * cal1 * (sigma - delta_sigma);
 
 	*distance = (gulong) cal_dist;

@@ -105,7 +105,7 @@ typedef struct {
 	int (*get_position)(gpointer handle, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy);   /*/< This is used for getting a position from a plug-in. */
 	int (*get_last_position)(gpointer handle, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy);   /*/< This is used for getting a last position from a plug-in. */
 	int (*set_option)(gpointer handle, const char *option);
-	//int (*set_position_update_interval)(gpointer handle, guint interval);
+	/* int (*set_position_update_interval)(gpointer handle, guint interval); */
 	int (*set_mock_location)(gpointer handle, LocationPosition *position, LocationVelocity *velocity, LocationAccuracy *accuracy, LocModStatusCB status_cb, gpointer userdata);   /*/< This is used for getting a position from a plug-in. */
 	int (*clear_mock_location)(gpointer handle, LocModStatusCB status_cb, gpointer userdata);   /*/< This is used for getting a position from a plug-in. */
 } LocModMockOps;

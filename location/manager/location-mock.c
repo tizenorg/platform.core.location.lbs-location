@@ -65,19 +65,19 @@ typedef struct _LocationMockPrivate {
 } LocationMockPrivate;
 
 enum {
-    PROP_0,
-    PROP_METHOD_TYPE,
-    PROP_IS_STARTED,
-    PROP_LAST_POSITION,
-    PROP_POS_INTERVAL,
-    PROP_VEL_INTERVAL,
-    PROP_LOC_INTERVAL,
-    PROP_BOUNDARY,
-    PROP_REMOVAL_BOUNDARY,
-    PROP_MIN_INTERVAL,
-    PROP_MIN_DISTANCE,
-    PROP_SERVICE_STATUS,
-    PROP_MAX
+	PROP_0,
+	PROP_METHOD_TYPE,
+	PROP_IS_STARTED,
+	PROP_LAST_POSITION,
+	PROP_POS_INTERVAL,
+	PROP_VEL_INTERVAL,
+	PROP_LOC_INTERVAL,
+	PROP_BOUNDARY,
+	PROP_REMOVAL_BOUNDARY,
+	PROP_MIN_INTERVAL,
+	PROP_MIN_DISTANCE,
+	PROP_SERVICE_STATUS,
+	PROP_MAX
 };
 
 static guint32 signals[LAST_SIGNAL] = {0, };
@@ -88,8 +88,8 @@ static GParamSpec *properties[PROP_MAX] = {NULL, };
 static void location_ielement_interface_init(LocationIElementInterface *iface);
 
 G_DEFINE_TYPE_WITH_CODE(LocationMock, location_mock, G_TYPE_OBJECT,
-                        G_IMPLEMENT_INTERFACE(LOCATION_TYPE_IELEMENT,
-                                              location_ielement_interface_init));
+						G_IMPLEMENT_INTERFACE(LOCATION_TYPE_IELEMENT,
+											  location_ielement_interface_init));
 
 static void
 __reset_pos_data_from_priv(LocationMockPrivate *priv)
@@ -138,9 +138,7 @@ __set_started(gpointer self, gboolean started)
 }
 
 static void
-mock_status_cb(gboolean enabled,
-              LocationStatus status,
-              gpointer self)
+mock_status_cb(gboolean enabled, LocationStatus status, gpointer self)
 {
 	LOCATION_LOGD("mock_status_cb");
 	g_return_if_fail(self);
@@ -153,11 +151,7 @@ mock_status_cb(gboolean enabled,
 }
 
 static void
-mock_location_cb(gboolean enabled,
-                LocationPosition *pos,
-                LocationVelocity *vel,
-                LocationAccuracy *acc,
-                gpointer self)
+mock_location_cb(gboolean enabled, LocationPosition *pos, LocationVelocity *vel, LocationAccuracy *acc, gpointer self)
 {
 	g_return_if_fail(self);
 	g_return_if_fail(pos);
@@ -168,44 +162,43 @@ mock_location_cb(gboolean enabled,
 
 	if (priv->min_interval != LOCATION_UPDATE_INTERVAL_NONE) {
 		distance_based_position_signaling(self,
-		                                  signals,
-		                                  enabled,
-		                                  pos,
-		                                  vel,
-		                                  acc,
-		                                  priv->min_interval,
-		                                  priv->min_distance,
-		                                  &(priv->enabled),
-		                                  &(priv->dist_updated_timestamp),
-		                                  &(priv->pos),
-		                                  &(priv->vel),
-		                                  &(priv->acc));
+										signals,
+										enabled,
+										pos,
+										vel,
+										acc,
+										priv->min_interval,
+										priv->min_distance,
+										&(priv->enabled),
+										&(priv->dist_updated_timestamp),
+										&(priv->pos),
+										&(priv->vel),
+										&(priv->acc));
 	}
 
 	LOCATION_LOGD("Calling location_signaling, status =%d", pos->status);
 
 	location_signaling(self,
-	                   signals,
-	                   enabled,
-	                   priv->boundary_list,
-	                   pos,
-	                   vel,
-	                   acc,
-	                   priv->pos_interval,
-	                   priv->vel_interval,
-	                   priv->loc_interval,
-	                   &(priv->enabled),
-	                   &(priv->pos_updated_timestamp),
-	                   &(priv->vel_updated_timestamp),
-	                   &(priv->loc_updated_timestamp),
-	                   &(priv->pos),
-	                   &(priv->vel),
-	                   &(priv->acc));
+						signals,
+						enabled,
+						priv->boundary_list,
+						pos,
+						vel,
+						acc,
+						priv->pos_interval,
+						priv->vel_interval,
+						priv->loc_interval,
+						&(priv->enabled),
+						&(priv->pos_updated_timestamp),
+						&(priv->vel_updated_timestamp),
+						&(priv->loc_updated_timestamp),
+						&(priv->pos),
+						&(priv->vel),
+						&(priv->acc));
 }
 
 static void
-location_setting_mock_cb(keynode_t *key,
-                        gpointer self)
+location_setting_mock_cb(keynode_t *key, gpointer self)
 {
 	LOCATION_LOGD("location_setting_mock_cb");
 	g_return_if_fail(key);
@@ -354,30 +347,27 @@ location_mock_finalize(GObject *gobject)
 }
 
 static void
-location_mock_set_property(GObject *object,
-                          guint property_id,
-                          const GValue *value,
-                          GParamSpec *pspec)
+location_mock_set_property(GObject *object, guint property_id, const GValue *value, GParamSpec *pspec)
 {
 	LocationMockPrivate *priv = GET_PRIVATE(object);
 	g_return_if_fail(priv);
 	int ret = 0;
 
 	switch (property_id) {
-		case PROP_BOUNDARY: {
+	case PROP_BOUNDARY: {
 				GList *boundary_list = (GList *)g_list_copy(g_value_get_pointer(value));
 				ret = set_prop_boundary(&priv->boundary_list, boundary_list);
 				if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Set boundary. Error[%d]", ret);
 				if (boundary_list) g_list_free(boundary_list);
 				break;
 			}
-		case PROP_REMOVAL_BOUNDARY: {
+	case PROP_REMOVAL_BOUNDARY: {
 				LocationBoundary *req_boundary = (LocationBoundary *) g_value_dup_boxed(value);
 				ret = set_prop_removal_boundary(&priv->boundary_list, req_boundary);
 				if (ret != 0) LOCATION_LOGD("Set removal boundary. Error[%d]", ret);
 				break;
 			}
-		case PROP_POS_INTERVAL: {
+	case PROP_POS_INTERVAL: {
 				guint interval = g_value_get_uint(value);
 				if (interval > 0) {
 					if (interval < LOCATION_UPDATE_INTERVAL_MAX)
@@ -389,7 +379,7 @@ location_mock_set_property(GObject *object,
 
 				break;
 			}
-		case PROP_VEL_INTERVAL: {
+	case PROP_VEL_INTERVAL: {
 				guint interval = g_value_get_uint(value);
 				if (interval > 0) {
 					if (interval < LOCATION_UPDATE_INTERVAL_MAX)
@@ -401,7 +391,7 @@ location_mock_set_property(GObject *object,
 				}
 				break;
 			}
-		case PROP_LOC_INTERVAL: {
+	case PROP_LOC_INTERVAL: {
 				guint interval = g_value_get_uint(value);
 				LOCATION_LOGD("Set prop>> PROP_LOC_INTERVAL: %u", interval);
 				if (interval > 0) {
@@ -414,7 +404,7 @@ location_mock_set_property(GObject *object,
 
 				break;
 			}
-		case PROP_MIN_INTERVAL: {
+	case PROP_MIN_INTERVAL: {
 				guint interval = g_value_get_uint(value);
 				LOCATION_LOGD("Set prop>> update-min-interval: %u", interval);
 				if (interval > 0) {
@@ -427,7 +417,7 @@ location_mock_set_property(GObject *object,
 
 				break;
 			}
-		case PROP_MIN_DISTANCE: {
+	case PROP_MIN_DISTANCE: {
 				gdouble distance = g_value_get_double(value);
 				LOCATION_LOGD("Set prop>> update-min-distance: %u", distance);
 				if (distance > 0) {
@@ -440,62 +430,57 @@ location_mock_set_property(GObject *object,
 
 				break;
 			}
-		default:
+	default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
 			break;
 	}
 }
 
 static void
-location_mock_get_property(GObject *object,
-                          guint property_id,
-                          GValue *value,
-                          GParamSpec *pspec)
+location_mock_get_property(GObject *object, guint property_id, GValue *value, GParamSpec *pspec)
 {
 	LocationMockPrivate *priv = GET_PRIVATE(object);
 	g_return_if_fail(priv);
 
 	switch (property_id) {
-		case PROP_METHOD_TYPE:
+	case PROP_METHOD_TYPE:
 			g_value_set_int(value, LOCATION_METHOD_MOCK);
 			break;
-		case PROP_IS_STARTED:
+	case PROP_IS_STARTED:
 			g_value_set_boolean(value, __get_started(object));
 			break;
-		case PROP_LAST_POSITION:
+	case PROP_LAST_POSITION:
 			g_value_set_boxed(value, priv->pos);
 			break;
-		case PROP_BOUNDARY:
+	case PROP_BOUNDARY:
 			g_value_set_pointer(value, g_list_first(priv->boundary_list));
 			break;
-		case PROP_POS_INTERVAL:
+	case PROP_POS_INTERVAL:
 			g_value_set_uint(value, priv->pos_interval);
 			break;
-		case PROP_VEL_INTERVAL:
+	case PROP_VEL_INTERVAL:
 			g_value_set_uint(value, priv->vel_interval);
 			break;
-		case PROP_LOC_INTERVAL:
+	case PROP_LOC_INTERVAL:
 			g_value_set_uint(value, priv->loc_interval);
 			break;
-		case PROP_MIN_INTERVAL:
+	case PROP_MIN_INTERVAL:
 			g_value_set_uint(value, priv->min_interval);
 			break;
-		case PROP_MIN_DISTANCE:
+	case PROP_MIN_DISTANCE:
 			g_value_set_double(value, priv->min_distance);
 			break;
-		case PROP_SERVICE_STATUS:
+	case PROP_SERVICE_STATUS:
 			g_value_set_int(value, priv->enabled);
 			break;
-		default:
+	default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
 			break;
 	}
 }
 
 static int
-location_mock_get_position(LocationMock *self,
-                          LocationPosition **position,
-                          LocationAccuracy **accuracy)
+location_mock_get_position(LocationMock *self, LocationPosition **position, LocationAccuracy **accuracy)
 {
 	int ret = LOCATION_ERROR_NOT_AVAILABLE;
 
@@ -520,10 +505,7 @@ location_mock_get_position(LocationMock *self,
 }
 
 static int
-location_mock_get_position_ext(LocationMock *self,
-                              LocationPosition **position,
-                              LocationVelocity **velocity,
-                              LocationAccuracy **accuracy)
+location_mock_get_position_ext(LocationMock *self, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy)
 {
 	int ret = LOCATION_ERROR_NOT_AVAILABLE;
 
@@ -540,8 +522,11 @@ location_mock_get_position_ext(LocationMock *self,
 	if (priv->pos && priv->vel) {
 		*position = location_position_copy(priv->pos);
 		*velocity = location_velocity_copy(priv->vel);
-		if (priv->acc) *accuracy = location_accuracy_copy(priv->acc);
-		else *accuracy = location_accuracy_new(LOCATION_ACCURACY_LEVEL_NONE, 0.0, 0.0);
+		if (priv->acc)
+			*accuracy = location_accuracy_copy(priv->acc);
+		else
+			*accuracy = location_accuracy_new(LOCATION_ACCURACY_LEVEL_NONE, 0.0, 0.0);
+
 		ret = LOCATION_ERROR_NONE;
 	}
 
@@ -550,9 +535,7 @@ location_mock_get_position_ext(LocationMock *self,
 
 
 static int
-location_mock_get_last_position(LocationMock *self,
-                               LocationPosition **position,
-                               LocationAccuracy **accuracy)
+location_mock_get_last_position(LocationMock *self, LocationPosition **position, LocationAccuracy **accuracy)
 {
 	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
@@ -573,10 +556,7 @@ location_mock_get_last_position(LocationMock *self,
 }
 
 static int
-location_mock_get_last_position_ext(LocationMock *self,
-                                   LocationPosition **position,
-                                   LocationVelocity **velocity,
-                                   LocationAccuracy **accuracy)
+location_mock_get_last_position_ext(LocationMock *self, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy)
 {
 	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
@@ -592,9 +572,7 @@ location_mock_get_last_position_ext(LocationMock *self,
 
 
 static int
-location_mock_get_velocity(LocationMock *self,
-                          LocationVelocity **velocity,
-                          LocationAccuracy **accuracy)
+location_mock_get_velocity(LocationMock *self, LocationVelocity **velocity, LocationAccuracy **accuracy)
 {
 	int ret = LOCATION_ERROR_NOT_AVAILABLE;
 
@@ -619,9 +597,7 @@ location_mock_get_velocity(LocationMock *self,
 }
 
 static int
-location_mock_get_last_velocity(LocationMock *self,
-                               LocationVelocity **velocity,
-                               LocationAccuracy **accuracy)
+location_mock_get_last_velocity(LocationMock *self, LocationVelocity **velocity, LocationAccuracy **accuracy)
 {
 	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
@@ -639,7 +615,8 @@ location_mock_get_last_velocity(LocationMock *self,
 	return ret;
 }
 
-static gboolean __single_location_timeout_cb(void *data)
+static gboolean
+__single_location_timeout_cb(void *data)
 {
 	LOCATION_LOGD("__single_location_timeout_cb");
 	LocationMock *self = (LocationMock *)data;
@@ -661,11 +638,7 @@ static gboolean __single_location_timeout_cb(void *data)
 
 
 static void
-mock_single_location_cb(gboolean enabled,
-                       LocationPosition *pos,
-                       LocationVelocity *vel,
-                       LocationAccuracy *acc,
-                       gpointer self)
+mock_single_location_cb(gboolean enabled, LocationPosition *pos, LocationVelocity *vel, LocationAccuracy *acc, gpointer self)
 {
 	LOCATION_LOGD("mock_single_location_cb");
 	g_return_if_fail(self);
@@ -715,15 +688,13 @@ location_mock_request_single_location(LocationMock *self, int timeout)
 }
 
 static int
-location_mock_get_satellite(LocationMock *self,
-                           LocationSatellite **satellite)
+location_mock_get_satellite(LocationMock *self, LocationSatellite **satellite)
 {
 	return LOCATION_ERROR_NOT_SUPPORTED;
 }
 
 static int
-location_mock_get_last_satellite(LocationMock *self,
-                                LocationSatellite **satellite)
+location_mock_get_last_satellite(LocationMock *self, LocationSatellite **satellite)
 {
 	return LOCATION_ERROR_NOT_SUPPORTED;
 }
@@ -748,8 +719,7 @@ location_mock_set_option(LocationMock *self, const char *option)
 }
 
 static int
-location_mock_get_nmea(LocationMock *self,
-                      char **nmea_data)
+location_mock_get_nmea(LocationMock *self, char **nmea_data)
 {
 	return LOCATION_ERROR_NOT_SUPPORTED;
 }
@@ -773,9 +743,7 @@ location_mock_get_status(LocationMock *self, int *status)
 
 
 static void
-__set_mock_location_cb(gboolean enabled,
-              LocationStatus status,
-              gpointer self)
+__set_mock_location_cb(gboolean enabled, LocationStatus status, gpointer self)
 {
 	g_return_if_fail(self);
 	LocationObject *obj = (LocationObject *) self;
@@ -793,10 +761,7 @@ __set_mock_location_cb(gboolean enabled,
 }
 
 static int
-location_mock_set_mock_location(LocationMock *self,
-							  LocationPosition *position,
-							  LocationVelocity *velocity,
-							  LocationAccuracy *accuracy)
+location_mock_set_mock_location(LocationMock *self, LocationPosition *position, LocationVelocity *velocity, LocationAccuracy *accuracy)
 {
 	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv->mod->handler, LOCATION_ERROR_NOT_AVAILABLE);
@@ -805,7 +770,6 @@ location_mock_set_mock_location(LocationMock *self,
 	LOCATION_LOGD("ENTER >>>");
 
 	int ret = LOCATION_ERROR_NONE;
-
 	if (!location_setting_get_int(VCONFKEY_LOCATION_MOCK_ENABLED)) {
 		ret = LOCATION_ERROR_SETTING_OFF;
 	} else {
@@ -815,7 +779,6 @@ location_mock_set_mock_location(LocationMock *self,
 		}
 	}
 
-	LOCATION_LOGD("EXIT <<<");
 	return ret;
 }
 
@@ -829,7 +792,6 @@ location_mock_clear_mock_location(LocationMock *self)
 	LOCATION_LOGD("ENTER >>>");
 
 	int ret = LOCATION_ERROR_NONE;
-
 	if (!location_setting_get_int(VCONFKEY_LOCATION_MOCK_ENABLED)) {
 		ret = LOCATION_ERROR_SETTING_OFF;
 	} else {
@@ -839,12 +801,10 @@ location_mock_clear_mock_location(LocationMock *self)
 		}
 	}
 
-	LOCATION_LOGD("EXIT <<<");
 	return ret;
 }
 
-static void _glib_log(const gchar *log_domain, GLogLevelFlags log_level,
-					const gchar *msg, gpointer user_data)
+static void _glib_log(const gchar *log_domain, GLogLevelFlags log_level, const gchar *msg, gpointer user_data)
 {
 	LOCATION_LOGD("GLIB[%d]: %s", log_level, msg);
 }
@@ -930,171 +890,169 @@ location_mock_class_init(LocationMockClass *klass)
 
 
 	signals[SERVICE_ENABLED] = g_signal_new("service-enabled",
-	                                        G_TYPE_FROM_CLASS(klass),
-	                                        G_SIGNAL_RUN_FIRST |
-	                                        G_SIGNAL_NO_RECURSE,
-	                                        G_STRUCT_OFFSET(LocationMockClass, enabled),
-	                                        NULL, NULL,
-	                                        location_VOID__UINT,
-	                                        G_TYPE_NONE, 1,
-	                                        G_TYPE_UINT);
+											G_TYPE_FROM_CLASS(klass),
+											G_SIGNAL_RUN_FIRST |
+											G_SIGNAL_NO_RECURSE,
+											G_STRUCT_OFFSET(LocationMockClass, enabled),
+											NULL, NULL,
+											location_VOID__UINT,
+											G_TYPE_NONE, 1,
+											G_TYPE_UINT);
 
 
 
 	signals[SERVICE_DISABLED] = g_signal_new("service-disabled",
-	                                         G_TYPE_FROM_CLASS(klass),
-	                                         G_SIGNAL_RUN_FIRST |
-	                                         G_SIGNAL_NO_RECURSE,
-	                                         G_STRUCT_OFFSET(LocationMockClass, disabled),
-	                                         NULL, NULL,
-	                                         location_VOID__UINT,
-	                                         G_TYPE_NONE, 1,
-	                                         G_TYPE_UINT);
+											G_TYPE_FROM_CLASS(klass),
+											G_SIGNAL_RUN_FIRST |
+											G_SIGNAL_NO_RECURSE,
+											G_STRUCT_OFFSET(LocationMockClass, disabled),
+											NULL, NULL,
+											location_VOID__UINT,
+											G_TYPE_NONE, 1,
+											G_TYPE_UINT);
 
 #if 0 /* TODO: STATUS_CHANGED will aggregate SERVICE_ENABLED and SERVICE_DISABLED */
 	signals[STATUS_CHANGED] = g_signal_new("status-changed",
-	                                        G_TYPE_FROM_CLASS(klass),
-	                                        G_SIGNAL_RUN_FIRST |
-	                                        G_SIGNAL_NO_RECURSE,
-	                                        G_STRUCT_OFFSET(LocationMockClass, status_changed),
-	                                        NULL, NULL,
-	                                        location_VOID__UINT,
-	                                        G_TYPE_NONE, 1,
-	                                        G_TYPE_UINT);
+											G_TYPE_FROM_CLASS(klass),
+											G_SIGNAL_RUN_FIRST |
+											G_SIGNAL_NO_RECURSE,
+											G_STRUCT_OFFSET(LocationMockClass, status_changed),
+											NULL, NULL,
+											location_VOID__UINT,
+											G_TYPE_NONE, 1,
+											G_TYPE_UINT);
 #endif
 
 	signals[SERVICE_UPDATED] = g_signal_new("service-updated",
-	                                        G_TYPE_FROM_CLASS(klass),
-	                                        G_SIGNAL_RUN_FIRST |
-	                                        G_SIGNAL_NO_RECURSE,
-	                                        G_STRUCT_OFFSET(LocationMockClass, service_updated),
-	                                        NULL, NULL,
-	                                        location_VOID__INT_POINTER_POINTER_POINTER,
-	                                        G_TYPE_NONE, 4,
-	                                        G_TYPE_INT,
-	                                        G_TYPE_POINTER,
-	                                        G_TYPE_POINTER,
-	                                        G_TYPE_POINTER);
+											G_TYPE_FROM_CLASS(klass),
+											G_SIGNAL_RUN_FIRST |
+											G_SIGNAL_NO_RECURSE,
+											G_STRUCT_OFFSET(LocationMockClass, service_updated),
+											NULL, NULL,
+											location_VOID__INT_POINTER_POINTER_POINTER,
+											G_TYPE_NONE, 4,
+											G_TYPE_INT,
+											G_TYPE_POINTER,
+											G_TYPE_POINTER,
+											G_TYPE_POINTER);
 
 	signals[LOCATION_UPDATED] = g_signal_new("location-updated",
-	                                         G_TYPE_FROM_CLASS(klass),
-	                                         G_SIGNAL_RUN_FIRST |
-	                                         G_SIGNAL_NO_RECURSE,
-	                                         G_STRUCT_OFFSET(LocationMockClass, location_updated),
-	                                         NULL, NULL,
-	                                         location_VOID__INT_POINTER_POINTER_POINTER,
-	                                         G_TYPE_NONE, 4,
-	                                         G_TYPE_INT,
-	                                         G_TYPE_POINTER,
-	                                         G_TYPE_POINTER,
-	                                         G_TYPE_POINTER);
+											G_TYPE_FROM_CLASS(klass),
+											G_SIGNAL_RUN_FIRST |
+											G_SIGNAL_NO_RECURSE,
+											G_STRUCT_OFFSET(LocationMockClass, location_updated),
+											NULL, NULL,
+											location_VOID__INT_POINTER_POINTER_POINTER,
+											G_TYPE_NONE, 4,
+											G_TYPE_INT,
+											G_TYPE_POINTER,
+											G_TYPE_POINTER,
+											G_TYPE_POINTER);
 
 	signals[ZONE_IN] = g_signal_new("zone-in",
-	                                G_TYPE_FROM_CLASS(klass),
-	                                G_SIGNAL_RUN_FIRST |
-	                                G_SIGNAL_NO_RECURSE,
-	                                G_STRUCT_OFFSET(LocationMockClass, zone_in),
-	                                NULL, NULL,
-	                                location_VOID__POINTER_POINTER_POINTER,
-	                                G_TYPE_NONE, 3,
-	                                G_TYPE_POINTER,
-	                                G_TYPE_POINTER,
-	                                G_TYPE_POINTER);
+									G_TYPE_FROM_CLASS(klass),
+									G_SIGNAL_RUN_FIRST |
+									G_SIGNAL_NO_RECURSE,
+									G_STRUCT_OFFSET(LocationMockClass, zone_in),
+									NULL, NULL,
+									location_VOID__POINTER_POINTER_POINTER,
+									G_TYPE_NONE, 3,
+									G_TYPE_POINTER,
+									G_TYPE_POINTER,
+									G_TYPE_POINTER);
 
 	signals[ZONE_OUT] = g_signal_new("zone-out",
-	                                 G_TYPE_FROM_CLASS(klass),
-	                                 G_SIGNAL_RUN_FIRST |
-	                                 G_SIGNAL_NO_RECURSE,
-	                                 G_STRUCT_OFFSET(LocationMockClass, zone_out),
-	                                 NULL, NULL,
-	                                 location_VOID__POINTER_POINTER_POINTER,
-	                                 G_TYPE_NONE, 3,
-	                                 G_TYPE_POINTER,
-	                                 G_TYPE_POINTER,
-	                                 G_TYPE_POINTER);
+									G_TYPE_FROM_CLASS(klass),
+									G_SIGNAL_RUN_FIRST |
+									G_SIGNAL_NO_RECURSE,
+									G_STRUCT_OFFSET(LocationMockClass, zone_out),
+									NULL, NULL,
+									location_VOID__POINTER_POINTER_POINTER,
+									G_TYPE_NONE, 3,
+									G_TYPE_POINTER,
+									G_TYPE_POINTER,
+									G_TYPE_POINTER);
 
 	properties[PROP_METHOD_TYPE] = g_param_spec_int("method",
-	                                                "method type",
-	                                                "location method type name",
-	                                                LOCATION_METHOD_MOCK,
-	                                                LOCATION_METHOD_MOCK,
-	                                                LOCATION_METHOD_MOCK,
-	                                                G_PARAM_READABLE);
+													"method type",
+													"location method type name",
+													LOCATION_METHOD_MOCK,
+													LOCATION_METHOD_MOCK,
+													LOCATION_METHOD_MOCK,
+													G_PARAM_READABLE);
 
 	properties[PROP_IS_STARTED] = g_param_spec_boolean("is_started",
-	                                                   "mock is started prop",
-	                                                   "mock is started status",
-	                                                   FALSE,
-	                                                   G_PARAM_READWRITE);
+														"mock is started prop",
+														"mock is started status",
+														FALSE,
+														G_PARAM_READWRITE);
 
 	properties[PROP_LAST_POSITION] = g_param_spec_boxed("last-position",
-	                                                    "mock last position prop",
-	                                                    "mock last position data",
-	                                                    LOCATION_TYPE_POSITION,
-	                                                    G_PARAM_READABLE);
+														"mock last position prop",
+														"mock last position data",
+														LOCATION_TYPE_POSITION,
+														G_PARAM_READABLE);
 
 	properties[PROP_POS_INTERVAL] = g_param_spec_uint("pos-interval",
-	                                                  "mock position interval prop",
-	                                                  "mock position interval data",
-	                                                  LOCATION_UPDATE_INTERVAL_MIN,
-	                                                  LOCATION_UPDATE_INTERVAL_MAX,
-	                                                  LOCATION_UPDATE_INTERVAL_DEFAULT,
-	                                                  G_PARAM_READWRITE);
+													"mock position interval prop",
+													"mock position interval data",
+													LOCATION_UPDATE_INTERVAL_MIN,
+													LOCATION_UPDATE_INTERVAL_MAX,
+													LOCATION_UPDATE_INTERVAL_DEFAULT,
+													G_PARAM_READWRITE);
 
 	properties[PROP_VEL_INTERVAL] = g_param_spec_uint("vel-interval",
-	                                                  "mock velocity interval prop",
-	                                                  "mock velocity interval data",
-	                                                  LOCATION_UPDATE_INTERVAL_MIN,
-	                                                  LOCATION_UPDATE_INTERVAL_MAX,
-	                                                  LOCATION_UPDATE_INTERVAL_DEFAULT,
-	                                                  G_PARAM_READWRITE);
+													"mock velocity interval prop",
+													"mock velocity interval data",
+													LOCATION_UPDATE_INTERVAL_MIN,
+													LOCATION_UPDATE_INTERVAL_MAX,
+													LOCATION_UPDATE_INTERVAL_DEFAULT,
+													G_PARAM_READWRITE);
 
 	properties[PROP_LOC_INTERVAL] = g_param_spec_uint("loc-interval",
-	                                                  "gps location interval prop",
-	                                                  "gps location interval data",
-	                                                  LOCATION_UPDATE_INTERVAL_MIN,
-	                                                  LOCATION_UPDATE_INTERVAL_MAX,
-	                                                  LOCATION_UPDATE_INTERVAL_DEFAULT,
-	                                                  G_PARAM_READWRITE);
+													"gps location interval prop",
+													"gps location interval data",
+													LOCATION_UPDATE_INTERVAL_MIN,
+													LOCATION_UPDATE_INTERVAL_MAX,
+													LOCATION_UPDATE_INTERVAL_DEFAULT,
+													G_PARAM_READWRITE);
 
 	properties[PROP_MIN_INTERVAL] = g_param_spec_uint("min-interval",
-	                                                  "mock distance-based interval prop",
-	                                                  "mock distance-based interval data",
-	                                                  LOCATION_MIN_INTERVAL_MIN,
-	                                                  LOCATION_MIN_INTERVAL_MAX,
-	                                                  LOCATION_MIN_INTERVAL_DEFAULT,
-	                                                  G_PARAM_READWRITE);
+													"mock distance-based interval prop",
+													"mock distance-based interval data",
+													LOCATION_MIN_INTERVAL_MIN,
+													LOCATION_MIN_INTERVAL_MAX,
+													LOCATION_MIN_INTERVAL_DEFAULT,
+													G_PARAM_READWRITE);
 
 	properties[PROP_MIN_DISTANCE] = g_param_spec_double("min-distance",
-	                                                    "mock distance-based distance prop",
-	                                                    "mock distance-based distance data",
-	                                                    LOCATION_MIN_DISTANCE_MIN,
-	                                                    LOCATION_MIN_DISTANCE_MAX,
-	                                                    LOCATION_MIN_DISTANCE_DEFAULT,
-	                                                    G_PARAM_READWRITE);
+														"mock distance-based distance prop",
+														"mock distance-based distance data",
+														LOCATION_MIN_DISTANCE_MIN,
+														LOCATION_MIN_DISTANCE_MAX,
+														LOCATION_MIN_DISTANCE_DEFAULT,
+														G_PARAM_READWRITE);
 
 	properties[PROP_BOUNDARY] = g_param_spec_pointer("boundary",
-	                                                 "mock boundary prop",
-	                                                 "mock boundary data",
-	                                                 G_PARAM_READWRITE);
+													"mock boundary prop",
+													"mock boundary data",
+													G_PARAM_READWRITE);
 
 	properties[PROP_REMOVAL_BOUNDARY] = g_param_spec_boxed("removal-boundary",
-	                                                       "mock removal boundary prop",
-	                                                       "mock removal boundary data",
-	                                                       LOCATION_TYPE_BOUNDARY,
-	                                                       G_PARAM_READWRITE);
+															"mock removal boundary prop",
+															"mock removal boundary data",
+															LOCATION_TYPE_BOUNDARY,
+															G_PARAM_READWRITE);
 
 	/* Tizen 3.0 */
 	properties[PROP_SERVICE_STATUS] = g_param_spec_int("service-status",
-	                                                "location service status prop",
-	                                                "location service status data",
-	                                                LOCATION_STATUS_NO_FIX,
-	                                                LOCATION_STATUS_3D_FIX,
-	                                                LOCATION_STATUS_NO_FIX,
-	                                                G_PARAM_READABLE);
+													"location service status prop",
+													"location service status data",
+													LOCATION_STATUS_NO_FIX,
+													LOCATION_STATUS_3D_FIX,
+													LOCATION_STATUS_NO_FIX,
+													G_PARAM_READABLE);
 
-	g_object_class_install_properties(gobject_class,
-	                                  PROP_MAX,
-	                                  properties);
+	g_object_class_install_properties(gobject_class, PROP_MAX, properties);
 }
 

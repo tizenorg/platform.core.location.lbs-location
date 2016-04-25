@@ -62,31 +62,31 @@ location_set_batch_parse_details(LocationBatch *batch, char *location_info, int 
 	last_location[index] = (char *)strtok_r(location, ";", &last);
 	while (last_location[index] != NULL) {
 		switch (index) {
-			case 0:
+		case 0:
 				batch->batch_data[i].timestamp = strtod(last_location[index], NULL);
 				break;
-			case 1:
+		case 1:
 				batch->batch_data[i].latitude = strtod(last_location[index], NULL);
 				break;
-			case 2:
+		case 2:
 				batch->batch_data[i].longitude = strtod(last_location[index], NULL);
 				break;
-			case 3:
+		case 3:
 				batch->batch_data[i].altitude = strtod(last_location[index], NULL);
 				break;
-			case 4:
+		case 4:
 				batch->batch_data[i].speed = strtod(last_location[index], NULL);
 				break;
-			case 5:
+		case 5:
 				batch->batch_data[i].direction = strtod(last_location[index], NULL);
 				break;
-			case 6:
+		case 6:
 				batch->batch_data[i].horizontal_accuracy = strtod(last_location[index], NULL);
 				break;
-			case 7:
+		case 7:
 				batch->batch_data[i].vertical_accuracy = strtod(last_location[index], NULL);
 				break;
-			default:
+		default:
 				break;
 		}
 		if (++index == MAX_BATCH_ITEM) break;
@@ -110,10 +110,8 @@ location_get_batch_file(int num_of_location)
 		int i = 0;
 
 		for (i = 0; i < num_of_location; i++) {
-			if (fgets(buf, BATCH_SENTENCE_SIZE, fd) != NULL) {
+			if (fgets(buf, BATCH_SENTENCE_SIZE, fd) != NULL)
 				location_set_batch_parse_details(batch, buf, i);
-			}
-
 		}
 		fclose(fd);
 	} else {
@@ -132,8 +130,8 @@ EXPORT_API gboolean location_set_sensor_batch(LocationBatch *batch, sensor_event
 	float latitude  = event->values[0];
 	float longitude = event->values[1];
 	float altitude  = event->values[2];
-	float speed     = event->values[3];
-	int idx   = (int)(event->values[4]);
+	float speed	 = event->values[3];
+	int idx = (int)(event->values[4]);
 
 	batch->batch_data[idx].timestamp = batch->start_time - (time_t)((timestamp / 1001000) % 100000);
 	batch->batch_data[idx].latitude = latitude;
@@ -157,28 +155,28 @@ location_batch_copy(const LocationBatch *batch)
 	int i = 0;
 	for (i = 0 ; i < batch_dup->num_of_location; i++)
 		location_set_batch_details(batch_dup, i,
-		                           batch->batch_data[i].latitude,
-		                           batch->batch_data[i].longitude,
-		                           batch->batch_data[i].altitude,
-		                           batch->batch_data[i].speed,
-		                           batch->batch_data[i].direction,
-		                           batch->batch_data[i].horizontal_accuracy,
-		                           batch->batch_data[i].vertical_accuracy,
-		                           batch->batch_data[i].timestamp);
+									batch->batch_data[i].latitude,
+									batch->batch_data[i].longitude,
+									batch->batch_data[i].altitude,
+									batch->batch_data[i].speed,
+									batch->batch_data[i].direction,
+									batch->batch_data[i].horizontal_accuracy,
+									batch->batch_data[i].vertical_accuracy,
+									batch->batch_data[i].timestamp);
 	return batch_dup;
 }
 
 EXPORT_API gboolean
 location_get_batch_details(const LocationBatch *batch,
-                           guint index,
-                           gdouble *latitude,
-                           gdouble *longitude,
-                           gdouble *altitude,
-                           gdouble *speed,
-                           gdouble *direction,
-                           gdouble *h_accuracy,
-                           gdouble *v_accuracy,
-                           guint *timestamp)
+							guint index,
+							gdouble *latitude,
+							gdouble *longitude,
+							gdouble *altitude,
+							gdouble *speed,
+							gdouble *direction,
+							gdouble *h_accuracy,
+							gdouble *v_accuracy,
+							guint *timestamp)
 {
 	g_return_val_if_fail(batch, FALSE);
 	g_return_val_if_fail(latitude, FALSE);
@@ -196,8 +194,8 @@ location_get_batch_details(const LocationBatch *batch,
 	*altitude	= batch->batch_data[index].altitude;
 	*speed		= batch->batch_data[index].speed;
 	*direction	= batch->batch_data[index].direction;
-	*h_accuracy = batch->batch_data[index].horizontal_accuracy;
-	*v_accuracy = batch->batch_data[index].vertical_accuracy;
+	*h_accuracy	= batch->batch_data[index].horizontal_accuracy;
+	*v_accuracy	= batch->batch_data[index].vertical_accuracy;
 	*timestamp	= batch->batch_data[index].timestamp;
 
 	return TRUE;
@@ -205,15 +203,15 @@ location_get_batch_details(const LocationBatch *batch,
 
 EXPORT_API gboolean
 location_set_batch_details(LocationBatch *batch,
-                           guint index,
-                           gdouble latitude,
-                           gdouble longitude,
-                           gdouble altitude,
-                           gdouble speed,
-                           gdouble direction,
-                           gdouble h_accuracy,
-                           gdouble v_accuracy,
-                           guint timestamp)
+							guint index,
+							gdouble latitude,
+							gdouble longitude,
+							gdouble altitude,
+							gdouble speed,
+							gdouble direction,
+							gdouble h_accuracy,
+							gdouble v_accuracy,
+							guint timestamp)
 {
 	g_return_val_if_fail(batch, FALSE);
 	g_return_val_if_fail(batch->batch_data, FALSE);

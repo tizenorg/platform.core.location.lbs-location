@@ -30,7 +30,7 @@
 G_BEGIN_DECLS
 
 GType location_position_get_type(void);
-#define LOCATION_TYPE_POSITION (location_position_get_type ())
+#define LOCATION_TYPE_POSITION (location_position_get_type())
 
 /**
  * @file location-position.h
@@ -50,11 +50,11 @@ GType location_position_get_type(void);
  * @brief This represents the various fix states.
  */
 typedef enum {
-    LOCATION_STATUS_NO_FIX = 0,	/*/< No fix status. */
-    LOCATION_STATUS_2D_FIX,		/*/< 2D fix status (latitude/longitude/speed/direction). */
-    LOCATION_STATUS_3D_FIX,		/*/< 3D fix status (altitude/climb as well). */
-    LOCATION_STATUS_MOCK_SET,	/**< MOCK Location set*/
-    LOCATION_STATUS_MOCK_FAIL,	/**< MOACK Location failed */
+	LOCATION_STATUS_NO_FIX = 0,	/*/< No fix status. */
+	LOCATION_STATUS_2D_FIX,		/*/< 2D fix status (latitude/longitude/speed/direction). */
+	LOCATION_STATUS_3D_FIX,		/*/< 3D fix status (altitude/climb as well). */
+	LOCATION_STATUS_MOCK_SET,	/**< MOCK Location set*/
+	LOCATION_STATUS_MOCK_FAIL,	/**< MOACK Location failed */
 } LocationStatus;
 
 /**

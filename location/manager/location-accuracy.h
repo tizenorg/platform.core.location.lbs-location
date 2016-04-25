@@ -47,13 +47,13 @@ GType location_accuracy_get_type(void);
  * @brief This represents the approximate accuracy level of given information.
  */
 typedef enum {
-    LOCATION_ACCURACY_LEVEL_NONE = 0,	/*/< Invalid data. */
-    LOCATION_ACCURACY_LEVEL_COUNTRY,	/*/< Country accuracy level-> */
-    LOCATION_ACCURACY_LEVEL_REGION,		/*/< Regional accuracy level-> */
-    LOCATION_ACCURACY_LEVEL_LOCALITY,	/*/< Local accuracy level-> */
-    LOCATION_ACCURACY_LEVEL_POSTALCODE,	/*/< Postal accuracy level-> */
-    LOCATION_ACCURACY_LEVEL_STREET,		/*/< Street accuracy level-> */
-    LOCATION_ACCURACY_LEVEL_DETAILED,	/*/< Detailed accuracy level-> */
+	LOCATION_ACCURACY_LEVEL_NONE = 0,	/*/< Invalid data. */
+	LOCATION_ACCURACY_LEVEL_COUNTRY,	/*/< Country accuracy level-> */
+	LOCATION_ACCURACY_LEVEL_REGION,		/*/< Regional accuracy level-> */
+	LOCATION_ACCURACY_LEVEL_LOCALITY,	/*/< Local accuracy level-> */
+	LOCATION_ACCURACY_LEVEL_POSTALCODE,	/*/< Postal accuracy level-> */
+	LOCATION_ACCURACY_LEVEL_STREET,		/*/< Street accuracy level-> */
+	LOCATION_ACCURACY_LEVEL_DETAILED,	/*/< Detailed accuracy level-> */
 } LocationAccuracyLevel;
 
 /**

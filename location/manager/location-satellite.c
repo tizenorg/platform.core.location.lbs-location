@@ -32,9 +32,9 @@ location_satellite_get_type(void)
 	static volatile gsize type_volatile = 0;
 	if (g_once_init_enter(&type_volatile)) {
 		GType type = g_boxed_type_register_static(
-		                 g_intern_static_string("LocationSatellite"),
-		                 (GBoxedCopyFunc) location_satellite_copy,
-		                 (GBoxedFreeFunc) location_satellite_free);
+						 g_intern_static_string("LocationSatellite"),
+						 (GBoxedCopyFunc) location_satellite_copy,
+						 (GBoxedFreeFunc) location_satellite_free);
 		g_once_init_leave(&type_volatile, type);
 	}
 	return type_volatile;
@@ -82,22 +82,22 @@ location_satellite_copy(const LocationSatellite *satellite)
 	int i = 0;
 	for (i = 0 ; i < satellite_dup->num_of_sat_inview ; i++)
 		location_satellite_set_satellite_details(satellite_dup, i,
-		                                         satellite->sat_inview[i].prn,
-		                                         satellite->sat_inview[i].used,
-		                                         satellite->sat_inview[i].elevation,
-		                                         satellite->sat_inview[i].azimuth,
-		                                         satellite->sat_inview[i].snr);
+												satellite->sat_inview[i].prn,
+												satellite->sat_inview[i].used,
+												satellite->sat_inview[i].elevation,
+												satellite->sat_inview[i].azimuth,
+												satellite->sat_inview[i].snr);
 	return satellite_dup;
 }
 
 EXPORT_API gboolean
 location_satellite_get_satellite_details(const LocationSatellite *satellite,
-                                         guint index,
-                                         guint *prn,
-                                         gboolean *used,
-                                         guint *elevation,
-                                         guint *azimuth,
-                                         gint *snr)
+										guint index,
+										guint *prn,
+										gboolean *used,
+										guint *elevation,
+										guint *azimuth,
+										gint *snr)
 {
 	g_return_val_if_fail(satellite, FALSE);
 	g_return_val_if_fail(prn, FALSE);
@@ -119,12 +119,12 @@ location_satellite_get_satellite_details(const LocationSatellite *satellite,
 
 EXPORT_API gboolean
 location_satellite_set_satellite_details(LocationSatellite *satellite,
-                                         guint index,
-                                         guint prn,
-                                         gboolean used,
-                                         guint elevation,
-                                         guint azimuth,
-                                         gint snr)
+										guint index,
+										guint prn,
+										gboolean used,
+										guint elevation,
+										guint azimuth,
+										gint snr)
 {
 	g_return_val_if_fail(satellite, FALSE);
 	g_return_val_if_fail(satellite->sat_inview, FALSE);

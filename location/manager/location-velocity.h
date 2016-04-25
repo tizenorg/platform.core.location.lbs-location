@@ -27,7 +27,7 @@
 G_BEGIN_DECLS
 
 GType location_velocity_get_type(void);
-#define LOCATION_TYPE_VELOCITY		(location_velocity_get_type ())
+#define LOCATION_TYPE_VELOCITY		(location_velocity_get_type())
 
 /**
  * @file location-velocity.h

@@ -28,7 +28,7 @@
 G_BEGIN_DECLS
 
 GType location_batch_get_type(void);
-#define LOCATION_TYPE_BATCH (location_batch_get_type ())
+#define LOCATION_TYPE_BATCH (location_batch_get_type())
 
 /**
  * @file location-batch.h

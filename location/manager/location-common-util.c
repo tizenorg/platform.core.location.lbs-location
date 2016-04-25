@@ -72,14 +72,14 @@ boundary_compare(gconstpointer comp1, gconstpointer comp2)
 		switch (priv1->boundary->type) {
 			case LOCATION_BOUNDARY_CIRCLE: {
 					if (location_position_equal(priv1->boundary->circle.center, priv2->boundary->circle.center)
-					    && priv1->boundary->circle.radius == priv2->boundary->circle.radius) {
+						&& priv1->boundary->circle.radius == priv2->boundary->circle.radius) {
 						ret = 0;
 					}
 					break;
 				}
 			case LOCATION_BOUNDARY_RECT: {
 					if (location_position_equal(priv1->boundary->rect.left_top, priv2->boundary->rect.left_top)
-					    && location_position_equal(priv1->boundary->rect.right_bottom, priv2->boundary->rect.right_bottom)) {
+						&& location_position_equal(priv1->boundary->rect.right_bottom, priv2->boundary->rect.right_bottom)) {
 						ret = 0;
 					}
 					break;
@@ -97,8 +97,11 @@ boundary_compare(gconstpointer comp1, gconstpointer comp2)
 
 					boundary2_prev = g_list_previous(boundary2_start);
 					boundary2_next = g_list_next(boundary2_start);
-					if (boundary2_prev == NULL) boundary2_prev = g_list_last(priv2->boundary->polygon.position_list);
-					if (boundary2_next == NULL) boundary2_next = g_list_first(priv2->boundary->polygon.position_list);
+					if (boundary2_prev == NULL)
+						boundary2_prev = g_list_last(priv2->boundary->polygon.position_list);
+
+					if (boundary2_next == NULL)
+						boundary2_next = g_list_first(priv2->boundary->polygon.position_list);
 
 					boundary1_next = g_list_next(priv1->boundary->polygon.position_list);
 					if (boundary1_next && location_position_equal((LocationPosition *)boundary1_next->data, (LocationPosition *)boundary2_prev->data) == TRUE) {
@@ -160,14 +163,12 @@ int set_prop_boundary(GList **prev_boundary_priv_list, GList *new_boundary_priv_
 			copy_priv->zone_status = new_priv->zone_status;
 			*prev_boundary_priv_list = g_list_append(*prev_boundary_priv_list, copy_priv);
 
-			LOCATION_LOGD("copy_priv: %p, copy_priv->boundary: %p, copy_priv->boundary->type: %d",
-			              copy_priv, copy_priv->boundary, copy_priv->boundary->type);
+			LOCATION_LOGD("copy_priv: %p, copy_priv->boundary: %p, copy_priv->boundary->type: %d", copy_priv, copy_priv->boundary, copy_priv->boundary->type);
 		}
 		location_boundary_free(new_priv->boundary);
 		index++;
 	}
 
-	LOCATION_LOGD("EXIT <<<");
 	return LOCATION_ERROR_NONE;
 }
 
@@ -212,49 +213,48 @@ void free_boundary_list(gpointer data)
 
 int location_get_app_type(char *target_app_id)
 {
-        int ret = 0;
-        pid_t pid = 0;
-        char *app_id = NULL;
-        app_info_h app_info;
-        char *type = NULL;
+	int ret = 0;
+	pid_t pid = 0;
+	char *app_id = NULL;
+	app_info_h app_info;
+	char *type = NULL;
 
-        if (target_app_id == NULL) {
-                pid = getpid();
-                ret = app_manager_get_app_id(pid, &app_id);
-                if (ret != APP_MANAGER_ERROR_NONE) {
-                        LOCATION_LOGE("Fail to get app_id. Err[%d]", ret);
-                        return LOCATION_ERROR_NONE;
-                }
-        } else {
-                app_id = g_strdup(target_app_id);
-        }
+	if (target_app_id == NULL) {
+		pid = getpid();
+		ret = app_manager_get_app_id(pid, &app_id);
+			if (ret != APP_MANAGER_ERROR_NONE) {
+				LOCATION_LOGE("Fail to get app_id. Err[%d]", ret);
+			return LOCATION_ERROR_NONE;
+		}
+	} else {
+		app_id = g_strdup(target_app_id);
+	}
 
-        ret = app_info_create(app_id, &app_info);
-        if (ret != APP_MANAGER_ERROR_NONE) {
-                LOCATION_LOGE("Fail to get app_info. Err[%d]", ret);
-                g_free(app_id);
-                return LOCATION_ERROR_NONE;
-        }
+	ret = app_info_create(app_id, &app_info);
+	if (ret != APP_MANAGER_ERROR_NONE) {
+		LOCATION_LOGE("Fail to get app_info. Err[%d]", ret);
+		g_free(app_id);
+		return LOCATION_ERROR_NONE;
+	}
 
-        ret = app_info_get_type(app_info, &type);
-        if (ret != APP_MANAGER_ERROR_NONE) {
-                LOCATION_LOGE("Fail to get type. Err[%d]", ret);
-                g_free(app_id);
-                app_info_destroy(app_info);
-                return LOCATION_ERROR_NONE;
-        }
+	ret = app_info_get_type(app_info, &type);
+	if (ret != APP_MANAGER_ERROR_NONE) {
+		LOCATION_LOGE("Fail to get type. Err[%d]", ret);
+		g_free(app_id);
+		app_info_destroy(app_info);
+		return LOCATION_ERROR_NONE;
+	}
 
-        if (strcmp(type, "c++app") == 0) {
-                ret = CPPAPP;
-        } else if (strcmp(type, "webapp") == 0) {
-                ret = WEBAPP;
-        } else {
-                ret = CAPP;
-        }
+	if (strcmp(type, "c++app") == 0)
+		ret = CPPAPP;
+	else if (strcmp(type, "webapp") == 0)
+		ret = WEBAPP;
+	else
+		ret = CAPP;
 
-        g_free(type);
-        g_free(app_id);
-        app_info_destroy(app_info);
+	g_free(type);
+	g_free(app_id);
+	app_info_destroy(app_info);
 
-        return ret;
+	return ret;
 }

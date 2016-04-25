@@ -72,9 +72,9 @@ location_boundary_get_type(void)
 	static volatile gsize type_volatile = 0;
 	if (g_once_init_enter(&type_volatile)) {
 		GType type = g_boxed_type_register_static(
-		                 g_intern_static_string("LocationBoundary"),
-		                 (GBoxedCopyFunc) location_boundary_copy,
-		                 (GBoxedFreeFunc) location_boundary_free);
+						g_intern_static_string("LocationBoundary"),
+						(GBoxedCopyFunc) location_boundary_copy,
+						(GBoxedFreeFunc) location_boundary_free);
 		g_once_init_leave(&type_volatile, type);
 	}
 	return type_volatile;
@@ -101,8 +101,7 @@ static void _free_polygon_position(gpointer data)
 }
 
 EXPORT_API LocationBoundary *
-location_boundary_new_for_rect(LocationPosition *left_top,
-                               LocationPosition *right_bottom)
+location_boundary_new_for_rect(LocationPosition *left_top, LocationPosition *right_bottom)
 {
 	g_return_val_if_fail(left_top, NULL);
 	g_return_val_if_fail(right_bottom, NULL);
@@ -127,8 +126,7 @@ location_boundary_new_for_rect(LocationPosition *left_top,
 }
 
 EXPORT_API LocationBoundary *
-location_boundary_new_for_circle(LocationPosition *center,
-                                 gdouble radius)
+location_boundary_new_for_circle(LocationPosition *center, gdouble radius)
 {
 	g_return_val_if_fail(center, NULL);
 	g_return_val_if_fail(radius > 0, NULL);
@@ -188,8 +186,7 @@ location_boundary_copy(const LocationBoundary *boundary)
 }
 
 EXPORT_API gboolean
-location_boundary_if_inside(LocationBoundary *boundary,
-                            LocationPosition *position)
+location_boundary_if_inside(LocationBoundary *boundary, LocationPosition *position)
 {
 	g_return_val_if_fail(boundary, FALSE);
 	g_return_val_if_fail(position, FALSE);
@@ -197,7 +194,7 @@ location_boundary_if_inside(LocationBoundary *boundary,
 	gboolean is_inside = FALSE;
 
 	switch (boundary->type) {
-		case LOCATION_BOUNDARY_RECT: {
+	case LOCATION_BOUNDARY_RECT: {
 				gdouble y = position->latitude;
 				gdouble x = position->longitude;
 
@@ -219,7 +216,7 @@ location_boundary_if_inside(LocationBoundary *boundary,
 				}
 				break;
 			}
-		case LOCATION_BOUNDARY_CIRCLE: {
+	case LOCATION_BOUNDARY_CIRCLE: {
 
 				LocationPosition center;
 				gulong distance = 0;
@@ -234,7 +231,7 @@ location_boundary_if_inside(LocationBoundary *boundary,
 				}
 				break;
 			}
-		case LOCATION_BOUNDARY_POLYGON: {
+	case LOCATION_BOUNDARY_POLYGON: {
 
 				double interval_x = 0.0, interval_y = 0.0;
 				double x0 = 0.0, y0 = 0.0;
@@ -255,8 +252,8 @@ location_boundary_if_inside(LocationBoundary *boundary,
 					interval_y = pos1->longitude - pos2->longitude;
 					interval_x = pos1->latitude - pos2->latitude;
 					/**
-					 * Case 1. -180 < longitude2 - longitude1 < 180 	: normal case
-					 * Case 2. longitude2 - longitude1 < -180 		: interval_y = longitude2 - longitude1 + 360
+					 * Case 1. -180 < longitude2 - longitude1 < 180	: normal case
+					 * Case 2. longitude2 - longitude1 < -180		: interval_y = longitude2 - longitude1 + 360
 					 * Case 3. longitude2 - longitude1 > 180		: intreval_y = longitude2 - longitude1 - 360
 					 */
 					if (interval_y > 180) {
@@ -298,7 +295,7 @@ location_boundary_if_inside(LocationBoundary *boundary,
 
 				break;
 			}
-		default: {
+	default: {
 				LOCATION_LOGW("\tboundary type is undefined.[%d]", boundary->type);
 				break;
 			}
@@ -387,7 +384,7 @@ location_boundary_get_center_position(LocationBoundary *boundary)
 	LocationPosition *center = NULL;
 
 	switch (boundary->type) {
-		case LOCATION_BOUNDARY_RECT: {
+	case LOCATION_BOUNDARY_RECT: {
 				gdouble latitude, longitude, altitude;
 				latitude = (boundary->rect.left_top->latitude + boundary->rect.right_bottom->latitude) / 2.0;
 				longitude = (boundary->rect.left_top->longitude + boundary->rect.right_bottom->longitude) / 2.0;
@@ -396,11 +393,11 @@ location_boundary_get_center_position(LocationBoundary *boundary)
 				center = location_position_new(boundary->rect.left_top->timestamp, latitude, longitude, altitude, boundary->rect.left_top->status);
 				break;
 			}
-		case LOCATION_BOUNDARY_CIRCLE: {
+	case LOCATION_BOUNDARY_CIRCLE: {
 				center = location_position_copy(boundary->circle.center);
 				break;
 			}
-		case LOCATION_BOUNDARY_POLYGON: {
+	case LOCATION_BOUNDARY_POLYGON: {
 				gdouble center_latitude = 0.0;
 				gdouble center_longitude = 0.0;
 				gdouble area = 0.0;
@@ -451,7 +448,7 @@ location_boundary_get_center_position(LocationBoundary *boundary)
 				}
 				break;
 			}
-		default:
+	default:
 			break;
 	}
 	return center;

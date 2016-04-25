@@ -103,9 +103,8 @@ LocationBoundary *json_util_get_polygon_boundary(int polygon_index)
 	int pos_count = _get_polygon_position_count(polygon_index);
 	if (pos_count == 0) return NULL;
 
-	for (index = 0; index < pos_count; index++) {
+	for (index = 0; index < pos_count; index++)
 		position_list = g_list_append(position_list, _get_position_from_polygon(polygon_index, index));
-	}
 
 	boundary = location_boundary_new_for_polygon(position_list);
 

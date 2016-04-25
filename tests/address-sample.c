@@ -39,8 +39,7 @@ print_pos(gpointer data, gpointer user_data)
 	LocationPosition *pos = (LocationPosition *)data;
 
 	if (pos) {
-		g_debug("time: %d, lat: %f, long: %f, alt: %f, status: %d",
-		        pos->timestamp, pos->latitude, pos->longitude, pos->altitude, pos->status);
+		g_debug("time: %d, lat: %f, long: %f, alt: %f, status: %d", pos->timestamp, pos->latitude, pos->longitude, pos->altitude, pos->status);
 		location_position_free(pos);
 	}
 }
@@ -56,24 +55,19 @@ print_acc(gpointer data, gpointer user_data)
 	}
 }
 static void
-cb_address(LocationError error,
-           LocationAddress *addr,
-           LocationAccuracy *acc,
-           gpointer userdata)
+cb_address(LocationError error, LocationAddress *addr, LocationAccuracy *acc, gpointer userdata)
 {
 	if (error != LOCATION_ERROR_NONE) {
 		g_debug("cb_address failed: error=%d\n", error);
 		return;
 	}
 	g_debug("ASYNC>> location_map_get_address_async> %s %s %s %s %s %s %s",
-	        addr->building_number, addr->street, addr->district, addr->city, addr->state, addr->postal_code, addr->country_code);
+			addr->building_number, addr->street, addr->district, addr->city, addr->state, addr->postal_code, addr->country_code);
 	g_debug("\tAccuracy level %d (%.0f meters %.0f meters)", acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
 }
 
 static void
-cb_service_disabled(GObject *self,
-                    guint status,
-                    gpointer userdata)
+cb_service_disabled(GObject *self, guint status, gpointer userdata)
 {
 	g_debug("cb_service_disabled: status(%d) userdata(0x%x)", status, (unsigned int)userdata);
 }
@@ -110,14 +104,12 @@ cb_address_from_position(LocationError error, LocationAddress *addr, LocationAcc
 		return;
 	}
 	g_debug("ASYNC>> location_map_get_address_from_position_async> %s %s %s %s %s %s %s",
-	        addr->building_number, addr->street, addr->district, addr->city, addr->state, addr->postal_code, addr->country_code);
+			addr->building_number, addr->street, addr->district, addr->city, addr->state, addr->postal_code, addr->country_code);
 	g_debug("\tAccuracy level %d (%.0f meters %.0f meters)", acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
 }
 
 static void
-cb_service_enabled(GObject *self,
-                   guint status,
-                   gpointer userdata)
+cb_service_enabled(GObject *self, guint status, gpointer userdata)
 {
 	g_debug("cb_service_enabled: status(%d) userdata(0x%x)", status, (unsigned int)userdata);
 }
@@ -161,7 +153,7 @@ main(int argc, char *argv[])
 	/* If application is executed by AUL, this is not needed. */
 	g_setenv("PKG_NAME", "com.samsung.address-sample", 1);
 
-#if !GLIB_CHECK_VERSION (2, 35, 0)
+#if !GLIB_CHECK_VERSION(2, 35, 0)
 	g_type_init();
 #endif
 
@@ -200,7 +192,7 @@ main(int argc, char *argv[])
 	err = location_map_get_address_from_position(loc, pos, &addr, &acc);
 	if (LOCATION_ERROR_NONE == err) {
 		g_debug("SYNC>> location_map_get_address_from_position() success> %s %s %s %s %s %s %s",
-		        addr->building_number, addr->street, addr->district, addr->city, addr->state, addr->postal_code, addr->country_code);
+				addr->building_number, addr->street, addr->district, addr->city, addr->state, addr->postal_code, addr->country_code);
 		g_debug("\tAccuracy level %d (%.0f meters %.0f meters)", acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
 		location_address_free(addr);
 		location_accuracy_free(acc);

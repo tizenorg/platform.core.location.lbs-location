@@ -27,7 +27,7 @@
 G_BEGIN_DECLS
 
 GType location_satellite_get_type(void);
-#define LOCATION_TYPE_SATELLITE (location_satellite_get_type ())
+#define LOCATION_TYPE_SATELLITE (location_satellite_get_type())
 
 /**
  * @file location-satellite.h

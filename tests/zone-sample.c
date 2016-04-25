@@ -4,7 +4,7 @@
  * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
- *          Genie Kim <daejins.kim@samsung.com>
+ *		  Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,49 +33,39 @@ exit_program(gpointer data)
 }
 
 static void
-cb_service_enabled(GObject *self,
-                   guint status,
-                   gpointer userdata)
+cb_service_enabled(GObject *self, guint status, gpointer userdata)
 {
 	g_debug("cb_service_enabled: status(%d) userdata(0x%x)", status, (unsigned int)userdata);
 }
 
 static void
-cb_service_disabled(GObject *self,
-                    guint status,
-                    gpointer userdata)
+cb_service_disabled(GObject *self, guint status, gpointer userdata)
 {
 	g_debug("cb_service_disabled: status(%d) userdata(0x%x)", status, (unsigned int)userdata);
 }
 
 static void
-cb_zone_in(GObject *self,
-           gpointer boundary,
-           gpointer position,
-           gpointer accuracy)
+cb_zone_in(GObject *self, gpointer boundary, gpointer position, gpointer accuracy)
 {
 	LocationPosition *pos = (LocationPosition *) position;
 	LocationAccuracy *acc = (LocationAccuracy *) accuracy;
 
 	g_debug("ASYNC>> ZoneIn> Current position: time: %d, lat: %f, long: %f, alt: %f",
-	        pos->timestamp, pos->latitude, pos->longitude, pos->altitude);
+			pos->timestamp, pos->latitude, pos->longitude, pos->altitude);
 	g_debug("\tAccuracy level %d (%.0f meters %.0f meters)",
-	        acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
+			acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
 }
 
 static void
-cb_zone_out(GObject *self,
-            gpointer boundary,
-            gpointer position,
-            gpointer accuracy)
+cb_zone_out(GObject *self, gpointer boundary, gpointer position, gpointer accuracy)
 {
 	LocationPosition *pos = (LocationPosition *) position;
 	LocationAccuracy *acc = (LocationAccuracy *) accuracy;
 
 	g_debug("ASYNC>> ZoneOut> Current position: time: %d, lat: %f, long: %f, alt: %f",
-	        pos->timestamp, pos->latitude, pos->longitude, pos->altitude);
+			pos->timestamp, pos->latitude, pos->longitude, pos->altitude);
 	g_debug("\tAccuracy level %d (%.0f meters %.0f meters)",
-	        acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
+			acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
 }
 
 int
@@ -105,11 +95,11 @@ main(int argc, char *argv[])
 	g_object_get(loc, "boundary", &bound, NULL);
 	if (bound) {
 		g_debug("Set property>> boundary> type: %d, (%f,%f),(%f,%f)",
-		        bound->type,
-		        bound->rect.right_bottom->latitude, bound->rect.right_bottom->longitude,
-		        bound->rect.left_top->latitude, bound->rect.left_top->longitude);
+				bound->type,
+				bound->rect.right_bottom->latitude, bound->rect.right_bottom->longitude,
+				bound->rect.left_top->latitude, bound->rect.left_top->longitude);
 		location_boundary_free(bound);
-	} else 	g_warning("failed to set property> boundary");
+	} else	g_warning("failed to set property> boundary");
 
 	g_signal_connect(loc, "service-enabled", G_CALLBACK(cb_service_enabled), loc);
 	g_signal_connect(loc, "service-disabled", G_CALLBACK(cb_service_disabled), loc);

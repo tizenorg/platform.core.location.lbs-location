@@ -37,13 +37,13 @@ gint location_setting_get_key_val(keynode_t *key)
 	g_return_val_if_fail(key, -1);
 	int val = -1;
 	switch (vconf_keynode_get_type(key)) {
-		case VCONF_TYPE_INT:
-			val = vconf_keynode_get_int(key);
-			LOCATION_SECLOG("changed [%s]:[%d]", vconf_keynode_get_name(key), val);
-			break;
-		default:
-			LOCATION_LOGW("Unused type(%d)", vconf_keynode_get_type(key));
-			break;
+	case VCONF_TYPE_INT:
+		val = vconf_keynode_get_int(key);
+		LOCATION_SECLOG("changed [%s]:[%d]", vconf_keynode_get_name(key), val);
+		break;
+	default:
+		LOCATION_LOGW("Unused type(%d)", vconf_keynode_get_type(key));
+		break;
 	}
 	return val;
 }
@@ -111,9 +111,7 @@ gint location_setting_add_notify(const gchar *path, SettingCB setting_cb, gpoint
 	const char *event_name = NULL;
 	event_name = __convert_event_from_vconf(path);
 
-	if (eventsystem_register_event(event_name,
-	                               &g_event_req_id,
-	                               (eventsystem_handler) __event_handler, NULL) != ES_R_OK) {
+	if (eventsystem_register_event(event_name, &g_event_req_id, (eventsystem_handler) __event_handler, NULL) != ES_R_OK) {
 
 		LOCATION_SECLOG("eventsystem_register_event failed");
 		return -1;

@@ -57,20 +57,20 @@ static char *__convert_setting_key(LocationMethod method)
 {
 	char *key = NULL;
 	switch (method) {
-		case LOCATION_METHOD_HYBRID:
-			key = g_strdup(VCONFKEY_LOCATION_USE_MY_LOCATION);
-			break;
-		case LOCATION_METHOD_GPS:
-			key = g_strdup(VCONFKEY_LOCATION_ENABLED);
-			break;
-		case LOCATION_METHOD_WPS:
-			key = g_strdup(VCONFKEY_LOCATION_NETWORK_ENABLED);
-			break;
-		case LOCATION_METHOD_MOCK:
-			key = g_strdup(VCONFKEY_LOCATION_MOCK_ENABLED);
-			break;
-		default:
-			break;
+	case LOCATION_METHOD_HYBRID:
+		key = g_strdup(VCONFKEY_LOCATION_USE_MY_LOCATION);
+		break;
+	case LOCATION_METHOD_GPS:
+		key = g_strdup(VCONFKEY_LOCATION_ENABLED);
+		break;
+	case LOCATION_METHOD_WPS:
+		key = g_strdup(VCONFKEY_LOCATION_NETWORK_ENABLED);
+		break;
+	case LOCATION_METHOD_MOCK:
+		key = g_strdup(VCONFKEY_LOCATION_MOCK_ENABLED);
+		break;
+	default:
+		break;
 	}
 
 	return key;
@@ -129,19 +129,19 @@ location_new(LocationMethod method)
 	LOCATION_LOGD("method: %d", method);
 
 	switch (method) {
-		case LOCATION_METHOD_HYBRID:
-			self = g_object_new(LOCATION_TYPE_HYBRID, NULL);
-			break;
-		case LOCATION_METHOD_GPS:
-			self = g_object_new(LOCATION_TYPE_GPS, NULL);
-			break;
-		case LOCATION_METHOD_WPS:
-			self = g_object_new(LOCATION_TYPE_WPS, NULL);
-			break;
-		case LOCATION_METHOD_MOCK:
-			self = g_object_new(LOCATION_TYPE_MOCK, NULL);
-		default:
-			break;
+	case LOCATION_METHOD_HYBRID:
+		self = g_object_new(LOCATION_TYPE_HYBRID, NULL);
+		break;
+	case LOCATION_METHOD_GPS:
+		self = g_object_new(LOCATION_TYPE_GPS, NULL);
+		break;
+	case LOCATION_METHOD_WPS:
+		self = g_object_new(LOCATION_TYPE_WPS, NULL);
+		break;
+	case LOCATION_METHOD_MOCK:
+		self = g_object_new(LOCATION_TYPE_MOCK, NULL);
+	default:
+		break;
 	}
 
 	if (!self) LOCATION_LOGE("Fail to create location object. Method [%d]", method);
@@ -174,7 +174,6 @@ location_start(LocationObject *obj)
 	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
 
 	int ret = LOCATION_ERROR_NONE;
-
 #ifndef TIZEN_PROFILE_TV
 	ret = location_check_cynara(LOCATION_PRIVILEGE);
 	if (ret != LOCATION_ERROR_NONE) {
@@ -238,20 +237,20 @@ location_is_supported_method(LocationMethod method)
 	gboolean is_supported = FALSE;
 
 	switch (method) {
-		case LOCATION_METHOD_HYBRID:
+	case LOCATION_METHOD_HYBRID:
 			if (module_is_supported("gps") || module_is_supported("wps") || module_is_supported("mock"))
 				is_supported = TRUE;
 			break;
-		case LOCATION_METHOD_GPS:
+	case LOCATION_METHOD_GPS:
 			is_supported = module_is_supported("gps");
 			break;
-		case LOCATION_METHOD_WPS:
+	case LOCATION_METHOD_WPS:
 			is_supported = module_is_supported("wps");
 			break;
-		case LOCATION_METHOD_MOCK:
+	case LOCATION_METHOD_MOCK:
 			is_supported = module_is_supported("mock");
 			break;
-		default:
+	default:
 			break;
 	}
 
@@ -394,9 +393,7 @@ location_ignore_setting_notify(LocationMethod method, LocationSettingCb callback
 
 
 EXPORT_API int
-location_get_position(LocationObject *obj,
-                      LocationPosition **position,
-                      LocationAccuracy **accuracy)
+location_get_position(LocationObject *obj, LocationPosition **position, LocationAccuracy **accuracy)
 {
 	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail(position, LOCATION_ERROR_PARAMETER);
@@ -419,10 +416,7 @@ location_get_position(LocationObject *obj,
 }
 
 EXPORT_API int
-location_get_position_ext(LocationObject *obj,
-                          LocationPosition **position,
-                          LocationVelocity **velocity,
-                          LocationAccuracy **accuracy)
+location_get_position_ext(LocationObject *obj, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy)
 {
 	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail(position, LOCATION_ERROR_PARAMETER);
@@ -446,9 +440,7 @@ location_get_position_ext(LocationObject *obj,
 }
 
 EXPORT_API int
-location_get_last_position(LocationObject *obj,
-                           LocationPosition **position,
-                           LocationAccuracy **accuracy)
+location_get_last_position(LocationObject *obj, LocationPosition **position, LocationAccuracy **accuracy)
 {
 	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail(position, LOCATION_ERROR_PARAMETER);
@@ -471,10 +463,7 @@ location_get_last_position(LocationObject *obj,
 }
 
 EXPORT_API int
-location_get_last_position_ext(LocationObject *obj,
-                               LocationPosition **position,
-                               LocationVelocity **velocity,
-                               LocationAccuracy **accuracy)
+location_get_last_position_ext(LocationObject *obj, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy)
 {
 	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail(position, LOCATION_ERROR_PARAMETER);
@@ -582,9 +571,7 @@ location_get_last_satellite(LocationObject *obj, LocationSatellite **satellite)
 }
 
 EXPORT_API int
-location_get_velocity(LocationObject *obj,
-                      LocationVelocity **velocity,
-                      LocationAccuracy **accuracy)
+location_get_velocity(LocationObject *obj, LocationVelocity **velocity, LocationAccuracy **accuracy)
 {
 	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail(velocity, LOCATION_ERROR_PARAMETER);
@@ -607,9 +594,7 @@ location_get_velocity(LocationObject *obj,
 }
 
 EXPORT_API int
-location_get_last_velocity(LocationObject *obj,
-                           LocationVelocity **velocity,
-                           LocationAccuracy **accuracy)
+location_get_last_velocity(LocationObject *obj, LocationVelocity **velocity, LocationAccuracy **accuracy)
 {
 	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail(velocity, LOCATION_ERROR_PARAMETER);
@@ -636,17 +621,17 @@ location_get_accessibility_state(LocationAccessState *state)
 {
 	int auth = location_application_get_authority();
 	switch (auth) {
-		case LOCATION_APP_OFF:
-			*state = LOCATION_ACCESS_DENIED;
-			break;
-		case LOCATION_APP_ON:
-			*state = LOCATION_ACCESS_ALLOWED;
-			break;
-		case LOCATION_APP_NOT_FOUND:
-			*state = LOCATION_ACCESS_NONE;
-			break;
-		default:
-			return LOCATION_ERROR_UNKNOWN;
+	case LOCATION_APP_OFF:
+		*state = LOCATION_ACCESS_DENIED;
+		break;
+	case LOCATION_APP_ON:
+		*state = LOCATION_ACCESS_ALLOWED;
+		break;
+	case LOCATION_APP_NOT_FOUND:
+		*state = LOCATION_ACCESS_NONE;
+		break;
+	default:
+		return LOCATION_ERROR_UNKNOWN;
 	}
 
 	LOCATION_LOGD("get_accessibility_state [%d]", auth);
@@ -660,15 +645,15 @@ location_set_accessibility_state(LocationAccessState state)
 	int ret = LOCATION_ERROR_NONE;
 
 	switch (state) {
-		case LOCATION_ACCESS_DENIED:
-			auth = LOCATION_APP_OFF;
-			break;
-		case LOCATION_ACCESS_ALLOWED:
-			auth = LOCATION_APP_ON;
-			break;
-		case LOCATION_ACCESS_NONE:
-		default:
-			return LOCATION_ERROR_PARAMETER;
+	case LOCATION_ACCESS_DENIED:
+		auth = LOCATION_APP_OFF;
+		break;
+	case LOCATION_ACCESS_ALLOWED:
+		auth = LOCATION_APP_ON;
+		break;
+	case LOCATION_ACCESS_NONE:
+	default:
+		return LOCATION_ERROR_PARAMETER;
 	}
 
 	ret = location_application_set_authority(auth);
@@ -772,13 +757,13 @@ static char *__convert_mock_setting_key(LocationMethod method)
 {
 	char *key = NULL;
 	switch (method) {
-		case LOCATION_METHOD_MOCK_GPS:
+	case LOCATION_METHOD_MOCK_GPS:
 			key = g_strdup(VCONFKEY_LOCATION_MOCK_GPS_ENABLED);
 			break;
-		case LOCATION_METHOD_MOCK_WPS:
+	case LOCATION_METHOD_MOCK_WPS:
 			key = g_strdup(VCONFKEY_LOCATION_MOCK_NETWORK_ENABLED);
 			break;
-		default:
+	default:
 			break;
 	}
 	return key;

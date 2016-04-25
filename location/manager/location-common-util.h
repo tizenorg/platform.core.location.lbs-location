@@ -38,15 +38,15 @@ G_BEGIN_DECLS
 #define CPPAPP	3
 
 typedef enum {
-    LOCATION_APP_OFF = 0,
-    LOCATION_APP_ON,
-    LOCATION_APP_NOT_FOUND
+	LOCATION_APP_OFF = 0,
+	LOCATION_APP_ON,
+	LOCATION_APP_NOT_FOUND
 } LOCATION_APP_STATE;
 
 typedef enum {
-    ZONE_STATUS_NONE = 0,
-    ZONE_STATUS_IN,
-    ZONE_STATUS_OUT,
+	ZONE_STATUS_NONE = 0,
+	ZONE_STATUS_IN,
+	ZONE_STATUS_OUT,
 } ZoneStatus;
 
 typedef struct _LocationBoundaryPrivate {

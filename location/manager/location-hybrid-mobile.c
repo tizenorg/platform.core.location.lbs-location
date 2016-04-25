@@ -73,19 +73,19 @@ typedef struct _LocationHybridPrivate {
 } LocationHybridPrivate;
 
 enum {
-    PROP_0,
-    PROP_METHOD_TYPE,
-    PROP_LAST_POSITION,
-    PROP_POS_INTERVAL,
-    PROP_VEL_INTERVAL,
-    PROP_SAT_INTERVAL,
-    PROP_LOC_INTERVAL,
-    PROP_BOUNDARY,
-    PROP_REMOVAL_BOUNDARY,
-    PROP_MIN_INTERVAL,
-    PROP_MIN_DISTANCE,
-    PROP_SERVICE_STATUS,
-    PROP_MAX
+	PROP_0,
+	PROP_METHOD_TYPE,
+	PROP_LAST_POSITION,
+	PROP_POS_INTERVAL,
+	PROP_VEL_INTERVAL,
+	PROP_SAT_INTERVAL,
+	PROP_LOC_INTERVAL,
+	PROP_BOUNDARY,
+	PROP_REMOVAL_BOUNDARY,
+	PROP_MIN_INTERVAL,
+	PROP_MIN_DISTANCE,
+	PROP_SERVICE_STATUS,
+	PROP_MAX
 };
 
 static guint32 signals[LAST_SIGNAL] = {0, };
@@ -96,14 +96,13 @@ static GParamSpec *properties[PROP_MAX] = {NULL, };
 static void location_ielement_interface_init(LocationIElementInterface *iface);
 
 G_DEFINE_TYPE_WITH_CODE(LocationHybrid, location_hybrid, G_TYPE_OBJECT,
-                        G_IMPLEMENT_INTERFACE(LOCATION_TYPE_IELEMENT,
-                                              location_ielement_interface_init));
+						G_IMPLEMENT_INTERFACE(LOCATION_TYPE_IELEMENT, location_ielement_interface_init));
 
 static LocationMethod
 hybrid_get_current_method(LocationHybridPrivate *priv)
 {
 	g_return_val_if_fail(priv, LOCATION_METHOD_NONE);
-	LOCATION_LOGW("Current Method [%d]", priv->current_method);
+	LOCATION_LOGD("Current Method [%d]", priv->current_method);
 	return priv->current_method;
 }
 
@@ -153,13 +152,13 @@ hybrid_get_current_object(LocationHybridPrivate *priv)
 
 	LocationObject *obj = NULL;
 	switch (method) {
-		case LOCATION_METHOD_GPS:
+	case LOCATION_METHOD_GPS:
 			obj = priv->gps;
 			break;
-		case LOCATION_METHOD_WPS:
+	case LOCATION_METHOD_WPS:
 			obj = priv->wps;
 			break;
-		default:
+	default:
 			break;
 	}
 
@@ -264,8 +263,7 @@ _velocity_timeout_cb(gpointer data)
 }
 
 static void
-location_hybrid_gps_cb(keynode_t *key,
-                       gpointer self)
+location_hybrid_gps_cb(keynode_t *key, gpointer self)
 {
 	LOCATION_LOGD("location_hybrid_gps_cb");
 	g_return_if_fail(key);
@@ -301,11 +299,11 @@ location_hybrid_gps_cb(keynode_t *key,
 
 static void
 hybrid_location_updated(GObject *obj,
-                        guint error,
-                        gpointer position,
-                        gpointer velocity,
-                        gpointer accuracy,
-                        gpointer self)
+						guint error,
+						gpointer position,
+						gpointer velocity,
+						gpointer accuracy,
+						gpointer self)
 {
 	LocationPosition *pos = (LocationPosition *)position;
 	LocationVelocity *vel = (LocationVelocity *)velocity;
@@ -318,12 +316,7 @@ hybrid_location_updated(GObject *obj,
 }
 
 static void
-hybrid_service_updated(GObject *obj,
-                       gint type,
-                       gpointer data,
-                       gpointer velocity,
-                       gpointer accuracy,
-                       gpointer self)
+hybrid_service_updated(GObject *obj, gint type, gpointer data, gpointer velocity, gpointer accuracy, gpointer self)
 {
 	LOCATION_LOGD("hybrid_service_updated");
 	LocationPosition *pos = NULL;
@@ -395,8 +388,8 @@ hybrid_service_updated(GObject *obj,
 								  &(priv->dist_updated_timestamp), &(priv->pos), &(priv->vel), &(priv->acc));
 			} else {
 				position_velocity_signaling(self, signals, priv->pos_interval, priv->vel_interval, priv->loc_interval,
-							    &(priv->pos_updated_timestamp), &(priv->vel_updated_timestamp), &(priv->loc_updated_timestamp),
-							    priv->boundary_list, pos, vel, acc);
+								&(priv->pos_updated_timestamp), &(priv->vel_updated_timestamp), &(priv->loc_updated_timestamp),
+								priv->boundary_list, pos, vel, acc);
 			}
 		}
 
@@ -431,8 +424,8 @@ hybrid_service_updated(GObject *obj,
 
 			if (type == DISTANCE_UPDATED) {
 				distance_based_position_signaling(self, signals, priv->enabled, pos, vel, acc,
-												  priv->min_interval, priv->min_distance, &(priv->enabled),
-												  &(priv->dist_updated_timestamp), &(priv->pos), &(priv->vel), &(priv->acc));
+												priv->min_interval, priv->min_distance, &(priv->enabled),
+												&(priv->dist_updated_timestamp), &(priv->pos), &(priv->vel), &(priv->acc));
 			} else {
 				LOCATION_LOGD("position_velocity_signaling");
 				position_velocity_signaling(self, signals, priv->pos_interval, priv->vel_interval, priv->loc_interval,
@@ -444,9 +437,7 @@ hybrid_service_updated(GObject *obj,
 }
 
 static void
-hybrid_service_enabled(GObject *obj,
-                       guint status,
-                       gpointer self)
+hybrid_service_enabled(GObject *obj, guint status, gpointer self)
 {
 	LOCATION_LOGD("hybrid_service_enabled");
 	LocationHybridPrivate *priv = GET_PRIVATE((LocationHybrid *)self);
@@ -461,15 +452,13 @@ hybrid_service_enabled(GObject *obj,
 		priv->mock_enabled = TRUE;
 	} else {
 		LOCATION_LOGW("Undefined GType enabled");
-        return;
+		return;
 	}
 	hybrid_get_update_method(priv);
 }
 
 static void
-hybrid_service_disabled(GObject *obj,
-                        guint status,
-                        gpointer self)
+hybrid_service_disabled(GObject *obj, guint status, gpointer self)
 {
 	LOCATION_LOGD("hybrid_service_disabled");
 	LocationHybridPrivate *priv = GET_PRIVATE((LocationHybrid *)self);
@@ -498,9 +487,7 @@ hybrid_service_disabled(GObject *obj,
 
 #if 0
 static void
-hybrid_status_changed(GObject *obj,
-                       guint status,
-                       gpointer self)
+hybrid_status_changed(GObject *obj, guint status, gpointer self)
 {
 	LOCATION_LOGD("status = %d", status);
 	LocationHybridPrivate *priv = GET_PRIVATE((LocationHybrid *)self);
@@ -509,7 +496,7 @@ hybrid_status_changed(GObject *obj,
 
 
 	switch (status) {
-		case LOCATION_STATUS_NO_FIX:
+	case LOCATION_STATUS_NO_FIX:
 			if (g_type == LOCATION_TYPE_GPS) {
 				priv->gps_enabled = FALSE;
 			} else if (g_type == LOCATION_TYPE_WPS) {
@@ -525,8 +512,8 @@ hybrid_status_changed(GObject *obj,
 				enable_signaling(self, signals, &(priv->enabled), FALSE, status);
 			break;
 
-		case LOCATION_STATUS_2D_FIX:
-		case LOCATION_STATUS_3D_FIX:
+	case LOCATION_STATUS_2D_FIX:
+	case LOCATION_STATUS_3D_FIX:
 			if (g_type == LOCATION_TYPE_GPS) {
 				priv->gps_enabled = TRUE;
 			} else if (g_type == LOCATION_TYPE_WPS) {
@@ -540,11 +527,11 @@ hybrid_status_changed(GObject *obj,
 			hybrid_get_update_method(priv);
 			break;
 
-		case LOCATION_STATUS_MOCK_SET:
+	case LOCATION_STATUS_MOCK_SET:
 			LOCATION_LOGD("Succeeded set mock location!!!");
 			break;
 
-		case LOCATION_STATUS_MOCK_FAIL:
+	case LOCATION_STATUS_MOCK_FAIL:
 			if (g_type == LOCATION_TYPE_GPS) {
 				priv->gps_enabled = FALSE;
 			} else if (g_type == LOCATION_TYPE_WPS) {
@@ -558,7 +545,7 @@ hybrid_status_changed(GObject *obj,
 				enable_signaling(self, signals, &(priv->enabled), FALSE, status);
 			break;
 
-		default:
+	default:
 				LOCATION_LOGW("Undefined status");
 			break;
 	}
@@ -750,10 +737,7 @@ location_hybrid_finalize(GObject *gobject)
 }
 
 static void
-location_hybrid_set_property(GObject *object,
-                             guint property_id,
-                             const GValue *value,
-                             GParamSpec *pspec)
+location_hybrid_set_property(GObject *object, guint property_id, const GValue *value, GParamSpec *pspec)
 {
 	LocationHybridPrivate *priv = GET_PRIVATE(object);
 	g_return_if_fail(priv);
@@ -764,19 +748,19 @@ location_hybrid_set_property(GObject *object,
 
 	int ret = 0;
 	switch (property_id) {
-		case PROP_BOUNDARY: {
+	case PROP_BOUNDARY: {
 				GList *boundary_list = (GList *)g_list_copy(g_value_get_pointer(value));
 				ret = set_prop_boundary(&priv->boundary_list, boundary_list);
 				if (ret != 0) LOCATION_LOGD("Set boundary. Error[%d]", ret);
 				break;
 			}
-		case PROP_REMOVAL_BOUNDARY: {
+	case PROP_REMOVAL_BOUNDARY: {
 				LocationBoundary *req_boundary = (LocationBoundary *) g_value_dup_boxed(value);
 				ret = set_prop_removal_boundary(&priv->boundary_list, req_boundary);
 				if (ret != 0) LOCATION_LOGD("Removal boundary. Error[%d]", ret);
 				break;
 			}
-		case PROP_POS_INTERVAL: {
+	case PROP_POS_INTERVAL: {
 				guint interval = g_value_get_uint(value);
 				LOCATION_LOGD("Set prop>> PROP_POS_INTERVAL: %u", interval);
 				if (interval > 0) {
@@ -798,7 +782,7 @@ location_hybrid_set_property(GObject *object,
 
 				break;
 			}
-		case PROP_VEL_INTERVAL: {
+	case PROP_VEL_INTERVAL: {
 				guint interval = g_value_get_uint(value);
 				LOCATION_LOGD("Set prop>> PROP_VEL_INTERVAL: %u", interval);
 				if (interval > 0) {
@@ -820,7 +804,7 @@ location_hybrid_set_property(GObject *object,
 
 				break;
 			}
-		case PROP_SAT_INTERVAL: {
+	case PROP_SAT_INTERVAL: {
 				guint interval = g_value_get_uint(value);
 				LOCATION_LOGD("Set prop>> PROP_SAT_INTERVAL: %u", interval);
 				if (interval > 0) {
@@ -834,7 +818,7 @@ location_hybrid_set_property(GObject *object,
 
 				break;
 			}
-		case PROP_LOC_INTERVAL: {
+	case PROP_LOC_INTERVAL: {
 				guint interval = g_value_get_uint(value);
 				LOCATION_LOGD("Set prop>> PROP_LOC_INTERVAL: %u", interval);
 				if (interval > 0) {
@@ -850,7 +834,7 @@ location_hybrid_set_property(GObject *object,
 
 				break;
 			}
-		case PROP_MIN_INTERVAL: {
+	case PROP_MIN_INTERVAL: {
 				guint interval = g_value_get_uint(value);
 				LOCATION_LOGD("Set prop>> PROP_MIN_INTERVAL: %u", interval);
 				if (interval > 0) {
@@ -866,7 +850,7 @@ location_hybrid_set_property(GObject *object,
 
 				break;
 			}
-		case PROP_MIN_DISTANCE: {
+	case PROP_MIN_DISTANCE: {
 				gdouble distance = g_value_get_double(value);
 				LOCATION_LOGD("Set prop>> PROP_MIN_DISTANCE: %u", distance);
 				if (distance > 0) {
@@ -882,17 +866,14 @@ location_hybrid_set_property(GObject *object,
 
 				break;
 			}
-		default:
+	default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
 			break;
 	}
 }
 
 static void
-location_hybrid_get_property(GObject *object,
-                             guint property_id,
-                             GValue *value,
-                             GParamSpec *pspec)
+location_hybrid_get_property(GObject *object, guint property_id, GValue *value,	 GParamSpec *pspec)
 {
 	LocationHybridPrivate *priv = GET_PRIVATE(object);
 	g_return_if_fail(priv);
@@ -904,46 +885,44 @@ location_hybrid_get_property(GObject *object,
 	LOCATION_LOGW("Get Propery ID[%d]", property_id);
 
 	switch (property_id) {
-		case PROP_METHOD_TYPE:
-			g_value_set_int(value, hybrid_get_current_method(priv));
-			break;
-		case PROP_LAST_POSITION:
-			g_value_set_boxed(value, priv->pos);
-			break;
-		case PROP_BOUNDARY:
-			g_value_set_pointer(value, g_list_first(priv->boundary_list));
-			break;
-		case PROP_POS_INTERVAL:
-			g_value_set_uint(value, priv->pos_interval);
-			break;
-		case PROP_VEL_INTERVAL:
-			g_value_set_uint(value, priv->vel_interval);
-			break;
-		case PROP_SAT_INTERVAL:
-			g_value_set_uint(value, priv->sat_interval);
-			break;
-		case PROP_LOC_INTERVAL:
-			g_value_set_uint(value, priv->loc_interval);
-			break;
-		case PROP_MIN_INTERVAL:
-			g_value_set_uint(value, priv->min_interval);
-			break;
-		case PROP_MIN_DISTANCE:
-			g_value_set_double(value, priv->min_distance);
-			break;
-		case PROP_SERVICE_STATUS:
-			g_value_set_int(value, priv->enabled);
-			break;
-		default:
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
-			break;
+	case PROP_METHOD_TYPE:
+		g_value_set_int(value, hybrid_get_current_method(priv));
+		break;
+	case PROP_LAST_POSITION:
+		g_value_set_boxed(value, priv->pos);
+		break;
+	case PROP_BOUNDARY:
+		g_value_set_pointer(value, g_list_first(priv->boundary_list));
+		break;
+	case PROP_POS_INTERVAL:
+		g_value_set_uint(value, priv->pos_interval);
+		break;
+	case PROP_VEL_INTERVAL:
+		g_value_set_uint(value, priv->vel_interval);
+		break;
+	case PROP_SAT_INTERVAL:
+		g_value_set_uint(value, priv->sat_interval);
+		break;
+	case PROP_LOC_INTERVAL:
+		g_value_set_uint(value, priv->loc_interval);
+		break;
+	case PROP_MIN_INTERVAL:
+		g_value_set_uint(value, priv->min_interval);
+		break;
+	case PROP_MIN_DISTANCE:
+		g_value_set_double(value, priv->min_distance);
+		break;
+	case PROP_SERVICE_STATUS:
+		g_value_set_int(value, priv->enabled);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
+		break;
 	}
 }
 
 static int
-location_hybrid_get_position(LocationHybrid *self,
-                             LocationPosition **position,
-                             LocationAccuracy **accuracy)
+location_hybrid_get_position(LocationHybrid *self, LocationPosition **position, LocationAccuracy **accuracy)
 {
 	int ret = LOCATION_ERROR_NOT_AVAILABLE;
 	LOCATION_LOGD("location_hybrid_get_position");
@@ -967,10 +946,7 @@ location_hybrid_get_position(LocationHybrid *self,
 }
 
 static int
-location_hybrid_get_position_ext(LocationHybrid *self,
-                                 LocationPosition **position,
-                                 LocationVelocity **velocity,
-                                 LocationAccuracy **accuracy)
+location_hybrid_get_position_ext(LocationHybrid *self, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy)
 {
 	LOCATION_LOGD("location_hybrid_get_position_ext");
 	if (!location_setting_get_int(VCONFKEY_LOCATION_ENABLED) && !location_setting_get_int(VCONFKEY_LOCATION_NETWORK_ENABLED)) {
@@ -999,9 +975,7 @@ location_hybrid_get_position_ext(LocationHybrid *self,
 
 
 static int
-location_hybrid_get_last_position(LocationHybrid *self,
-                                  LocationPosition **position,
-                                  LocationAccuracy **accuracy)
+location_hybrid_get_last_position(LocationHybrid *self, LocationPosition **position, LocationAccuracy **accuracy)
 {
 	LOCATION_LOGD("location_hybrid_get_last_position");
 
@@ -1040,10 +1014,7 @@ location_hybrid_get_last_position(LocationHybrid *self,
 }
 
 static int
-location_hybrid_get_last_position_ext(LocationHybrid *self,
-                                      LocationPosition **position,
-                                      LocationVelocity **velocity,
-                                      LocationAccuracy **accuracy)
+location_hybrid_get_last_position_ext(LocationHybrid *self, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy)
 {
 	LOCATION_LOGD("location_hybrid_get_last_position_ext");
 
@@ -1097,9 +1068,7 @@ location_hybrid_get_last_position_ext(LocationHybrid *self,
 }
 
 static int
-location_hybrid_get_velocity(LocationHybrid *self,
-                             LocationVelocity **velocity,
-                             LocationAccuracy **accuracy)
+location_hybrid_get_velocity(LocationHybrid *self, LocationVelocity **velocity, LocationAccuracy **accuracy)
 {
 	int ret = LOCATION_ERROR_NOT_AVAILABLE;
 	LOCATION_LOGD("location_hybrid_get_velocity");
@@ -1123,9 +1092,7 @@ location_hybrid_get_velocity(LocationHybrid *self,
 }
 
 static int
-location_hybrid_get_last_velocity(LocationHybrid *self,
-                                  LocationVelocity **velocity,
-                                  LocationAccuracy **accuracy)
+location_hybrid_get_last_velocity(LocationHybrid *self, LocationVelocity **velocity, LocationAccuracy **accuracy)
 {
 	LOCATION_LOGD("location_hybrid_get_last_velocity");
 
@@ -1175,8 +1142,7 @@ location_hybrid_get_last_velocity(LocationHybrid *self,
 }
 
 static int
-location_hybrid_get_satellite(LocationHybrid *self,
-                              LocationSatellite **satellite)
+location_hybrid_get_satellite(LocationHybrid *self, LocationSatellite **satellite)
 {
 	int ret = LOCATION_ERROR_NOT_AVAILABLE;
 	LOCATION_LOGD("location_hybrid_get_satellite");
@@ -1195,8 +1161,7 @@ location_hybrid_get_satellite(LocationHybrid *self,
 }
 
 static int
-location_hybrid_get_last_satellite(LocationHybrid *self,
-                                   LocationSatellite **satellite)
+location_hybrid_get_last_satellite(LocationHybrid *self, LocationSatellite **satellite)
 {
 	LOCATION_LOGD("location_hybrid_get_last_satellite");
 
@@ -1254,8 +1219,7 @@ location_hybrid_request_single_location(LocationHybrid *self, int timeout)
 }
 
 static int
-location_hybrid_get_nmea(LocationHybrid *self,
-                         char **nmea_data)
+location_hybrid_get_nmea(LocationHybrid *self, char **nmea_data)
 {
 	LOCATION_LOGD("location_hybrid_get_nmea");
 	LocationHybridPrivate *priv = GET_PRIVATE(self);
@@ -1275,10 +1239,7 @@ location_hybrid_get_nmea(LocationHybrid *self,
  * Tizen 3.0
  */
 static int
-location_hybrid_set_mock_location(LocationMock *self,
-							  LocationPosition *position,
-							  LocationVelocity *velocity,
-							  LocationAccuracy *accuracy)
+location_hybrid_set_mock_location(LocationMock *self, LocationPosition *position, LocationVelocity *velocity, LocationAccuracy *accuracy)
 {
 	LocationHybridPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
@@ -1416,168 +1377,166 @@ location_hybrid_class_init(LocationHybridClass *klass)
 	g_type_class_add_private(klass, sizeof(LocationHybridPrivate));
 
 	signals[SERVICE_ENABLED] = g_signal_new("service-enabled",
-	                                        G_TYPE_FROM_CLASS(klass),
-	                                        G_SIGNAL_RUN_FIRST |
-	                                        G_SIGNAL_NO_RECURSE,
-	                                        G_STRUCT_OFFSET(LocationHybridClass, enabled),
-	                                        NULL, NULL,
-	                                        location_VOID__UINT,
-	                                        G_TYPE_NONE, 1,
-	                                        G_TYPE_UINT);
+											G_TYPE_FROM_CLASS(klass),
+											G_SIGNAL_RUN_FIRST |
+											G_SIGNAL_NO_RECURSE,
+											G_STRUCT_OFFSET(LocationHybridClass, enabled),
+											NULL, NULL,
+											location_VOID__UINT,
+											G_TYPE_NONE, 1,
+											G_TYPE_UINT);
 
 	signals[SERVICE_DISABLED] = g_signal_new("service-disabled",
-	                                         G_TYPE_FROM_CLASS(klass),
-	                                         G_SIGNAL_RUN_FIRST |
-	                                         G_SIGNAL_NO_RECURSE,
-	                                         G_STRUCT_OFFSET(LocationHybridClass, disabled),
-	                                         NULL, NULL,
-	                                         location_VOID__UINT,
-	                                         G_TYPE_NONE, 1,
-	                                         G_TYPE_UINT);
+											G_TYPE_FROM_CLASS(klass),
+											G_SIGNAL_RUN_FIRST |
+											G_SIGNAL_NO_RECURSE,
+											G_STRUCT_OFFSET(LocationHybridClass, disabled),
+											NULL, NULL,
+											location_VOID__UINT,
+											G_TYPE_NONE, 1,
+											G_TYPE_UINT);
 
 #if 0 /* TODO: STATUS_CHANGED will aggregate SERVICE_ENABLED and SERVICE_DISABLED */
 	signals[STATUS_CHANGED] = g_signal_new("status-changed",
-	                                        G_TYPE_FROM_CLASS(klass),
-	                                        G_SIGNAL_RUN_FIRST |
-	                                        G_SIGNAL_NO_RECURSE,
-	                                        G_STRUCT_OFFSET(LocationHybridClass, status_changed),
-	                                        NULL, NULL,
-	                                        location_VOID__UINT,
-	                                        G_TYPE_NONE, 1,
-	                                        G_TYPE_UINT);
+											G_TYPE_FROM_CLASS(klass),
+											G_SIGNAL_RUN_FIRST |
+											G_SIGNAL_NO_RECURSE,
+											G_STRUCT_OFFSET(LocationHybridClass, status_changed),
+											NULL, NULL,
+											location_VOID__UINT,
+											G_TYPE_NONE, 1,
+											G_TYPE_UINT);
 #endif
 
 	signals[SERVICE_UPDATED] = g_signal_new("service-updated",
-	                                        G_TYPE_FROM_CLASS(klass),
-	                                        G_SIGNAL_RUN_FIRST |
-	                                        G_SIGNAL_NO_RECURSE,
-	                                        G_STRUCT_OFFSET(LocationHybridClass, service_updated),
-	                                        NULL, NULL,
-	                                        location_VOID__INT_POINTER_POINTER_POINTER,
-	                                        G_TYPE_NONE, 4,
-	                                        G_TYPE_INT,
-	                                        G_TYPE_POINTER,
-	                                        G_TYPE_POINTER,
-	                                        G_TYPE_POINTER);
+											G_TYPE_FROM_CLASS(klass),
+											G_SIGNAL_RUN_FIRST |
+											G_SIGNAL_NO_RECURSE,
+											G_STRUCT_OFFSET(LocationHybridClass, service_updated),
+											NULL, NULL,
+											location_VOID__INT_POINTER_POINTER_POINTER,
+											G_TYPE_NONE, 4,
+											G_TYPE_INT,
+											G_TYPE_POINTER,
+											G_TYPE_POINTER,
+											G_TYPE_POINTER);
 
 	signals[LOCATION_UPDATED] = g_signal_new("location-updated",
-	                                         G_TYPE_FROM_CLASS(klass),
-	                                         G_SIGNAL_RUN_FIRST |
-	                                         G_SIGNAL_NO_RECURSE,
-	                                         G_STRUCT_OFFSET(LocationHybridClass, location_updated),
-	                                         NULL, NULL,
-	                                         location_VOID__INT_POINTER_POINTER_POINTER,
-	                                         G_TYPE_NONE, 4,
-	                                         G_TYPE_INT,
-	                                         G_TYPE_POINTER,
-	                                         G_TYPE_POINTER,
-	                                         G_TYPE_POINTER);
+											G_TYPE_FROM_CLASS(klass),
+											G_SIGNAL_RUN_FIRST |
+											G_SIGNAL_NO_RECURSE,
+											G_STRUCT_OFFSET(LocationHybridClass, location_updated),
+											NULL, NULL,
+											location_VOID__INT_POINTER_POINTER_POINTER,
+											G_TYPE_NONE, 4,
+											G_TYPE_INT,
+											G_TYPE_POINTER,
+											G_TYPE_POINTER,
+											G_TYPE_POINTER);
 
 	signals[ZONE_IN] = g_signal_new("zone-in",
-	                                G_TYPE_FROM_CLASS(klass),
-	                                G_SIGNAL_RUN_FIRST |
-	                                G_SIGNAL_NO_RECURSE,
-	                                G_STRUCT_OFFSET(LocationHybridClass, zone_in),
-	                                NULL, NULL,
-	                                location_VOID__POINTER_POINTER_POINTER,
-	                                G_TYPE_NONE, 3,
-	                                G_TYPE_POINTER,
-	                                G_TYPE_POINTER,
-	                                G_TYPE_POINTER);
+									G_TYPE_FROM_CLASS(klass),
+									G_SIGNAL_RUN_FIRST |
+									G_SIGNAL_NO_RECURSE,
+									G_STRUCT_OFFSET(LocationHybridClass, zone_in),
+									NULL, NULL,
+									location_VOID__POINTER_POINTER_POINTER,
+									G_TYPE_NONE, 3,
+									G_TYPE_POINTER,
+									G_TYPE_POINTER,
+									G_TYPE_POINTER);
 
 	signals[ZONE_OUT] = g_signal_new("zone-out",
-	                                 G_TYPE_FROM_CLASS(klass),
-	                                 G_SIGNAL_RUN_FIRST |
-	                                 G_SIGNAL_NO_RECURSE,
-	                                 G_STRUCT_OFFSET(LocationHybridClass, zone_out),
-	                                 NULL, NULL,
-	                                 location_VOID__POINTER_POINTER_POINTER,
-	                                 G_TYPE_NONE, 3,
-	                                 G_TYPE_POINTER,
-	                                 G_TYPE_POINTER,
-	                                 G_TYPE_POINTER);
+									G_TYPE_FROM_CLASS(klass),
+									G_SIGNAL_RUN_FIRST |
+									G_SIGNAL_NO_RECURSE,
+									G_STRUCT_OFFSET(LocationHybridClass, zone_out),
+									NULL, NULL,
+									location_VOID__POINTER_POINTER_POINTER,
+									G_TYPE_NONE, 3,
+									G_TYPE_POINTER,
+									G_TYPE_POINTER,
+									G_TYPE_POINTER);
 
 	properties[PROP_METHOD_TYPE] = g_param_spec_int("method",
-	                                                "method type",
-	                                                "location method type name",
-	                                                LOCATION_METHOD_HYBRID,
-	                                                LOCATION_METHOD_HYBRID,
-	                                                LOCATION_METHOD_HYBRID,
-	                                                G_PARAM_READABLE);
+													"method type",
+													"location method type name",
+													LOCATION_METHOD_HYBRID,
+													LOCATION_METHOD_HYBRID,
+													LOCATION_METHOD_HYBRID,
+													G_PARAM_READABLE);
 
 	properties[PROP_LAST_POSITION] = g_param_spec_boxed("last-position",
-	                                                    "hybrid last position prop",
-	                                                    "hybrid last position data",
-	                                                    LOCATION_TYPE_POSITION,
-	                                                    G_PARAM_READABLE);
+														"hybrid last position prop",
+														"hybrid last position data",
+														LOCATION_TYPE_POSITION,
+														G_PARAM_READABLE);
 
 	properties[PROP_POS_INTERVAL] = g_param_spec_uint("pos-interval",
-	                                                  "position interval prop",
-	                                                  "position interval data",
-	                                                  LOCATION_UPDATE_INTERVAL_MIN,
-	                                                  LOCATION_UPDATE_INTERVAL_MAX,
-	                                                  LOCATION_UPDATE_INTERVAL_DEFAULT,
-	                                                  G_PARAM_READWRITE);
+													"position interval prop",
+													"position interval data",
+													LOCATION_UPDATE_INTERVAL_MIN,
+													LOCATION_UPDATE_INTERVAL_MAX,
+													LOCATION_UPDATE_INTERVAL_DEFAULT,
+													G_PARAM_READWRITE);
 	properties[PROP_VEL_INTERVAL] = g_param_spec_uint("vel-interval",
-	                                                  "velocity interval prop",
-	                                                  "velocity interval data",
-	                                                  LOCATION_UPDATE_INTERVAL_MIN,
-	                                                  LOCATION_UPDATE_INTERVAL_MAX,
-	                                                  LOCATION_UPDATE_INTERVAL_DEFAULT,
-	                                                  G_PARAM_READWRITE);
+													"velocity interval prop",
+													"velocity interval data",
+													LOCATION_UPDATE_INTERVAL_MIN,
+													LOCATION_UPDATE_INTERVAL_MAX,
+													LOCATION_UPDATE_INTERVAL_DEFAULT,
+													G_PARAM_READWRITE);
 	properties[PROP_SAT_INTERVAL] = g_param_spec_uint("sat-interval",
-	                                                  "satellite interval prop",
-	                                                  "satellite interval data",
-	                                                  LOCATION_UPDATE_INTERVAL_MIN,
-	                                                  LOCATION_UPDATE_INTERVAL_MAX,
-	                                                  LOCATION_UPDATE_INTERVAL_DEFAULT,
-	                                                  G_PARAM_READWRITE);
+													"satellite interval prop",
+													"satellite interval data",
+													LOCATION_UPDATE_INTERVAL_MIN,
+													LOCATION_UPDATE_INTERVAL_MAX,
+													LOCATION_UPDATE_INTERVAL_DEFAULT,
+													G_PARAM_READWRITE);
 
 	properties[PROP_LOC_INTERVAL] = g_param_spec_uint("loc-interval",
-	                                                  "gps location interval prop",
-	                                                  "gps location interval data",
-	                                                  LOCATION_UPDATE_INTERVAL_MIN,
-	                                                  LOCATION_UPDATE_INTERVAL_MAX,
-	                                                  LOCATION_UPDATE_INTERVAL_DEFAULT,
-	                                                  G_PARAM_READWRITE);
+													"gps location interval prop",
+													"gps location interval data",
+													LOCATION_UPDATE_INTERVAL_MIN,
+													LOCATION_UPDATE_INTERVAL_MAX,
+													LOCATION_UPDATE_INTERVAL_DEFAULT,
+													G_PARAM_READWRITE);
 
 	properties[PROP_MIN_INTERVAL] = g_param_spec_uint("min-interval",
-	                                                  "gps distance-based interval prop",
-	                                                  "gps distance-based interval data",
-	                                                  LOCATION_MIN_INTERVAL_MIN,
-	                                                  LOCATION_MIN_INTERVAL_MAX,
-	                                                  LOCATION_MIN_INTERVAL_DEFAULT,
-	                                                  G_PARAM_READWRITE);
+													"gps distance-based interval prop",
+													"gps distance-based interval data",
+													LOCATION_MIN_INTERVAL_MIN,
+													LOCATION_MIN_INTERVAL_MAX,
+													LOCATION_MIN_INTERVAL_DEFAULT,
+													G_PARAM_READWRITE);
 
 	properties[PROP_MIN_DISTANCE] = g_param_spec_double("min-distance",
-	                                                    "gps distance-based distance prop",
-	                                                    "gps distance-based distance data",
-	                                                    LOCATION_MIN_DISTANCE_MIN,
-	                                                    LOCATION_MIN_DISTANCE_MAX,
-	                                                    LOCATION_MIN_DISTANCE_DEFAULT,
-	                                                    G_PARAM_READWRITE);
+														"gps distance-based distance prop",
+														"gps distance-based distance data",
+														LOCATION_MIN_DISTANCE_MIN,
+														LOCATION_MIN_DISTANCE_MAX,
+														LOCATION_MIN_DISTANCE_DEFAULT,
+														G_PARAM_READWRITE);
 
 	properties[PROP_BOUNDARY] = g_param_spec_pointer("boundary",
-	                                                 "hybrid boundary prop",
-	                                                 "hybrid boundary data",
-	                                                 G_PARAM_READWRITE);
+													"hybrid boundary prop",
+													"hybrid boundary data",
+													G_PARAM_READWRITE);
 
 	properties[PROP_REMOVAL_BOUNDARY] = g_param_spec_boxed("removal-boundary",
-	                                                       "hybrid removal boundary prop",
-	                                                       "hybrid removal boundary data",
-	                                                       LOCATION_TYPE_BOUNDARY,
-	                                                       G_PARAM_READWRITE);
+														"hybrid removal boundary prop",
+														"hybrid removal boundary data",
+														LOCATION_TYPE_BOUNDARY,
+														G_PARAM_READWRITE);
 
 	/* Tizen 3.0 */
 	properties[PROP_SERVICE_STATUS] = g_param_spec_int("service-status",
-	                                                "location service status prop",
-	                                                "location service status data",
-	                                                LOCATION_STATUS_NO_FIX,
-	                                                LOCATION_STATUS_3D_FIX,
-	                                                LOCATION_STATUS_NO_FIX,
-	                                                G_PARAM_READABLE);
+													"location service status prop",
+													"location service status data",
+													LOCATION_STATUS_NO_FIX,
+													LOCATION_STATUS_3D_FIX,
+													LOCATION_STATUS_NO_FIX,
+													G_PARAM_READABLE);
 
-	g_object_class_install_properties(gobject_class,
-	                                  PROP_MAX,
-	                                  properties);
+	g_object_class_install_properties(gobject_class, PROP_MAX, properties);
 }

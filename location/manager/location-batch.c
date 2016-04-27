@@ -103,8 +103,9 @@ location_get_batch_file(int num_of_location)
 	LocationBatch *batch = location_batch_new(num_of_location);
 	batch->num_of_location = num_of_location;
 
-	const char *batch_path = tzplatform_mkpath(TZ_USER_CONTENT, "lbs-server/location_batch.log");
+	const char *batch_path = tzplatform_mkpath(TZ_SYS_MEDIA, "lbs-server/location_batch.log");
 	FILE *fd = fopen(batch_path, "r");
+
 	if (fd != NULL) {
 		char buf[BATCH_SENTENCE_SIZE] = { 0, };
 		int i = 0;
@@ -112,10 +113,17 @@ location_get_batch_file(int num_of_location)
 		for (i = 0; i < num_of_location; i++) {
 			if (fgets(buf, BATCH_SENTENCE_SIZE, fd) != NULL)
 				location_set_batch_parse_details(batch, buf, i);
+			else
+				LOCATION_LOGE("Batch fgets failed");
 		}
-		fclose(fd);
+
+		if (fd != 0) {
+			if (fclose(fd) != 0)
+				LOCATION_LOGE("Batch fclose failed");
+			fd = NULL;
+		}
 	} else {
-		LOCATION_LOGE("Batch fd is NULL");
+		LOCATION_LOGE("Batch fopen failed. fd is NULL");
 	}
 	return batch;
 }

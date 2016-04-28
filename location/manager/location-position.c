@@ -48,11 +48,7 @@ location_position_get_type(void)
 }
 
 EXPORT_API LocationPosition *
-location_position_new(guint timestamp,
-					gdouble latitude,
-					gdouble longitude,
-					gdouble altitude,
-					LocationStatus status)
+location_position_new(guint timestamp, gdouble latitude, gdouble longitude, gdouble altitude, LocationStatus status)
 {
 	if (latitude < -90 || latitude > 90) return NULL;
 	if (longitude < -180 || longitude > 180) return NULL;
@@ -95,11 +91,7 @@ location_position_copy(const LocationPosition *position)
 
 	LocationPosition *new_position = NULL;
 
-	new_position = location_position_new(position->timestamp,
-										position->latitude,
-										position->longitude,
-										position->altitude,
-										position->status);
+	new_position = location_position_new(position->timestamp, position->latitude, position->longitude, position->altitude, position->status);
 
 	return new_position;
 
@@ -195,10 +187,9 @@ location_last_position_a2i(char *position, int *lat, int *lon)
 	*lat = atoi(latitude);
 	*lon = atoi(longitude);
 
-	if (*d_lat == 'S') {
+	if (*d_lat == 'S')
 		*lat = *lat * -1;
-	}
-	if (*d_lon == 'W') {
+
+	if (*d_lon == 'W')
 		*lon = *lon * -1;
-	}
 }

@@ -299,6 +299,11 @@ location_enable_method(const LocationMethod method, const int enable)
 	}
 #endif
 
+	if (location_setting_get_int(VCONFKEY_LOCATION_RESTRICT) > RESTRICT_OFF) {
+		LOCATION_SECLOG("Location setting is denied by DPM");
+		return LOCATION_ERROR_NOT_ALLOWED;
+	}
+
 	/* for itself */
 	_key = __convert_setting_key(method);
 	if (!_key) {
@@ -835,3 +840,81 @@ location_clear_mock_location(LocationObject *obj)
 
 	return ret;
 }
+
+EXPORT_API int
+location_restriction(const int enable)
+{
+	int ret = LOCATION_ERROR_NONE;
+	int restriction = 0;
+
+#ifndef TIZEN_PROFILE_TV
+	ret = location_check_cynara(LOCATION_ENABLE_PRIVILEGE);
+	if (ret != LOCATION_ERROR_NONE) {
+		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
+		return LOCATION_ERROR_NOT_ALLOWED;
+	}
+#endif
+	if (enable) {
+		int value = 0;
+		ret = vconf_get_int(VCONFKEY_LOCATION_RESTRICT, &restriction);
+		if (ret != VCONF_OK) {
+			LOCATION_SECLOG("vconf failed. ret=[%d]", ret);
+			return LOCATION_ERROR_NOT_ALLOWED;
+		}
+
+		if (restriction == RESTRICT_OFF) {
+
+			if (location_setting_get_int(VCONFKEY_LOCATION_ENABLED)) {
+				value |= RESTRICT_GPS;
+				vconf_set_int(VCONFKEY_LOCATION_ENABLED, 0);
+			}
+
+			if (location_setting_get_int(VCONFKEY_LOCATION_NETWORK_ENABLED)) {
+				value |= RESTRICT_WPS;
+				vconf_set_int(VCONFKEY_LOCATION_NETWORK_ENABLED, 0);
+			}
+
+			if (location_setting_get_int(VCONFKEY_LOCATION_USE_MY_LOCATION)) {
+				value |= RESTRICT_HYBRID;
+				vconf_set_int(VCONFKEY_LOCATION_USE_MY_LOCATION, 0);
+			}
+
+			if (value == 0)
+				value = RESTRICT_NONE;
+
+			ret = vconf_set_int(VCONFKEY_LOCATION_RESTRICT, value);
+			if (ret != VCONF_OK) {
+				LOCATION_SECLOG("vconf failed. ret=[%d]", ret);
+				return LOCATION_ERROR_NOT_ALLOWED;
+			}
+		}
+
+	} else {
+		ret = vconf_get_int(VCONFKEY_LOCATION_RESTRICT, &restriction);
+		if (ret != VCONF_OK) {
+			LOCATION_SECLOG("vconf failed. ret=[%d]", ret);
+			return LOCATION_ERROR_NOT_ALLOWED;
+		}
+
+		if (restriction > RESTRICT_OFF) {
+
+			if (restriction & RESTRICT_GPS)
+				vconf_set_int(VCONFKEY_LOCATION_ENABLED, 1);
+
+			if (restriction & RESTRICT_WPS)
+				vconf_set_int(VCONFKEY_LOCATION_NETWORK_ENABLED, 1);
+
+			if (restriction & RESTRICT_HYBRID)
+				vconf_set_int(VCONFKEY_LOCATION_USE_MY_LOCATION, 1);
+
+			ret = vconf_set_int(VCONFKEY_LOCATION_RESTRICT, RESTRICT_OFF);
+			if (ret != VCONF_OK) {
+				LOCATION_SECLOG("vconf failed. ret=[%d]", ret);
+				return LOCATION_ERROR_NOT_ALLOWED;
+			}
+		}
+	}
+
+	return LOCATION_ERROR_NONE;
+}
+

@@ -1,3 +1,10 @@
+[Version]	libslp-location_1.3.0
+[Date]		12 May 2016
+[Changes]	Add location restriction to support DPM
+[Developer]	Kyoungjun Sung <kj7.sung@samsung.com>
+
+================================================================================
+
 [Version]	libslp-location_1.2.1
 [Date]		9 May 2016
 [Changes]	Change tag style for error log

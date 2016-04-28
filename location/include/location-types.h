@@ -91,6 +91,17 @@ typedef enum {
 } LocationAccessState;
 
 /**
+ * @brief This represents the setting type.
+ */
+typedef enum {
+	RESTRICT_OFF	= 0,
+	RESTRICT_NONE	= 0x01,
+	RESTRICT_GPS	= RESTRICT_NONE << 0x01,
+	RESTRICT_WPS	= RESTRICT_NONE << 0x02,
+	RESTRICT_HYBRID	= RESTRICT_NONE << 0x03,
+} LocationRestrictType;
+
+/**
  * @brief Location object redefined by GObject.
  */
 typedef GObject LocationObject;

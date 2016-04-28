@@ -286,6 +286,11 @@ location_enable_method(const LocationMethod method, const int enable)
 	LOC_IF_FAIL(ret, _E, "Privilege not allowed [%s]", err_msg(ret));
 #endif
 
+	if (location_setting_get_int(VCONFKEY_LOCATION_RESTRICT) > RESTRICT_OFF) {
+		LOCATION_SECLOG("Location setting is denied by DPM");
+		return LOCATION_ERROR_NOT_ALLOWED;
+	}
+
 	/* for itself */
 	_key = __convert_setting_key(method);
 	LOC_COND_RET(!_key, LOCATION_ERROR_NOT_SUPPORTED, _E, "Invalid method = %d [%s]", method, err_msg(LOCATION_ERROR_NOT_SUPPORTED));
@@ -759,4 +764,75 @@ location_clear_mock_location(LocationObject *obj)
 	LOC_IF_FAIL(ret, _E, "Fail to clear_mock_location [%s]", err_msg(ret));
 
 	return ret;
+}
+
+EXPORT_API int
+location_enable_restriction(const int enable)
+{
+	int ret = LOCATION_ERROR_NONE;
+	int restriction = 0;
+
+#ifndef TIZEN_PROFILE_TV
+	ret = location_check_cynara(LOCATION_ENABLE_PRIVILEGE);
+	LOC_IF_FAIL(ret, _E, "Privilege not allowed [%s]", err_msg(ret));
+#endif
+	if (enable) {
+		int value = 0;
+		ret = vconf_get_int(VCONFKEY_LOCATION_RESTRICT, &restriction);
+		LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to get restriction status [%s]", err_msg(LOCATION_ERROR_NOT_ALLOWED));
+
+		if (restriction == RESTRICT_OFF) {
+
+			if (location_setting_get_int(VCONFKEY_LOCATION_ENABLED)) {
+				value |= RESTRICT_GPS;
+				ret = vconf_set_int(VCONFKEY_LOCATION_ENABLED, 0);
+				LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to set status [%s]", err_msg(LOCATION_ERROR_NOT_ALLOWED));
+			}
+
+			if (location_setting_get_int(VCONFKEY_LOCATION_NETWORK_ENABLED)) {
+				value |= RESTRICT_WPS;
+				ret = vconf_set_int(VCONFKEY_LOCATION_NETWORK_ENABLED, 0);
+				LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to set status [%s]", err_msg(LOCATION_ERROR_NOT_ALLOWED));
+			}
+
+			if (location_setting_get_int(VCONFKEY_LOCATION_USE_MY_LOCATION)) {
+				value |= RESTRICT_HYBRID;
+				ret = vconf_set_int(VCONFKEY_LOCATION_USE_MY_LOCATION, 0);
+				LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to set status [%s]", err_msg(LOCATION_ERROR_NOT_ALLOWED));
+			}
+
+			if (value == 0)
+				value = RESTRICT_NONE;
+
+			ret = vconf_set_int(VCONFKEY_LOCATION_RESTRICT, value);
+			LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to set value. %d [%s]", value, err_msg(LOCATION_ERROR_NOT_ALLOWED));
+		}
+
+	} else {
+		ret = vconf_get_int(VCONFKEY_LOCATION_RESTRICT, &restriction);
+		LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to get restriction status [%s]", err_msg(LOCATION_ERROR_NOT_ALLOWED));
+
+		if (restriction > RESTRICT_OFF) {
+
+			if (restriction & RESTRICT_GPS) {
+				ret = vconf_set_int(VCONFKEY_LOCATION_ENABLED, 1);
+				LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to set status [%s]", err_msg(LOCATION_ERROR_NOT_ALLOWED));
+			}
+
+			if (restriction & RESTRICT_WPS) {
+				ret = vconf_set_int(VCONFKEY_LOCATION_NETWORK_ENABLED, 1);
+				LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to set status [%s]", err_msg(LOCATION_ERROR_NOT_ALLOWED));
+			}
+
+			if (restriction & RESTRICT_HYBRID) {
+				ret = vconf_set_int(VCONFKEY_LOCATION_USE_MY_LOCATION, 1);
+				LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to set status [%s]", err_msg(LOCATION_ERROR_NOT_ALLOWED));
+			}
+
+			ret = vconf_set_int(VCONFKEY_LOCATION_RESTRICT, RESTRICT_OFF);
+			LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to set value. %d [%s]", RESTRICT_OFF, err_msg(LOCATION_ERROR_NOT_ALLOWED));
+		}
+	}
+
+	return LOCATION_ERROR_NONE;
 }

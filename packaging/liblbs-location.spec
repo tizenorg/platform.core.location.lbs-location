@@ -1,6 +1,6 @@
 Name: liblbs-location
 Summary: Location Based Service Library
-Version: 1.2.1
+Version: 1.3.0
 Release: 1
 Group: Location/Libraries
 License: Apache-2.0

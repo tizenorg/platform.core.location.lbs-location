@@ -593,7 +593,7 @@ static int location_gps_stop_batch(LocationGps *self)
 	if (__get_started(self) == TRUE) {
 		__set_started(self, FALSE);
 		ret = priv->mod->ops.stop_batch(priv->mod->handler);
-		LOC_IF_FAIL_LOG(ret, _E, "Failed to stop_batch [%s]", err_mgs(ret));
+		LOC_IF_FAIL_LOG(ret, _E, "Failed to stop_batch [%s]", err_msg(ret));
 	} else {
 		return LOCATION_ERROR_NONE;
 	}

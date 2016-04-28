@@ -877,6 +877,8 @@ int location_set_mock_method_enabled(const LocationMethod method, const int enab
 int location_set_mock_location(LocationObject *obj, const LocationPosition *position, const LocationVelocity *velocity, const LocationAccuracy *accuracy);
 int location_clear_mock_location(LocationObject *obj);
 
+int location_restriction(const int enable);
+
 /**
  * @} @}
  */

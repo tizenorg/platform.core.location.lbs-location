@@ -31,10 +31,9 @@ location_velocity_get_type(void)
 {
 	static volatile gsize type_volatile = 0;
 	if (g_once_init_enter(&type_volatile)) {
-		GType type = g_boxed_type_register_static(
-						g_intern_static_string("LocationVelocity"),
-						(GBoxedCopyFunc) location_velocity_copy,
-						(GBoxedFreeFunc) location_velocity_free);
+		GType type = g_boxed_type_register_static(g_intern_static_string("LocationVelocity"),
+						(GBoxedCopyFunc) location_velocity_copy, (GBoxedFreeFunc) location_velocity_free);
+
 		g_once_init_leave(&type_volatile, type);
 	}
 	return type_volatile;
@@ -78,9 +77,7 @@ EXPORT_API LocationVelocity *
 location_velocity_copy(const LocationVelocity *velocity)
 {
 	g_return_val_if_fail(velocity, NULL);
-
 	LocationVelocity *new_velocity = NULL;
-
 	new_velocity = location_velocity_new(velocity->timestamp, velocity->speed, velocity->direction, velocity->climb);
 
 	return new_velocity;

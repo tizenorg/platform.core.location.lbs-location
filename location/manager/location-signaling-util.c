@@ -105,9 +105,8 @@ position_velocity_signaling(LocationObject *obj,
 		}
 	}
 
-	if (signal_type != 0) {
+	if (signal_type != 0)
 		g_signal_emit(obj, signals[SERVICE_UPDATED], 0, signal_type, pos, vel, acc);
-	}
 
 	if (boundary_list) {
 		while ((priv = (LocationBoundaryPrivate *)g_list_nth_data(boundary_list, index)) != NULL) {

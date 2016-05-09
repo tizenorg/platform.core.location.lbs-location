@@ -52,9 +52,9 @@ gint location_setting_get_int(const gchar *path)
 {
 	g_return_val_if_fail(path, 0);
 	int val = 0;
-	if (vconf_get_int(path, &val)) {
+	if (vconf_get_int(path, &val))
 		LOCATION_SECLOG("failed [%s]", path);
-	}
+
 	return val;
 }
 
@@ -62,9 +62,9 @@ gboolean location_setting_get_bool(const gchar *path)
 {
 	g_return_val_if_fail(path, FALSE);
 	gboolean val = FALSE;
-	if (vconf_get_bool(path, &val)) {
+	if (vconf_get_bool(path, &val))
 		LOCATION_SECLOG("failed [%s]", path);
-	}
+
 	return val;
 }
 
@@ -77,13 +77,12 @@ gchar *location_setting_get_string(const gchar *path)
 static char *__convert_event_from_vconf(const char *vconf)
 {
 	char *event = NULL;
-	if (g_strcmp0(vconf, VCONFKEY_LOCATION_USE_MY_LOCATION) == 0) {
+	if (g_strcmp0(vconf, VCONFKEY_LOCATION_USE_MY_LOCATION) == 0)
 		event = g_strdup(SYS_EVENT_LOCATION_ENABLE_STATE);
-	} else if (g_strcmp0(vconf, VCONFKEY_LOCATION_ENABLED) == 0) {
+	else if (g_strcmp0(vconf, VCONFKEY_LOCATION_ENABLED) == 0)
 		event = g_strdup(SYS_EVENT_GPS_ENABLE_STATE);
-	} else if (g_strcmp0(vconf, VCONFKEY_LOCATION_NETWORK_ENABLED) == 0) {
+	else if (g_strcmp0(vconf, VCONFKEY_LOCATION_NETWORK_ENABLED) == 0)
 		event = g_strdup(SYS_EVENT_NPS_ENABLE_STATE);
-	}
 
 	return event;
 }
@@ -92,13 +91,12 @@ static void __event_handler(const char *event_name, bundle *data, void *self)
 {
 	const char *value = NULL;
 
-	if (g_strcmp0(event_name, SYS_EVENT_LOCATION_ENABLE_STATE) == 0) {
+	if (g_strcmp0(event_name, SYS_EVENT_LOCATION_ENABLE_STATE) == 0)
 		value = bundle_get_val(data, EVT_KEY_LOCATION_ENABLE_STATE);
-	} else if (g_strcmp0(event_name, SYS_EVENT_GPS_ENABLE_STATE) == 0) {
+	else if (g_strcmp0(event_name, SYS_EVENT_GPS_ENABLE_STATE) == 0)
 		value = bundle_get_val(data, EVT_KEY_GPS_ENABLE_STATE);
-	} else if (g_strcmp0(event_name, SYS_EVENT_NPS_ENABLE_STATE) == 0) {
+	else if (g_strcmp0(event_name, SYS_EVENT_NPS_ENABLE_STATE) == 0)
 		value = bundle_get_val(data, EVT_KEY_NPS_ENABLE_STATE);
-	}
 
 	LOCATION_SECLOG("[%s: %s]", event_name, value);
 }

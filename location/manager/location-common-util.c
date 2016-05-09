@@ -50,9 +50,8 @@ static gint compare_position(gconstpointer a, gconstpointer b)
 	g_return_val_if_fail(a, 1);
 	g_return_val_if_fail(b, -1);
 
-	if (location_position_equal((LocationPosition *) a, (LocationPosition *)b) == TRUE) {
+	if (location_position_equal((LocationPosition *) a, (LocationPosition *)b) == TRUE)
 		return 0;
-	}
 
 	return -1;
 }
@@ -87,9 +86,8 @@ boundary_compare(gconstpointer comp1, gconstpointer comp2)
 			case LOCATION_BOUNDARY_POLYGON: {
 					GList *boundary1_next = NULL;
 					GList *boundary2_start = NULL, *boundary2_prev = NULL, *boundary2_next = NULL;
-					if (g_list_length(priv1->boundary->polygon.position_list) != g_list_length(priv2->boundary->polygon.position_list)) {
+					if (g_list_length(priv1->boundary->polygon.position_list) != g_list_length(priv2->boundary->polygon.position_list))
 						return -1;
-					}
 
 					/* Find a matching index of Boundary2 with Boundary1's 1st postion. */
 					boundary2_start = g_list_find_custom(priv2->boundary->polygon.position_list, g_list_nth_data(priv1->boundary->polygon.position_list, 0), (GCompareFunc) compare_position);
@@ -108,10 +106,12 @@ boundary_compare(gconstpointer comp1, gconstpointer comp2)
 						boundary1_next = g_list_next(boundary1_next);
 						while (boundary1_next) {
 							boundary2_prev = g_list_previous(boundary2_prev);
-							if (boundary2_prev == NULL) boundary2_prev = g_list_last(priv2->boundary->polygon.position_list);
-							if (location_position_equal((LocationPosition *)boundary1_next->data, (LocationPosition *) boundary2_prev->data) == FALSE) {
+							if (boundary2_prev == NULL)
+								boundary2_prev = g_list_last(priv2->boundary->polygon.position_list);
+
+							if (location_position_equal((LocationPosition *)boundary1_next->data, (LocationPosition *) boundary2_prev->data) == FALSE)
 								return -1;
-							}
+
 							boundary1_next = g_list_next(boundary1_next);
 						}
 						ret = 0;
@@ -119,10 +119,12 @@ boundary_compare(gconstpointer comp1, gconstpointer comp2)
 						boundary1_next = g_list_next(boundary1_next);
 						while (boundary1_next) {
 							boundary2_next = g_list_next(boundary2_next);
-							if (boundary2_next == NULL) boundary2_next = g_list_first(priv2->boundary->polygon.position_list);
-							if (location_position_equal((LocationPosition *)boundary1_next->data, (LocationPosition *) boundary2_next->data) == FALSE) {
+							if (boundary2_next == NULL)
+								boundary2_next = g_list_first(priv2->boundary->polygon.position_list);
+
+							if (location_position_equal((LocationPosition *)boundary1_next->data, (LocationPosition *) boundary2_next->data) == FALSE)
 								return -1;
-							}
+
 							boundary1_next = g_list_next(boundary1_next);
 						}
 						ret = 0;
@@ -144,7 +146,7 @@ boundary_compare(gconstpointer comp1, gconstpointer comp2)
 
 int set_prop_boundary(GList **prev_boundary_priv_list, GList *new_boundary_priv_list)
 {
-	LOCATION_LOGD("ENTER >>>");
+	LOC_FUNC_LOG
 	g_return_val_if_fail(new_boundary_priv_list, LOCATION_ERROR_PARAMETER);
 
 	int index = 0;
@@ -174,7 +176,7 @@ int set_prop_boundary(GList **prev_boundary_priv_list, GList *new_boundary_priv_
 
 int set_prop_removal_boundary(GList **prev_boundary_list, LocationBoundary *boundary)
 {
-	LOCATION_LOGD("ENTER >>>");
+	LOC_FUNC_LOG
 	g_return_val_if_fail(*prev_boundary_list, LOCATION_ERROR_PARAMETER);
 
 	GList *check_list = NULL;
@@ -222,10 +224,7 @@ int location_get_app_type(char *target_app_id)
 	if (target_app_id == NULL) {
 		pid = getpid();
 		ret = app_manager_get_app_id(pid, &app_id);
-			if (ret != APP_MANAGER_ERROR_NONE) {
-				LOCATION_LOGE("Fail to get app_id. Err[%d]", ret);
-			return LOCATION_ERROR_NONE;
-		}
+		LOC_COND_RET(ret != APP_MANAGER_ERROR_NONE, LOCATION_ERROR_NONE, _E, "Fail to get app_id. Err[%d]", ret);
 	} else {
 		app_id = g_strdup(target_app_id);
 	}
@@ -257,4 +256,23 @@ int location_get_app_type(char *target_app_id)
 	app_info_destroy(app_info);
 
 	return ret;
+}
+
+const char* err_msg(int err)
+{
+	switch (err) {
+	case LOCATION_ERROR_NONE: return "LOCATION_ERROR_NONE";
+	case LOCATION_ERROR_NOT_ALLOWED: return "LOCATION_ERROR_NOT_ALLOWED";
+	case LOCATION_ERROR_NOT_AVAILABLE: return "LOCATION_ERROR_NOT_AVAILABLE";
+	case LOCATION_ERROR_NETWORK_FAILED: return "LOCATION_ERROR_NETWORK_FAILED";
+	case LOCATION_ERROR_NETWORK_NOT_CONNECTED: return "LOCATION_ERROR_NETWORK_NOT_CONNECTED";
+	case LOCATION_ERROR_CONFIGURATION: return "LOCATION_ERROR_CONFIGURATION";
+	case LOCATION_ERROR_PARAMETER: return "LOCATION_ERROR_PARAMETER";
+	case LOCATION_ERROR_NOT_FOUND: return "LOCATION_ERROR_NOT_FOUND";
+	case LOCATION_ERROR_NOT_SUPPORTED: return "LOCATION_ERROR_NOT_SUPPORTED";
+	case LOCATION_ERROR_UNKNOWN: return "LOCATION_ERROR_UNKNOWN";
+	case LOCATION_ERROR_SETTING_OFF: return "LOCATION_ERROR_SETTING_OFF";
+	case LOCATION_ERROR_SECURITY_DENIED: return "LOCATION_ERROR_SECURITY_DENIED";
+	default: return "LOCATION_ERROR_UNKNOWN";
+	}
 }

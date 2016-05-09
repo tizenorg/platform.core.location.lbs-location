@@ -43,8 +43,7 @@ int location_check_cynara(const char *privilege_name)
 	char *session = NULL;
 	char smack_label[100] = {0, };
 
-	if (cynara_initialize(&cynara, NULL) != CYNARA_API_SUCCESS)
-	{
+	if (cynara_initialize(&cynara, NULL) != CYNARA_API_SUCCESS) {
 		LOCATION_LOGE("cynara initialize failed");
 		cynara = NULL;
 		return LOCATION_ERROR_NOT_ALLOWED;
@@ -66,18 +65,13 @@ int location_check_cynara(const char *privilege_name)
 	snprintf(uid, 16, "%d", getuid());
 	ret = cynara_check(cynara, smack_label, session, uid, privilege_name);
 
-	if (session) {
+	if (session)
 		free(session);
-	}
 
-	if (cynara) {
+	if (cynara)
 		cynara_finish(cynara);
-	}
 
-	if (ret != CYNARA_API_ACCESS_ALLOWED) {
-		LOCATION_LOGE("cynara_check failed [%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
+	LOC_COND_RET(ret != CYNARA_API_ACCESS_ALLOWED, LOCATION_ERROR_NOT_ALLOWED, _E, "Cynara_check failed [%s]", err_msg(LOCATION_ERROR_NOT_ALLOWED));
 
 	return LOCATION_ERROR_NONE;
 }

@@ -61,11 +61,11 @@ gint location_state_ignore_notify(const gchar *path, SettingCB setting_cb);
 
 #define setting_retval_if_fail(path) {\
 		int val = location_setting_get_int(path);\
-		if (val == -1){\
+		if (val == -1) {\
 			return LOCATION_ERROR_UNKNOWN;\
 		} else if (val == 0) {\
 			return LOCATION_ERROR_SETTING_OFF;\
-		}\
+		} \
 	}
 
 /* For test

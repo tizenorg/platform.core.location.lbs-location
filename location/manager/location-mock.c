@@ -94,7 +94,7 @@ G_DEFINE_TYPE_WITH_CODE(LocationMock, location_mock, G_TYPE_OBJECT,
 static void
 __reset_pos_data_from_priv(LocationMockPrivate *priv)
 {
-	LOCATION_LOGD("__reset_pos_data_from_priv");
+	LOC_FUNC_LOG
 	g_return_if_fail(priv);
 
 	if (priv->pos) {
@@ -140,7 +140,7 @@ __set_started(gpointer self, gboolean started)
 static void
 mock_status_cb(gboolean enabled, LocationStatus status, gpointer self)
 {
-	LOCATION_LOGD("mock_status_cb");
+	LOC_FUNC_LOG
 	g_return_if_fail(self);
 	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(priv);
@@ -200,7 +200,7 @@ mock_location_cb(gboolean enabled, LocationPosition *pos, LocationVelocity *vel,
 static void
 location_setting_mock_cb(keynode_t *key, gpointer self)
 {
-	LOCATION_LOGD("location_setting_mock_cb");
+	LOC_FUNC_LOG
 	g_return_if_fail(key);
 	g_return_if_fail(self);
 	LocationMockPrivate *priv = GET_PRIVATE(self);
@@ -214,9 +214,8 @@ location_setting_mock_cb(keynode_t *key, gpointer self)
 		if (priv->mod->ops.stop && __get_started(self)) {
 			__set_started(self, FALSE);
 			ret = priv->mod->ops.stop(priv->mod->handler);
-			if (ret == LOCATION_ERROR_NONE) {
+			if (ret == LOCATION_ERROR_NONE)
 				__reset_pos_data_from_priv(priv);
-			}
 		}
 	} else {
 		if (location_setting_get_int(VCONFKEY_LOCATION_MOCK_ENABLED) == 1 && priv->mod->ops.start && !__get_started(self)) {
@@ -235,7 +234,7 @@ location_setting_mock_cb(keynode_t *key, gpointer self)
 static int
 location_mock_start(LocationMock *self)
 {
-	LOCATION_LOGD("ENTER >>>");
+	LOC_FUNC_LOG
 	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
@@ -270,7 +269,7 @@ location_mock_start(LocationMock *self)
 static int
 location_mock_stop(LocationMock *self)
 {
-	LOCATION_LOGD("location_mock_stop");
+	LOC_FUNC_LOG
 	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
@@ -282,9 +281,7 @@ location_mock_stop(LocationMock *self)
 	if (__get_started(self) == TRUE) {
 		__set_started(self, FALSE);
 		ret = priv->mod->ops.stop(priv->mod->handler);
-		if (ret != LOCATION_ERROR_NONE) {
-			LOCATION_LOGD("Failed to stop. Error[%d]", ret);
-		}
+		LOC_IF_FAIL_LOG(ret, _E, "Failed to stop [%s]", err_msg(ret));
 	}
 
 	if (priv->app_type != CPPAPP && priv->set_noti == TRUE) {
@@ -300,8 +297,7 @@ location_mock_stop(LocationMock *self)
 static void
 location_mock_dispose(GObject *gobject)
 {
-	LOCATION_LOGD("location_mock_dispose");
-
+	LOC_FUNC_LOG
 	LocationMockPrivate *priv = GET_PRIVATE(gobject);
 	g_return_if_fail(priv);
 
@@ -318,7 +314,7 @@ location_mock_dispose(GObject *gobject)
 static void
 location_mock_finalize(GObject *gobject)
 {
-	LOCATION_LOGD("location_mock_finalize");
+	LOC_FUNC_LOG
 	LocationMockPrivate *priv = GET_PRIVATE(gobject);
 	g_return_if_fail(priv);
 	module_free(priv->mod, "mock");
@@ -357,14 +353,14 @@ location_mock_set_property(GObject *object, guint property_id, const GValue *val
 	case PROP_BOUNDARY: {
 				GList *boundary_list = (GList *)g_list_copy(g_value_get_pointer(value));
 				ret = set_prop_boundary(&priv->boundary_list, boundary_list);
-				if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Set boundary. Error[%d]", ret);
+				LOC_IF_FAIL_LOG(ret, _E, "Set boundary. Error[%s]", err_msg(ret));
 				if (boundary_list) g_list_free(boundary_list);
 				break;
 			}
 	case PROP_REMOVAL_BOUNDARY: {
 				LocationBoundary *req_boundary = (LocationBoundary *) g_value_dup_boxed(value);
 				ret = set_prop_removal_boundary(&priv->boundary_list, req_boundary);
-				if (ret != 0) LOCATION_LOGD("Set removal boundary. Error[%d]", ret);
+				LOC_IF_FAIL_LOG(ret, _E, "Set removal boundary. Error[%s]", err_msg(ret));
 				break;
 			}
 	case PROP_POS_INTERVAL: {
@@ -489,10 +485,7 @@ location_mock_get_position(LocationMock *self, LocationPosition **position, Loca
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
 	setting_retval_if_fail(VCONFKEY_LOCATION_MOCK_ENABLED);
 
-	if (__get_started(self) != TRUE) {
-		LOCATION_LOGE("location is not started");
-		return LOCATION_ERROR_NOT_AVAILABLE;
-	}
+	LOC_COND_RET(__get_started(self) != TRUE, LOCATION_ERROR_NOT_AVAILABLE, _E, "location is not started [%s]", err_msg(LOCATION_ERROR_NOT_AVAILABLE));
 
 	if (priv->pos) {
 		*position = location_position_copy(priv->pos);
@@ -514,10 +507,7 @@ location_mock_get_position_ext(LocationMock *self, LocationPosition **position, 
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
 	setting_retval_if_fail(VCONFKEY_LOCATION_MOCK_ENABLED);
 
-	if (__get_started(self) != TRUE) {
-		LOCATION_LOGE("location is not started");
-		return LOCATION_ERROR_NOT_AVAILABLE;
-	}
+	LOC_COND_RET(__get_started(self) != TRUE, LOCATION_ERROR_NOT_AVAILABLE, _E, "location is not started [%s]", err_msg(LOCATION_ERROR_NOT_AVAILABLE));
 
 	if (priv->pos && priv->vel) {
 		*position = location_position_copy(priv->pos);
@@ -581,10 +571,7 @@ location_mock_get_velocity(LocationMock *self, LocationVelocity **velocity, Loca
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
 	setting_retval_if_fail(VCONFKEY_LOCATION_MOCK_ENABLED);
 
-	if (__get_started(self) != TRUE) {
-		LOCATION_LOGE("location is not started");
-		return LOCATION_ERROR_NOT_AVAILABLE;
-	}
+	LOC_COND_RET(__get_started(self) != TRUE, LOCATION_ERROR_NOT_AVAILABLE, _E, "location is not started [%s]", err_msg(LOCATION_ERROR_NOT_AVAILABLE));
 
 	if (priv->vel) {
 		*velocity = location_velocity_copy(priv->vel);
@@ -618,7 +605,7 @@ location_mock_get_last_velocity(LocationMock *self, LocationVelocity **velocity,
 static gboolean
 __single_location_timeout_cb(void *data)
 {
-	LOCATION_LOGD("__single_location_timeout_cb");
+	LOC_FUNC_LOG
 	LocationMock *self = (LocationMock *)data;
 	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, FALSE);
@@ -640,7 +627,7 @@ __single_location_timeout_cb(void *data)
 static void
 mock_single_location_cb(gboolean enabled, LocationPosition *pos, LocationVelocity *vel, LocationAccuracy *acc, gpointer self)
 {
-	LOCATION_LOGD("mock_single_location_cb");
+	LOC_FUNC_LOG
 	g_return_if_fail(self);
 	g_return_if_fail(pos);
 	g_return_if_fail(vel);
@@ -660,7 +647,7 @@ mock_single_location_cb(gboolean enabled, LocationPosition *pos, LocationVelocit
 static int
 location_mock_request_single_location(LocationMock *self, int timeout)
 {
-	LOCATION_LOGD("location_mock_request_single_location");
+	LOC_FUNC_LOG
 	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
@@ -678,9 +665,9 @@ location_mock_request_single_location(LocationMock *self, int timeout)
 		__set_started(self, FALSE);
 		return ret;
 	} else {
-		if (priv->loc_timeout != 0) {
+		if (priv->loc_timeout != 0)
 			g_source_remove(priv->loc_timeout);
-		}
+
 		priv->loc_timeout = g_timeout_add_seconds(timeout, __single_location_timeout_cb, self);
 	}
 
@@ -711,9 +698,7 @@ location_mock_set_option(LocationMock *self, const char *option)
 	int ret = LOCATION_ERROR_NONE;
 
 	ret = priv->mod->ops.set_option(priv->mod->handler, option);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Failed to set_option. Error[%d]", ret);
-	}
+	LOC_IF_FAIL_LOG(ret, _E, "Failed to set_option. Error[%d]", ret);
 
 	return ret;
 }
@@ -763,20 +748,17 @@ __set_mock_location_cb(gboolean enabled, LocationStatus status, gpointer self)
 static int
 location_mock_set_mock_location(LocationMock *self, LocationPosition *position, LocationVelocity *velocity, LocationAccuracy *accuracy)
 {
+	LOC_FUNC_LOG
 	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv->mod->handler, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod->ops.set_mock_location, LOCATION_ERROR_NOT_AVAILABLE);
-
-	LOCATION_LOGD("ENTER >>>");
 
 	int ret = LOCATION_ERROR_NONE;
 	if (!location_setting_get_int(VCONFKEY_LOCATION_MOCK_ENABLED)) {
 		ret = LOCATION_ERROR_SETTING_OFF;
 	} else {
 		ret = priv->mod->ops.set_mock_location(priv->mod->handler, position, velocity, accuracy, __set_mock_location_cb, self);
-		if (ret != LOCATION_ERROR_NONE) {
-			LOCATION_LOGE("Failed to set_mock_location. Error[%d]", ret);
-		}
+		LOC_IF_FAIL_LOG(ret, _E, "Failed to set_mock_location [%s]", err_msg(ret));
 	}
 
 	return ret;
@@ -785,20 +767,17 @@ location_mock_set_mock_location(LocationMock *self, LocationPosition *position, 
 static int
 location_mock_clear_mock_location(LocationMock *self)
 {
+	LOC_FUNC_LOG
 	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv->mod->handler, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod->ops.set_mock_location, LOCATION_ERROR_NOT_AVAILABLE);
-
-	LOCATION_LOGD("ENTER >>>");
 
 	int ret = LOCATION_ERROR_NONE;
 	if (!location_setting_get_int(VCONFKEY_LOCATION_MOCK_ENABLED)) {
 		ret = LOCATION_ERROR_SETTING_OFF;
 	} else {
 		ret = priv->mod->ops.clear_mock_location(priv->mod->handler, __set_mock_location_cb, self);
-		if (ret != LOCATION_ERROR_NONE) {
-			LOCATION_LOGE("Failed to set_mock_location. Error[%d]", ret);
-		}
+		LOC_IF_FAIL_LOG(ret, _E, "Failed to clear_mock_location [%s]", err_msg(ret));
 	}
 
 	return ret;
@@ -835,12 +814,12 @@ location_ielement_interface_init(LocationIElementInterface *iface)
 static void
 location_mock_init(LocationMock *self)
 {
-	LOCATION_LOGD("location_mock_init");
+	LOC_FUNC_LOG
 	LocationMockPrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(priv);
 
 	priv->mod = (LocationMockMod *)module_new("mock");
-	if (!priv->mod) LOCATION_LOGW("module loading failed");
+	LOC_COND_LOG(!priv->mod, _E, "Module loading failed");
 
 	g_mutex_init(&priv->mutex);
 	priv->is_started = FALSE;
@@ -864,15 +843,13 @@ location_mock_init(LocationMock *self)
 	priv->loc_timeout = 0;
 
 	priv->app_type = location_get_app_type(NULL);
-	if (priv->app_type == 0) {
-		LOCATION_LOGW("Fail to get app_type");
-	}
+	LOC_COND_LOG(priv->app_type == 0, _E, "Fail to get app_type");
 }
 
 static void
 location_mock_class_init(LocationMockClass *klass)
 {
-	LOCATION_LOGD("location_mock_class_init");
+	LOC_FUNC_LOG
 
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 

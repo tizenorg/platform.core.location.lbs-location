@@ -120,23 +120,20 @@ static gboolean _location_timeout_cb(gpointer data)
 	LocationVelocity *vel = NULL;
 	LocationAccuracy *acc = NULL;
 
-	if (priv->pos) {
+	if (priv->pos)
 		pos = location_position_copy(priv->pos);
-	} else {
+	else
 		pos = location_position_new(0, 0.0, 0.0, 0.0, LOCATION_STATUS_NO_FIX);
-	}
 
-	if (priv->vel) {
+	if (priv->vel)
 		vel = location_velocity_copy(priv->vel);
-	} else {
+	else
 		vel = location_velocity_new(0, 0.0, 0.0, 0.0);
-	}
 
-	if (priv->acc) {
+	if (priv->acc)
 		acc = location_accuracy_copy(priv->acc);
-	} else {
+	else
 		acc = location_accuracy_new(LOCATION_ACCURACY_LEVEL_NONE, 0.0, 0.0);
-	}
 
 	g_signal_emit(object, signals[SERVICE_UPDATED], 0, priv->signal_type, pos, vel, acc);
 	priv->signal_type = 0;
@@ -183,7 +180,7 @@ static gboolean _velocity_timeout_cb(gpointer data)
 
 static void __reset_pos_data_from_priv(LocationGpsPrivate *priv)
 {
-	LOCATION_LOGD("__reset_pos_data_from_priv");
+	LOC_FUNC_LOG
 	g_return_if_fail(priv);
 
 	if (priv->pos) {
@@ -246,7 +243,7 @@ static int __set_started(gpointer self, gboolean started)
 
 static void gps_status_cb(gboolean enabled, LocationStatus status, gpointer self)
 {
-	LOCATION_LOGD("gps_status_cb");
+	LOC_FUNC_LOG
 	g_return_if_fail(self);
 	LocationGpsPrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(priv);
@@ -308,9 +305,9 @@ static void gps_batch_cb(gboolean enabled, guint num_of_location, gpointer self)
 	LocationGpsPrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(priv);
 
-	if (priv->batch != NULL) {
+	if (priv->batch != NULL)
 		location_batch_free(priv->batch);
-	}
+
 	priv->batch = location_get_batch_file(num_of_location);
 
 	g_signal_emit(self, signals[BATCH_UPDATED], 0, num_of_location);
@@ -329,7 +326,7 @@ static void gps_satellite_cb(gboolean enabled, LocationSatellite *sat, gpointer 
 #ifdef TIZEN_PROFILE_MOBILE
 static void location_setting_search_cb(keynode_t *key, gpointer self)
 {
-	LOCATION_LOGD("location_setting_search_cb");
+	LOC_FUNC_LOG
 	g_return_if_fail(key);
 	g_return_if_fail(self);
 	LocationGpsPrivate *priv = GET_PRIVATE(self);
@@ -349,7 +346,7 @@ static void location_setting_search_cb(keynode_t *key, gpointer self)
 
 static void location_setting_gps_cb(keynode_t *key, gpointer self)
 {
-	LOCATION_LOGD("location_setting_gps_cb");
+	LOC_FUNC_LOG
 	g_return_if_fail(key);
 	g_return_if_fail(self);
 	LocationGpsPrivate *priv = GET_PRIVATE(self);
@@ -363,11 +360,10 @@ static void location_setting_gps_cb(keynode_t *key, gpointer self)
 		LOCATION_LOGD("location stopped by setting");
 		__set_started(self, FALSE);
 		ret = priv->mod->ops.stop(priv->mod->handler);
-		if (ret == LOCATION_ERROR_NONE) {
+		if (ret == LOCATION_ERROR_NONE)
 			__reset_pos_data_from_priv(priv);
-		} else {
+		else
 			LOCATION_LOGI("Fail to stop[%d]", ret);
-		}
 
 	} else if (1 == location_setting_get_key_val(key) && priv->mod->ops.start && !__get_started(self)) {
 		LOCATION_LOGD("location resumed by setting");
@@ -382,7 +378,7 @@ static void location_setting_gps_cb(keynode_t *key, gpointer self)
 
 static int location_gps_start(LocationGps *self)
 {
-	LOCATION_LOGD("ENTER >>>");
+	LOC_FUNC_LOG
 	LocationGpsPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
@@ -422,7 +418,7 @@ static int location_gps_start(LocationGps *self)
 
 static int location_gps_stop(LocationGps *self)
 {
-	LOCATION_LOGD("location_gps_stop");
+	LOC_FUNC_LOG
 	LocationGpsPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
@@ -434,9 +430,7 @@ static int location_gps_stop(LocationGps *self)
 	if (__get_started(self) == TRUE) {
 		__set_started(self, FALSE);
 		ret = priv->mod->ops.stop(priv->mod->handler);
-		if (ret != LOCATION_ERROR_NONE) {
-			LOCATION_LOGE("Failed to stop. Error[%d]", ret);
-		}
+		LOC_IF_FAIL_LOG(ret, _E, "Failed to stop [%s]", err_msg(ret));
 	} else {
 		return LOCATION_ERROR_NONE;
 	}
@@ -496,7 +490,7 @@ static void __sensor_event_cb(sensor_h s, sensor_event_s *event, void *data)
 
 static int __set_sensor_batch(LocationGps *self, int batch_interval)
 {
-	LOCATION_LOGD("__set_sensor_batch");
+	LOC_FUNC_LOG
 	LocationGpsPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 
@@ -510,44 +504,31 @@ static int __set_sensor_batch(LocationGps *self, int batch_interval)
 	bool supported = false;
 
 	ret = sensor_is_supported((sensor_type_e)0x1A02, &supported);
-	if (ret != SENSOR_ERROR_NONE) {
-		LOCATION_LOGD("sensor_is_supported() failed");
-		return LOCATION_ERROR_NOT_AVAILABLE;
-	}
-
-	if (!supported) {
-		LOCATION_LOGD("Not supported");
-		return LOCATION_ERROR_NOT_SUPPORTED;
-	}
+	LOC_IF_FAIL(ret, _E, "Fail to sensor_is_supported [%s]", err_msg(LOCATION_ERROR_NOT_AVAILABLE));
+	LOC_COND_RET(!supported, LOCATION_ERROR_NOT_SUPPORTED, _E, "Batch sensor is not supported [%s]", err_msg(LOCATION_ERROR_NOT_SUPPORTED));
 
 	ret = sensor_get_default_sensor((sensor_type_e)0x1A02, &priv->sensor);
-	if (ret != SENSOR_ERROR_NONE) {
-		LOCATION_LOGD("sensor_get_default_sensor() failed (%d)", ret);
-		return LOCATION_ERROR_NOT_AVAILABLE;
-	}
+	LOC_IF_FAIL(ret, _E, "Fail to sensor_get_default_sensor [%s]", err_msg(LOCATION_ERROR_NOT_AVAILABLE));
 
 	ret = sensor_create_listener(priv->sensor, &priv->sensor_listener);
-	if (ret != SENSOR_ERROR_NONE) {
-		LOCATION_LOGD("sensor_create_listener() failed (%d)", ret);
-		return LOCATION_ERROR_NOT_AVAILABLE;
-	}
+	LOC_IF_FAIL(ret, _E, "Fail to sensor_create_listener [%s]", err_msg(LOCATION_ERROR_NOT_AVAILABLE));
 
 	ret = sensor_listener_set_event_cb(priv->sensor_listener, update_interval, __sensor_event_cb, self);
 	if (ret != SENSOR_ERROR_NONE) {
-		LOCATION_LOGD("sensor_listener_set_event_cb() failed");
+		LOCATION_LOGE("sensor_listener_set_event_cb() failed");
 		sensor_destroy_listener(priv->sensor_listener);
 		return LOCATION_ERROR_NOT_AVAILABLE;
 	}
 
 	ret = sensor_listener_set_option(priv->sensor_listener, SENSOR_OPTION_ALWAYS_ON);
 	if (ret != SENSOR_ERROR_NONE) {
-		LOCATION_LOGD("sensor_listener_set_option() failed");
+		LOCATION_LOGE("sensor_listener_set_option() failed");
 		sensor_destroy_listener(priv->sensor_listener);
 		return LOCATION_ERROR_NOT_AVAILABLE;
 	}
 	ret = sensor_listener_start(priv->sensor_listener);
 	if (ret != SENSOR_ERROR_NONE) {
-		LOCATION_LOGD("sensor_listener_set_event_cb() failed");
+		LOCATION_LOGE("sensor_listener_set_event_cb() failed");
 		sensor_destroy_listener(priv->sensor_listener);
 		return LOCATION_ERROR_NOT_AVAILABLE;
 	}
@@ -558,7 +539,7 @@ static int __set_sensor_batch(LocationGps *self, int batch_interval)
 
 static int location_gps_start_batch(LocationGps *self)
 {
-	LOCATION_LOGD("location_gps_start_batch");
+	LOC_FUNC_LOG
 	LocationGpsPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
@@ -578,7 +559,7 @@ static int location_gps_start_batch(LocationGps *self)
 		__set_started(self, TRUE);
 		ret = priv->mod->ops.start_batch(priv->mod->handler, gps_batch_cb, priv->batch_interval, priv->batch_period, self);
 		if (ret != LOCATION_ERROR_NONE) {
-			LOCATION_LOGE("Fail to start_batch. Error[%d]", ret);
+			LOCATION_LOGE("Fail to start_batch [%s]", err_msg(ret));
 			__set_started(self, FALSE);
 			return ret;
 		}
@@ -590,7 +571,7 @@ static int location_gps_start_batch(LocationGps *self)
 
 static int location_gps_stop_batch(LocationGps *self)
 {
-	LOCATION_LOGD("location_gps_stop_batch");
+	LOC_FUNC_LOG
 	LocationGpsPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
@@ -601,25 +582,18 @@ static int location_gps_stop_batch(LocationGps *self)
 
 #ifdef TIZEN_DEVICE
 	ret = sensor_listener_stop(priv->sensor_listener);
-	if (ret != SENSOR_ERROR_NONE) {
-		LOCATION_LOGD("sensor_listener_stop() failed (%d)", ret);
-		return LOCATION_ERROR_NOT_AVAILABLE;
-	}
+	LOC_IF_FAIL(ret, _E, "Fail to listener_stop [%s]", err_msg(LOCATION_ERROR_NOT_AVAILABLE));
+
 	ret = sensor_listener_unset_event_cb(priv->sensor_listener);
-	if (ret != SENSOR_ERROR_NONE) {
-		LOCATION_LOGD("sensor_listener_unset_event_cb() failed (%d)", ret);
-	}
+	LOC_IF_FAIL_LOG(ret, _E, "Fail to listener_unset_event_cb [%s]", err_msg(ret));
+
 	ret = sensor_destroy_listener(priv->sensor_listener);
-	if (ret != SENSOR_ERROR_NONE) {
-		LOCATION_LOGD("sensor_destroy_listener() failed (%d)", ret);
-	}
+	LOC_IF_FAIL_LOG(ret, _E, "Fail to destroy_listener [%s]", err_msg(ret));
 #else
 	if (__get_started(self) == TRUE) {
 		__set_started(self, FALSE);
 		ret = priv->mod->ops.stop_batch(priv->mod->handler);
-		if (ret != LOCATION_ERROR_NONE) {
-			LOCATION_LOGE("Failed to stop_batch. Error[%d]", ret);
-		}
+		LOC_IF_FAIL_LOG(ret, _E, "Failed to stop_batch [%s]", err_mgs(ret));
 	} else {
 		return LOCATION_ERROR_NONE;
 	}
@@ -632,7 +606,7 @@ static int location_gps_stop_batch(LocationGps *self)
 
 static void location_gps_dispose(GObject *gobject)
 {
-	LOCATION_LOGD("location_gps_dispose");
+	LOC_FUNC_LOG
 
 	LocationGpsPrivate *priv = GET_PRIVATE(gobject);
 	g_return_if_fail(priv);
@@ -660,7 +634,7 @@ static void location_gps_dispose(GObject *gobject)
 
 static void location_gps_finalize(GObject *gobject)
 {
-	LOCATION_LOGD("location_gps_finalize");
+	LOC_FUNC_LOG
 	LocationGpsPrivate *priv = GET_PRIVATE(gobject);
 	g_return_if_fail(priv);
 
@@ -711,14 +685,14 @@ static void location_gps_set_property(GObject *object, guint property_id, const 
 	case PROP_BOUNDARY: {
 				GList *boundary_list = g_list_copy(g_value_get_pointer(value));
 				ret = set_prop_boundary(&priv->boundary_list, boundary_list);
-				if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Set boundary. Error[%d]", ret);
+				LOC_IF_FAIL_LOG(ret, _E, "Set boundary. Error[%s]", err_msg(ret));
 				if (boundary_list) g_list_free(boundary_list);
 				break;
 			}
 	case PROP_REMOVAL_BOUNDARY: {
 				LocationBoundary *req_boundary = (LocationBoundary *) g_value_dup_boxed(value);
 				ret = set_prop_removal_boundary(&priv->boundary_list, req_boundary);
-				if (ret != 0) LOCATION_LOGD("Removal boundary. Error[%d]", ret);
+				LOC_IF_FAIL_LOG(ret, _E, "Removal boundary. Error[%s]", err_msg(ret));
 				break;
 			}
 	case PROP_POS_INTERVAL: {
@@ -875,72 +849,72 @@ static void location_gps_get_property(GObject *object, guint property_id, GValue
 	g_return_if_fail(priv->mod->handler);
 	LocModGpsOps ops = priv->mod->ops;
 	switch (property_id) {
-		case PROP_METHOD_TYPE:
-			g_value_set_int(value, LOCATION_METHOD_GPS);
-			break;
-		case PROP_IS_STARTED:
-			g_value_set_boolean(value, __get_started(object));
-			break;
-		case PROP_LAST_POSITION:
-			g_value_set_boxed(value, priv->pos);
-			break;
-		case PROP_POS_INTERVAL:
-			g_value_set_uint(value, priv->pos_interval);
-			break;
-		case PROP_VEL_INTERVAL:
-			g_value_set_uint(value, priv->vel_interval);
-			break;
-		case PROP_SAT_INTERVAL:
-			g_value_set_uint(value, priv->sat_interval);
-			break;
-		case PROP_LOC_INTERVAL:
-			g_value_set_uint(value, priv->loc_interval);
-			break;
-		case PROP_BATCH_INTERVAL:
-			g_value_set_uint(value, priv->batch_interval);
-			break;
-		case PROP_BATCH_PERIOD:
-			g_value_set_uint(value, priv->batch_period);
-			break;
-		case PROP_MIN_INTERVAL:
-			g_value_set_uint(value, priv->min_interval);
-			break;
-		case PROP_MIN_DISTANCE:
-			g_value_set_double(value, priv->min_distance);
-			break;
-		case PROP_BOUNDARY:
-			g_value_set_pointer(value, g_list_first(priv->boundary_list));
-			break;
-		case PROP_NMEA: {
-				char *nmea_data = NULL;
-				if (ops.get_nmea && LOCATION_ERROR_NONE == ops.get_nmea(priv->mod->handler, &nmea_data) && nmea_data) {
-					LOCATION_SECLOG("Get prop>> Lastest nmea: \n%s", nmea_data);
-					g_value_set_string(value, nmea_data);
-					g_free(nmea_data);
-				} else {
-					LOCATION_LOGW("Get prop>> Lastest nmea: failed");
-					g_value_set_string(value, NULL);
-				}
-				break;
+	case PROP_METHOD_TYPE:
+		g_value_set_int(value, LOCATION_METHOD_GPS);
+		break;
+	case PROP_IS_STARTED:
+		g_value_set_boolean(value, __get_started(object));
+		break;
+	case PROP_LAST_POSITION:
+		g_value_set_boxed(value, priv->pos);
+		break;
+	case PROP_POS_INTERVAL:
+		g_value_set_uint(value, priv->pos_interval);
+		break;
+	case PROP_VEL_INTERVAL:
+		g_value_set_uint(value, priv->vel_interval);
+		break;
+	case PROP_SAT_INTERVAL:
+		g_value_set_uint(value, priv->sat_interval);
+		break;
+	case PROP_LOC_INTERVAL:
+		g_value_set_uint(value, priv->loc_interval);
+		break;
+	case PROP_BATCH_INTERVAL:
+		g_value_set_uint(value, priv->batch_interval);
+		break;
+	case PROP_BATCH_PERIOD:
+		g_value_set_uint(value, priv->batch_period);
+		break;
+	case PROP_MIN_INTERVAL:
+		g_value_set_uint(value, priv->min_interval);
+		break;
+	case PROP_MIN_DISTANCE:
+		g_value_set_double(value, priv->min_distance);
+		break;
+	case PROP_BOUNDARY:
+		g_value_set_pointer(value, g_list_first(priv->boundary_list));
+		break;
+	case PROP_NMEA: {
+			char *nmea_data = NULL;
+			if (ops.get_nmea && LOCATION_ERROR_NONE == ops.get_nmea(priv->mod->handler, &nmea_data) && nmea_data) {
+				LOCATION_SECLOG("Get prop>> Lastest nmea: \n%s", nmea_data);
+				g_value_set_string(value, nmea_data);
+				g_free(nmea_data);
+			} else {
+				LOCATION_LOGW("Get prop>> Lastest nmea: failed");
+				g_value_set_string(value, NULL);
 			}
-		case PROP_SATELLITE: {
-				LocationSatellite *satellite = NULL;
-				if (ops.get_satellite && priv->mod->handler && LOCATION_ERROR_NONE == ops.get_satellite(priv->mod->handler, &satellite) && satellite) {
-					LOCATION_LOGD("Get prop>> Last sat: num_used(%d) num_view(%d)", satellite->num_of_sat_used, satellite->num_of_sat_inview);
-					g_value_set_boxed(value, satellite);
-					location_satellite_free(satellite);
-				} else {
-					LOCATION_LOGW("Get prop>> Last sat: failed");
-					g_value_set_boxed(value, NULL);
-				}
-				break;
+			break;
+		}
+	case PROP_SATELLITE: {
+			LocationSatellite *satellite = NULL;
+			if (ops.get_satellite && priv->mod->handler && LOCATION_ERROR_NONE == ops.get_satellite(priv->mod->handler, &satellite) && satellite) {
+				LOCATION_LOGD("Get prop>> Last sat: num_used(%d) num_view(%d)", satellite->num_of_sat_used, satellite->num_of_sat_inview);
+				g_value_set_boxed(value, satellite);
+				location_satellite_free(satellite);
+			} else {
+				LOCATION_LOGW("Get prop>> Last sat: failed");
+				g_value_set_boxed(value, NULL);
 			}
-		case PROP_SERVICE_STATUS:
-			g_value_set_int(value, priv->enabled);
 			break;
-		default:
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
-			break;
+		}
+	case PROP_SERVICE_STATUS:
+		g_value_set_int(value, priv->enabled);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
+		break;
 	}
 }
 
@@ -951,10 +925,7 @@ static int location_gps_get_position(LocationGps *self, LocationPosition **posit
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	setting_retval_if_fail(VCONFKEY_LOCATION_ENABLED);
 
-	if (__get_started(self) != TRUE) {
-		LOCATION_LOGE("location is not started");
-		return LOCATION_ERROR_NOT_AVAILABLE;
-	}
+	LOC_COND_RET(__get_started(self) != TRUE, LOCATION_ERROR_NOT_AVAILABLE, _E, "Location is not started [%s]", err_msg(LOCATION_ERROR_NOT_AVAILABLE));
 
 	if (priv->pos) {
 		*position = location_position_copy(priv->pos);
@@ -974,10 +945,7 @@ location_gps_get_position_ext(LocationGps *self, LocationPosition **position, Lo
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	setting_retval_if_fail(VCONFKEY_LOCATION_ENABLED);
 
-	if (__get_started(self) != TRUE) {
-		LOCATION_LOGE("location is not started");
-		return LOCATION_ERROR_NOT_AVAILABLE;
-	}
+	LOC_COND_RET(__get_started(self) != TRUE, LOCATION_ERROR_NOT_AVAILABLE, _E, "Location is not started [%s]", err_msg(LOCATION_ERROR_NOT_AVAILABLE));
 
 	if (priv->pos && priv->vel) {
 		*position = location_position_copy(priv->pos);
@@ -1034,10 +1002,7 @@ location_gps_get_velocity(LocationGps *self, LocationVelocity **velocity, Locati
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	setting_retval_if_fail(VCONFKEY_LOCATION_ENABLED);
 
-	if (__get_started(self) != TRUE) {
-		LOCATION_LOGE("location is not started");
-		return LOCATION_ERROR_NOT_AVAILABLE;
-	}
+	LOC_COND_RET(__get_started(self) != TRUE, LOCATION_ERROR_NOT_AVAILABLE, _E, "Location is not started [%s]", err_msg(LOCATION_ERROR_NOT_AVAILABLE));
 
 	if (priv->vel) {
 		*velocity = location_velocity_copy(priv->vel);
@@ -1071,7 +1036,7 @@ location_gps_get_last_velocity(LocationGps *self, LocationVelocity **velocity, L
 
 static gboolean __single_location_timeout_cb(void *data)
 {
-	LOCATION_LOGD("__single_location_timeout_cb");
+	LOC_FUNC_LOG
 	LocationGps *self = (LocationGps *)data;
 	LocationGpsPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, FALSE);
@@ -1092,7 +1057,7 @@ static gboolean __single_location_timeout_cb(void *data)
 static void
 gps_single_location_cb(gboolean enabled, LocationPosition *pos, LocationVelocity *vel, LocationAccuracy *acc, gpointer self)
 {
-	LOCATION_LOGD("gps_single_location_cb");
+	LOC_FUNC_LOG
 	g_return_if_fail(self);
 	g_return_if_fail(pos);
 	g_return_if_fail(vel);
@@ -1113,7 +1078,7 @@ gps_single_location_cb(gboolean enabled, LocationPosition *pos, LocationVelocity
 static int
 location_gps_request_single_location(LocationGps *self, int timeout)
 {
-	LOCATION_LOGD("location_gps_request_single_location");
+	LOC_FUNC_LOG
 	LocationGpsPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
@@ -1131,9 +1096,9 @@ location_gps_request_single_location(LocationGps *self, int timeout)
 		__set_started(self, FALSE);
 		return ret;
 	} else {
-		if (priv->loc_timeout != 0) {
+		if (priv->loc_timeout != 0)
 			g_source_remove(priv->loc_timeout);
-		}
+
 		priv->loc_timeout = g_timeout_add_seconds(timeout, __single_location_timeout_cb, self);
 	}
 
@@ -1152,9 +1117,7 @@ static int location_gps_get_nmea(LocationGps *self, char **nmea_data)
 	setting_retval_if_fail(VCONFKEY_LOCATION_ENABLED);
 
 	ret = priv->mod->ops.get_nmea(priv->mod->handler, nmea_data);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Failed to get_nmea. Error[%d]", ret);
-	}
+	LOC_IF_FAIL_LOG(ret, _E, "Failed to get_nmea [%s]", err_msg(ret));
 
 	return ret;
 }
@@ -1169,10 +1132,7 @@ static int location_gps_get_batch(LocationGps *self, LocationBatch **batch)
 	setting_retval_if_fail(VCONFKEY_LOCATION_ENABLED);
 
 #ifndef TIZEN_DEVICE
-	if (__get_started(self) != TRUE) {
-		LOCATION_LOGE("location is not started");
-		return LOCATION_ERROR_NOT_AVAILABLE;
-	}
+	LOC_COND_RET(__get_started(self) != TRUE, LOCATION_ERROR_NOT_AVAILABLE, _E, "Location is not started [%s]", err_msg(LOCATION_ERROR_NOT_AVAILABLE));
 #endif
 
 	if (priv->batch) {
@@ -1194,10 +1154,7 @@ static int location_gps_get_satellite(LocationGps *self, LocationSatellite **sat
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
 	setting_retval_if_fail(VCONFKEY_LOCATION_ENABLED);
 
-	if (__get_started(self) != TRUE) {
-		LOCATION_LOGE("location is not started");
-		return LOCATION_ERROR_NOT_AVAILABLE;
-	}
+	LOC_COND_RET(__get_started(self) != TRUE, LOCATION_ERROR_NOT_AVAILABLE, _E, "Location is not started [%s]", err_msg(LOCATION_ERROR_NOT_AVAILABLE));
 
 	if (priv->sat) {
 		*satellite = location_satellite_copy(priv->sat);
@@ -1222,9 +1179,7 @@ static int location_gps_set_option(LocationGps *self, const char *option)
 
 	int ret = LOCATION_ERROR_NONE;
 	ret = priv->mod->ops.set_option(priv->mod->handler, option);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Failed to set_option. Error[%d]", ret);
-	}
+	LOC_IF_FAIL_LOG(ret, _E, "Failed to set_option [%s]", err_msg(ret));
 
 	return ret;
 }
@@ -1253,12 +1208,12 @@ static void location_ielement_interface_init(LocationIElementInterface *iface)
 
 static void location_gps_init(LocationGps *self)
 {
-	LOCATION_LOGD("location_gps_init");
+	LOC_FUNC_LOG
 	LocationGpsPrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(priv);
 
 	priv->mod = (LocationGpsMod *)module_new("gps");
-	if (!priv->mod) LOCATION_LOGW("module loading failed");
+	LOC_COND_LOG(!priv->mod, _E, "Module loading failed");
 
 	g_mutex_init(&priv->mutex);
 	priv->is_started = FALSE;
@@ -1299,14 +1254,12 @@ static void location_gps_init(LocationGps *self)
 #endif
 
 	priv->app_type = location_get_app_type(NULL);
-	if (priv->app_type == 0) {
-		LOCATION_LOGW("Fail to get app_type");
-	}
+	LOC_COND_LOG(priv->app_type == 0, _W, "Fail to get app_type");
 }
 
 static void location_gps_class_init(LocationGpsClass *klass)
 {
-	LOCATION_LOGD("location_gps_class_init");
+	LOC_FUNC_LOG
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
 	gobject_class->set_property = location_gps_set_property;

@@ -31,10 +31,8 @@ location_satellite_get_type(void)
 {
 	static volatile gsize type_volatile = 0;
 	if (g_once_init_enter(&type_volatile)) {
-		GType type = g_boxed_type_register_static(
-						 g_intern_static_string("LocationSatellite"),
-						 (GBoxedCopyFunc) location_satellite_copy,
-						 (GBoxedFreeFunc) location_satellite_free);
+		GType type = g_boxed_type_register_static(g_intern_static_string("LocationSatellite"),
+						(GBoxedCopyFunc) location_satellite_copy, (GBoxedFreeFunc) location_satellite_free);
 		g_once_init_leave(&type_volatile, type);
 	}
 	return type_volatile;
@@ -48,7 +46,7 @@ update_num_of_used(LocationSatellite *satellite)
 	if (satellite->num_of_sat_inview > 0 && satellite->sat_inview) {
 		int i = 0;
 		for (i = 0 ; i < satellite->num_of_sat_inview ; i++)
-			if (satellite->sat_inview[i].used)(satellite->num_of_sat_used)++;
+			if (satellite->sat_inview[i].used) (satellite->num_of_sat_used)++;
 	}
 }
 
@@ -92,12 +90,7 @@ location_satellite_copy(const LocationSatellite *satellite)
 
 EXPORT_API gboolean
 location_satellite_get_satellite_details(const LocationSatellite *satellite,
-										guint index,
-										guint *prn,
-										gboolean *used,
-										guint *elevation,
-										guint *azimuth,
-										gint *snr)
+										guint index, guint *prn, gboolean *used, guint *elevation, guint *azimuth, gint *snr)
 {
 	g_return_val_if_fail(satellite, FALSE);
 	g_return_val_if_fail(prn, FALSE);
@@ -119,12 +112,7 @@ location_satellite_get_satellite_details(const LocationSatellite *satellite,
 
 EXPORT_API gboolean
 location_satellite_set_satellite_details(LocationSatellite *satellite,
-										guint index,
-										guint prn,
-										gboolean used,
-										guint elevation,
-										guint azimuth,
-										gint snr)
+										guint index, guint prn, gboolean used, guint elevation, guint azimuth, gint snr)
 {
 	g_return_val_if_fail(satellite, FALSE);
 	g_return_val_if_fail(satellite->sat_inview, FALSE);

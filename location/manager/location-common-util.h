@@ -63,6 +63,7 @@ void free_boundary_list(gpointer data);
 
 int location_get_app_type(char *app_id);
 
+const char* err_msg(int err);
 
 G_END_DECLS
 

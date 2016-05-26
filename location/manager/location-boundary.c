@@ -175,13 +175,13 @@ EXPORT_API LocationBoundary *
 location_boundary_copy(const LocationBoundary *boundary)
 {
 	g_return_val_if_fail(boundary, NULL);
-	if (boundary->type == LOCATION_BOUNDARY_RECT) {
+	if (boundary->type == LOCATION_BOUNDARY_RECT)
 		return location_boundary_new_for_rect(boundary->rect.left_top, boundary->rect.right_bottom);
-	} else if (boundary->type == LOCATION_BOUNDARY_CIRCLE) {
+	else if (boundary->type == LOCATION_BOUNDARY_CIRCLE)
 		return location_boundary_new_for_circle(boundary->circle.center, boundary->circle.radius);
-	} else if (boundary->type == LOCATION_BOUNDARY_POLYGON) {
+	else if (boundary->type == LOCATION_BOUNDARY_POLYGON)
 		return location_boundary_new_for_polygon(boundary->polygon.position_list);
-	}
+
 	return NULL;
 }
 

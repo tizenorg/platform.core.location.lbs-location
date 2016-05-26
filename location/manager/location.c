@@ -79,24 +79,23 @@ static char *__convert_setting_key(LocationMethod method)
 static LocationMethod __convert_method_from_key(const char *key)
 {
 	LocationMethod _method = LOCATION_METHOD_NONE;
-	if (g_strcmp0(key, VCONFKEY_LOCATION_USE_MY_LOCATION) == 0) {
+	if (g_strcmp0(key, VCONFKEY_LOCATION_USE_MY_LOCATION) == 0)
 		_method = LOCATION_METHOD_HYBRID;
-	} else if (g_strcmp0(key, VCONFKEY_LOCATION_ENABLED) == 0) {
+	else if (g_strcmp0(key, VCONFKEY_LOCATION_ENABLED) == 0)
 		_method = LOCATION_METHOD_GPS;
-	} else if (g_strcmp0(key, VCONFKEY_LOCATION_NETWORK_ENABLED) == 0) {
+	else if (g_strcmp0(key, VCONFKEY_LOCATION_NETWORK_ENABLED) == 0)
 		_method = LOCATION_METHOD_WPS;
-	} else if (g_strcmp0(key, VCONFKEY_LOCATION_MOCK_ENABLED) == 0) {
+	else if (g_strcmp0(key, VCONFKEY_LOCATION_MOCK_ENABLED) == 0)
 		_method = LOCATION_METHOD_MOCK;
-	}
 
 	return _method;
 }
 
 static void __location_setting_cb(keynode_t *key, gpointer data)
 {
-	if (key == NULL || data == NULL) {
+	if (key == NULL || data == NULL)
 		return;
-	}
+
 	LocationSetting *_setting = (LocationSetting *)data;
 	LocationMethod _method = LOCATION_METHOD_NONE;
 
@@ -144,7 +143,7 @@ location_new(LocationMethod method)
 		break;
 	}
 
-	if (!self) LOCATION_LOGE("Fail to create location object. Method [%d]", method);
+	LOC_COND_LOG(!self, _E, "Fail to create location object. [method=%d]", method);
 	return self;
 }
 
@@ -163,7 +162,7 @@ location_request_single_location(LocationObject *obj, int timeout)
 
 	int ret = LOCATION_ERROR_NONE;
 	ret = location_ielement_request_single_location(LOCATION_IELEMENT(obj), timeout);
-	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to request single location. Error [%d]", ret);
+	LOC_IF_FAIL(ret, _E, "Fail to request single location [%s]", err_msg(ret));
 
 	return ret;
 }
@@ -176,14 +175,11 @@ location_start(LocationObject *obj)
 	int ret = LOCATION_ERROR_NONE;
 #ifndef TIZEN_PROFILE_TV
 	ret = location_check_cynara(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
+	LOC_IF_FAIL(ret, _E, "Privilege not allowed [%s]", err_msg(ret));
 #endif
 
 	ret = location_ielement_start(LOCATION_IELEMENT(obj));
-	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to start. Error [%d]", ret);
+	LOC_IF_FAIL(ret, _E, "Fail to start [%s]", err_msg(ret));
 
 	return ret;
 }
@@ -192,10 +188,10 @@ EXPORT_API int
 location_stop(LocationObject *obj)
 {
 	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
-	int ret = LOCATION_ERROR_NONE;
 
+	int ret = LOCATION_ERROR_NONE;
 	ret = location_ielement_stop(LOCATION_IELEMENT(obj));
-	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to stop. Error [%d]", ret);
+	LOC_IF_FAIL(ret, _E, "Fail to stop [%s]", err_msg(ret));
 
 	return ret;
 }
@@ -208,14 +204,11 @@ location_start_batch(LocationObject *obj)
 
 #ifndef TIZEN_PROFILE_TV
 	ret = location_check_cynara(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
+	LOC_IF_FAIL(ret, _E, "Privilege not allowed [%s]", err_msg(ret));
 #endif
 
 	ret = location_ielement_start_batch(LOCATION_IELEMENT(obj));
-	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to Batch start. Error [%d]", ret);
+	LOC_IF_FAIL(ret, _E, "Fail to start_batch [%s]", err_msg(ret));
 
 	return ret;
 }
@@ -226,7 +219,7 @@ location_stop_batch(LocationObject *obj)
 	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
 	int ret = LOCATION_ERROR_NONE;
 	ret = location_ielement_stop_batch(LOCATION_IELEMENT(obj));
-	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to Batch stop. Error [%d]", ret);
+	LOC_IF_FAIL(ret, _E, "Fail to stop_batch [%d]", err_msg(ret));
 
 	return ret;
 }
@@ -265,14 +258,11 @@ location_is_enabled_method(LocationMethod method, int *is_enabled)
 	int vconf_ret = VCONF_ERROR;
 
 	char *_key = __convert_setting_key(method);
-	if (!_key) {
-		LOCATION_LOGE("Invalid method[%d]", method);
-		return LOCATION_ERROR_NOT_SUPPORTED;
-	}
+	LOC_COND_RET(!_key, LOCATION_ERROR_NOT_SUPPORTED, _E, "Invalid method = %d [%s]", method, err_msg(LOCATION_ERROR_NOT_SUPPORTED));
 
 	vconf_ret = vconf_get_int(_key, &vconf_val);
 	if (vconf_ret != VCONF_OK) {
-		LOCATION_SECLOG("failed [%s], error [%d]", _key, vconf_ret);
+		LOCATION_SECLOG("vconf_get failed [%s], error [%d]", _key, vconf_ret);
 		g_free(_key);
 		return LOCATION_ERROR_NOT_AVAILABLE;
 	} else {
@@ -293,18 +283,18 @@ location_enable_method(const LocationMethod method, const int enable)
 
 #ifndef TIZEN_PROFILE_TV
 	ret = location_check_cynara(LOCATION_ENABLE_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
+	LOC_IF_FAIL(ret, _E, "Privilege not allowed [%s]", err_msg(ret));
+#endif
+
+	if (location_setting_get_int(VCONFKEY_LOCATION_RESTRICT) > RESTRICT_OFF) {
+		LOCATION_SECLOG("Location setting is denied by DPM");
 		return LOCATION_ERROR_NOT_ALLOWED;
 	}
-#endif
 
 	/* for itself */
 	_key = __convert_setting_key(method);
-	if (!_key) {
-		LOCATION_LOGE("Invalid method[%d]", method);
-		return LOCATION_ERROR_NOT_SUPPORTED;
-	}
+	LOC_COND_RET(!_key, LOCATION_ERROR_NOT_SUPPORTED, _E, "Invalid method = %d [%s]", method, err_msg(LOCATION_ERROR_NOT_SUPPORTED));
+
 	ret = vconf_set_int(_key, enable);
 	if (ret != VCONF_OK) {
 		LOCATION_SECLOG("vconf_set_int failed [%s], ret=[%d]", _key, ret);
@@ -315,10 +305,7 @@ location_enable_method(const LocationMethod method, const int enable)
 
 	/* for hybrid */
 	_key = __convert_setting_key(LOCATION_METHOD_HYBRID);
-	if (!_key) {
-		LOCATION_LOGE("Invalid method[%d]", LOCATION_METHOD_HYBRID);
-		return LOCATION_ERROR_NOT_SUPPORTED;
-	}
+	LOC_COND_RET(!_key, LOCATION_ERROR_NOT_SUPPORTED, _E, "Invalid method = %d [%s]", LOCATION_METHOD_HYBRID, err_msg(LOCATION_ERROR_NOT_SUPPORTED));
 
 	if (enable) {
 		ret = vconf_set_int(_key, enable);
@@ -358,10 +345,7 @@ location_add_setting_notify(LocationMethod method, LocationSettingCb callback, v
 {
 	int ret = LOCATION_ERROR_NONE;
 	char *_key = __convert_setting_key(method);
-	if (!_key) {
-		LOCATION_LOGE("Invalid method[%d]", method);
-		return LOCATION_ERROR_PARAMETER;
-	}
+	LOC_COND_RET(!_key, LOCATION_ERROR_PARAMETER, _E, "Invalid method = %d [%s]", method, err_msg(LOCATION_ERROR_PARAMETER));
 
 	g_location_setting.callback = callback;
 	g_location_setting.user_data = user_data;
@@ -377,10 +361,7 @@ location_ignore_setting_notify(LocationMethod method, LocationSettingCb callback
 {
 	int ret = LOCATION_ERROR_NONE;
 	char *_key = __convert_setting_key(method);
-	if (!_key) {
-		LOCATION_LOGE("Invalid method[%d]", method);
-		return LOCATION_ERROR_PARAMETER;
-	}
+	LOC_COND_RET(!_key, LOCATION_ERROR_PARAMETER, _E, "Invalid method = %d [%s]", method, err_msg(LOCATION_ERROR_PARAMETER));
 
 	g_location_setting.callback = NULL;
 	g_location_setting.user_data = NULL;
@@ -403,14 +384,11 @@ location_get_position(LocationObject *obj, LocationPosition **position, Location
 
 #ifndef TIZEN_PROFILE_TV
 	ret = location_check_cynara(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
+	LOC_IF_FAIL(ret, _E, "Privilege not allowed [%s]", err_msg(ret));
 #endif
 
 	ret = location_ielement_get_position(LOCATION_IELEMENT(obj), position, accuracy);
-	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to get_position. Error [%d]", ret);
+	LOC_COND_RET(ret != LOCATION_ERROR_NONE, ret, _E, "Fail to get_position [%s]", err_msg(ret));
 
 	return ret;
 }
@@ -427,14 +405,11 @@ location_get_position_ext(LocationObject *obj, LocationPosition **position, Loca
 
 #ifndef TIZEN_PROFILE_TV
 	ret = location_check_cynara(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
+	LOC_IF_FAIL(ret, _E, "Privilege not allowed [%s]", err_msg(ret));
 #endif
 
 	ret = location_ielement_get_position_ext(LOCATION_IELEMENT(obj), position, velocity, accuracy);
-	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to get_position_ext. Error [%d]", ret);
+	LOC_IF_FAIL(ret, _E, "Fail to get_position_ext [%s]", err_msg(ret));
 
 	return ret;
 }
@@ -450,14 +425,11 @@ location_get_last_position(LocationObject *obj, LocationPosition **position, Loc
 
 #ifndef TIZEN_PROFILE_TV
 	ret = location_check_cynara(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
+	LOC_IF_FAIL(ret, _E, "Privilege not allowed [%s]", err_msg(ret));
 #endif
 
 	ret = location_ielement_get_last_position(LOCATION_IELEMENT(obj), position, accuracy);
-	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to get_last_position. Error [%d]", ret);
+	LOC_IF_FAIL(ret, _E, "Fail to get_last_position [%s]", err_msg(ret));
 
 	return ret;
 }
@@ -474,14 +446,11 @@ location_get_last_position_ext(LocationObject *obj, LocationPosition **position,
 
 #ifndef TIZEN_PROFILE_TV
 	ret = location_check_cynara(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
+	LOC_IF_FAIL(ret, _E, "Privilege not allowed [%s]", err_msg(ret));
 #endif
 
 	ret = location_ielement_get_last_position_ext(LOCATION_IELEMENT(obj), position, velocity, accuracy);
-	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to get_last_position_ext. Error [%d]", ret);
+	LOC_IF_FAIL(ret, _E, "Fail to get_last_position_ext [%s]", err_msg(ret));
 
 	return ret;
 }
@@ -494,9 +463,7 @@ location_get_nmea(LocationObject *obj, char **nmea)
 
 	int ret = LOCATION_ERROR_NONE;
 	ret = location_ielement_get_nmea(LOCATION_IELEMENT(obj), nmea);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Fail to get_nmea. Error [%d]", ret);
-	}
+	LOC_IF_FAIL(ret, _E, "Fail to get_nmea [%s]", err_msg(ret));
 
 	return ret;
 }
@@ -512,16 +479,11 @@ location_get_satellite(LocationObject *obj, LocationSatellite **satellite)
 
 #ifndef TIZEN_PROFILE_TV
 	ret = location_check_cynara(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
+	LOC_IF_FAIL(ret, _E, "Privilege not allowed [%s]", err_msg(ret));
 #endif
 
 	ret = location_ielement_get_satellite(LOCATION_IELEMENT(obj), satellite);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Fail to get_satellite. Error [%d]", ret);
-	}
+	LOC_IF_FAIL(ret, _E, "Fail to get_satellite [%s]", err_msg(ret));
 
 	return ret;
 }
@@ -536,14 +498,11 @@ location_get_batch(LocationObject *obj, LocationBatch **batch)
 
 #ifndef TIZEN_PROFILE_TV
 	ret = location_check_cynara(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
+	LOC_IF_FAIL(ret, _E, "Privilege not allowed [%s]", err_msg(ret));
 #endif
 
 	ret = location_ielement_get_batch(LOCATION_IELEMENT(obj), batch);
-	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to get_batch. Error [%d]", ret);
+	LOC_IF_FAIL(ret, _E, "Fail to get_batch [%s]", err_msg(ret));
 
 	return ret;
 }
@@ -558,14 +517,11 @@ location_get_last_satellite(LocationObject *obj, LocationSatellite **satellite)
 
 #ifndef TIZEN_PROFILE_TV
 	ret = location_check_cynara(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
+	LOC_IF_FAIL(ret, _E, "Privilege not allowed [%s]", err_msg(ret));
 #endif
 
 	ret = location_ielement_get_last_satellite(LOCATION_IELEMENT(obj), satellite);
-	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to get_last_satellite. Error [%d]", ret);
+	LOC_IF_FAIL(ret, _E, "Fail to get_last_satellite [%s]", err_msg(ret));
 
 	return ret;
 }
@@ -581,14 +537,11 @@ location_get_velocity(LocationObject *obj, LocationVelocity **velocity, Location
 
 #ifndef TIZEN_PROFILE_TV
 	ret = location_check_cynara(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
+	LOC_IF_FAIL(ret, _E, "Privilege not allowed [%s]", err_msg(ret));
 #endif
 
 	ret = location_ielement_get_velocity(LOCATION_IELEMENT(obj), velocity, accuracy);
-	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to get_velocity. Error [%d]", ret);
+	LOC_IF_FAIL(ret, _E, "Fail to get_velocity [%s]", err_msg(ret));
 
 	return ret;
 }
@@ -604,14 +557,11 @@ location_get_last_velocity(LocationObject *obj, LocationVelocity **velocity, Loc
 
 #ifndef TIZEN_PROFILE_TV
 	ret = location_check_cynara(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
+	LOC_IF_FAIL(ret, _E, "Privilege not allowed [%s]", err_msg(ret));
 #endif
 
 	ret = location_ielement_get_last_velocity(LOCATION_IELEMENT(obj), velocity, accuracy);
-	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to get_last_velocity. Error [%d]", ret);
+	LOC_IF_FAIL(ret, _E, "Fail to get_last_velocity [%s]", err_msg(ret));
 
 	return ret;
 }
@@ -676,15 +626,11 @@ location_set_option(LocationObject *obj, const char *option)
 
 #ifndef TIZEN_PROFILE_TV
 	ret = location_check_cynara(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
+	LOC_IF_FAIL(ret, _E, "Privilege not allowed [%s]", err_msg(ret));
 #endif
 
 	ret = location_ielement_set_option(LOCATION_IELEMENT(obj), option);
-	if (ret != LOCATION_ERROR_NONE)
-		LOCATION_LOGE("Fail to get_velocity. Error [%d]", ret);
+	LOC_IF_FAIL(ret, _E, "Fail to get_velocity [%s]", err_msg(ret));
 	return ret;
 }
 
@@ -701,7 +647,7 @@ location_get_service_state(LocationObject *obj, int *state)
 
 	int ret = LOCATION_ERROR_NONE;
 	ret = location_ielement_get_status(LOCATION_IELEMENT(obj), state);
-	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to get_position. Error [%d]", ret);
+	LOC_IF_FAIL(ret, _E, "Fail to get_position [%s]", err_msg(ret));
 
 	return ret;
 }
@@ -713,33 +659,23 @@ location_enable_mock(const LocationMethod method, const int enable)
 	int ret = 0;
 	char *_key = NULL;
 
-	if (method != LOCATION_METHOD_MOCK) {
-		return LOCATION_ERROR_PARAMETER;
-	}
+	LOC_COND_RET(method != LOCATION_METHOD_MOCK, LOCATION_ERROR_PARAMETER, _E, "Method is not mock [%s]", err_msg(LOCATION_ERROR_PARAMETER));
 
 #ifndef TIZEN_PROFILE_TV
 	ret = location_check_cynara(LOCATION_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
+	LOC_IF_FAIL(ret, _E, "Privilege not allowed [%s]", err_msg(ret));
 #endif
 
 #if 0 /* Tizen platform didn't turn developer option on */
 	gboolean developer_option = FALSE;
 
 	ret = vconf_get_bool(VCONFKEY_SETAPPL_DEVELOPER_OPTION_STATE, &developer_option);
-	if (!developer_option) {
-		LOCATION_LOGE("Cannot enable mock location because developer option is not turned on", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
+	LOC_COND_RET(!developer_option, LOCATION_ERROR_NOT_ALLOWED, _E, "Cannot enable mock location because developer option is not turned on", ret);
 #endif
 
 	_key = __convert_setting_key(method);
-	if (!_key) {
-		LOCATION_LOGE("Invalid method[%d]", method);
-		return LOCATION_ERROR_NOT_SUPPORTED;
-	}
+	LOC_COND_RET(!_key, LOCATION_ERROR_NOT_SUPPORTED, _E, "Invalid method = %d [%s]", method, err_msg(LOCATION_ERROR_NOT_SUPPORTED));
+
 	ret = vconf_set_int(_key, enable);
 	if (ret != VCONF_OK) {
 		LOCATION_SECLOG("vconf_set_int failed [%s], ret=[%d]", _key, ret);
@@ -777,10 +713,7 @@ location_set_mock_method_enabled(const LocationMethod method, const int enable)
 	int vconf_val = 0;
 
 	_key = __convert_setting_key(method);
-	if (!_key) {
-		LOCATION_LOGE("Invalid method[%d]", method);
-		return LOCATION_ERROR_NOT_SUPPORTED;
-	}
+	LOC_COND_RET(!_key, LOCATION_ERROR_NOT_SUPPORTED, _E, "Invalid method = %d [%s]", method, err_msg(LOCATION_ERROR_NOT_SUPPORTED));
 
 	ret = vconf_get_int(_key, &vconf_val);
 	if (ret != VCONF_OK) {
@@ -791,10 +724,7 @@ location_set_mock_method_enabled(const LocationMethod method, const int enable)
 
 	if (vconf_val) {
 		_key = __convert_mock_setting_key(method);
-		if (!_key) {
-			LOCATION_LOGE("Invalid method[%d]", method);
-			return LOCATION_ERROR_NOT_SUPPORTED;
-		}
+		LOC_COND_RET(!_key, LOCATION_ERROR_NOT_SUPPORTED, _E, "Invalid method[%d]", method);
 		ret = vconf_set_int(_key, enable);
 		if (ret != VCONF_OK) {
 			LOCATION_SECLOG("vconf_set_int failed [%s], ret=[%d]", _key, ret);
@@ -819,7 +749,7 @@ location_set_mock_location(LocationObject *obj, const LocationPosition *position
 
 	int ret = LOCATION_ERROR_NONE;
 	ret = location_ielement_set_mock_location(LOCATION_IELEMENT(obj), position, velocity, accuracy);
-	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to location_ielement_set_mock_location. Error [%d]", ret);
+	LOC_IF_FAIL(ret, _E, "Fail to set_mock_location [%s]", err_msg(ret));
 
 	return ret;
 }
@@ -831,7 +761,78 @@ location_clear_mock_location(LocationObject *obj)
 
 	int ret = LOCATION_ERROR_NONE;
 	ret = location_ielement_clear_mock_location(LOCATION_IELEMENT(obj));
-	if (ret != LOCATION_ERROR_NONE) LOCATION_LOGE("Fail to location_ielement_set_mock_location. Error [%d]", ret);
+	LOC_IF_FAIL(ret, _E, "Fail to clear_mock_location [%s]", err_msg(ret));
 
 	return ret;
+}
+
+EXPORT_API int
+location_enable_restriction(const int enable)
+{
+	int ret = LOCATION_ERROR_NONE;
+	int restriction = 0;
+
+#ifndef TIZEN_PROFILE_TV
+	ret = location_check_cynara(LOCATION_ENABLE_PRIVILEGE);
+	LOC_IF_FAIL(ret, _E, "Privilege not allowed [%s]", err_msg(ret));
+#endif
+	if (enable) {
+		int value = 0;
+		ret = vconf_get_int(VCONFKEY_LOCATION_RESTRICT, &restriction);
+		LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to get restriction status [%s]", err_msg(LOCATION_ERROR_NOT_ALLOWED));
+
+		if (restriction == RESTRICT_OFF) {
+
+			if (location_setting_get_int(VCONFKEY_LOCATION_ENABLED)) {
+				value |= RESTRICT_GPS;
+				ret = vconf_set_int(VCONFKEY_LOCATION_ENABLED, 0);
+				LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to set status [%s]", err_msg(LOCATION_ERROR_NOT_ALLOWED));
+			}
+
+			if (location_setting_get_int(VCONFKEY_LOCATION_NETWORK_ENABLED)) {
+				value |= RESTRICT_WPS;
+				ret = vconf_set_int(VCONFKEY_LOCATION_NETWORK_ENABLED, 0);
+				LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to set status [%s]", err_msg(LOCATION_ERROR_NOT_ALLOWED));
+			}
+
+			if (location_setting_get_int(VCONFKEY_LOCATION_USE_MY_LOCATION)) {
+				value |= RESTRICT_HYBRID;
+				ret = vconf_set_int(VCONFKEY_LOCATION_USE_MY_LOCATION, 0);
+				LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to set status [%s]", err_msg(LOCATION_ERROR_NOT_ALLOWED));
+			}
+
+			if (value == 0)
+				value = RESTRICT_NONE;
+
+			ret = vconf_set_int(VCONFKEY_LOCATION_RESTRICT, value);
+			LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to set value. %d [%s]", value, err_msg(LOCATION_ERROR_NOT_ALLOWED));
+		}
+
+	} else {
+		ret = vconf_get_int(VCONFKEY_LOCATION_RESTRICT, &restriction);
+		LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to get restriction status [%s]", err_msg(LOCATION_ERROR_NOT_ALLOWED));
+
+		if (restriction > RESTRICT_OFF) {
+
+			if (restriction & RESTRICT_GPS) {
+				ret = vconf_set_int(VCONFKEY_LOCATION_ENABLED, 1);
+				LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to set status [%s]", err_msg(LOCATION_ERROR_NOT_ALLOWED));
+			}
+
+			if (restriction & RESTRICT_WPS) {
+				ret = vconf_set_int(VCONFKEY_LOCATION_NETWORK_ENABLED, 1);
+				LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to set status [%s]", err_msg(LOCATION_ERROR_NOT_ALLOWED));
+			}
+
+			if (restriction & RESTRICT_HYBRID) {
+				ret = vconf_set_int(VCONFKEY_LOCATION_USE_MY_LOCATION, 1);
+				LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to set status [%s]", err_msg(LOCATION_ERROR_NOT_ALLOWED));
+			}
+
+			ret = vconf_set_int(VCONFKEY_LOCATION_RESTRICT, RESTRICT_OFF);
+			LOC_COND_RET(ret != VCONF_OK, LOCATION_ERROR_NOT_ALLOWED, _E, "Fail to set value. %d [%s]", RESTRICT_OFF, err_msg(LOCATION_ERROR_NOT_ALLOWED));
+		}
+	}
+
+	return LOCATION_ERROR_NONE;
 }

@@ -1,4 +1,11 @@
 [Version]	libslp-location_1.3.0
+[Date]		3 Jun 2016
+[Changes]	Change service state behavior when GPS/WPS searching mode
+[Developer]	Kyoungjun Sung <kj7.sung@samsung.com>
+
+================================================================================
+
+[Version]	libslp-location_1.3.0
 [Date]		12 May 2016
 [Changes]	Add location restriction to support DPM
 [Developer]	Kyoungjun Sung <kj7.sung@samsung.com>

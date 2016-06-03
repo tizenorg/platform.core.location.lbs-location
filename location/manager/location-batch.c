@@ -128,7 +128,7 @@ location_get_batch_file(int num_of_location)
 	return batch;
 }
 
-#ifdef TIZEN_DEVICE
+#if defined(TIZEN_DEVICE) && !defined(TIZEN_PROFILE_TV)
 EXPORT_API gboolean location_set_sensor_batch(LocationBatch *batch, sensor_event_s *event)
 {
 	g_return_val_if_fail(batch, FALSE);
@@ -138,8 +138,8 @@ EXPORT_API gboolean location_set_sensor_batch(LocationBatch *batch, sensor_event
 	float latitude  = event->values[0];
 	float longitude = event->values[1];
 	float altitude  = event->values[2];
-	float speed	 = event->values[3];
-	int idx = (int)(event->values[4]);
+	float speed     = event->values[3];
+	int idx   = (int)(event->values[4]);
 
 	batch->batch_data[idx].timestamp = batch->start_time - (time_t)((timestamp / 1001000) % 100000);
 	batch->batch_data[idx].latitude = latitude;

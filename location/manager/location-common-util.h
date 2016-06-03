@@ -65,6 +65,22 @@ int location_get_app_type(char *app_id);
 
 const char* err_msg(int err);
 
+#define LOCATION_IF_POS_FAIL(path) {\
+		int state = 0; \
+		vconf_get_int(path, &state); \
+		if (state != 2){\
+			return LOCATION_ERROR_NOT_AVAILABLE;\
+		}\
+	}
+
+#define LOCATION_IF_HYBRID_FAIL(gpath, wpath) { \
+		int gps = 0; vconf_get_int(gpath, &gps); \
+		int wps = 0; vconf_get_int(wpath, &wps); \
+		if (gps != 2 && wps != 2) {\
+			return LOCATION_ERROR_NOT_AVAILABLE;\
+		}\
+	}
+
 G_END_DECLS
 
 #endif

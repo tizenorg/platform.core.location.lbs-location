@@ -909,6 +909,7 @@ location_hybrid_get_position(LocationHybrid *self, LocationPosition **position, 
 
 	LocationHybridPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
+	LOCATION_IF_HYBRID_FAIL(VCONFKEY_LOCATION_GPS_STATE, VCONFKEY_LOCATION_WPS_STATE);
 
 	if (priv->pos) {
 		*position = location_position_copy(priv->pos);
@@ -930,6 +931,7 @@ location_hybrid_get_position_ext(LocationHybrid *self, LocationPosition **positi
 
 	LocationHybridPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
+	LOCATION_IF_HYBRID_FAIL(VCONFKEY_LOCATION_GPS_STATE, VCONFKEY_LOCATION_WPS_STATE);
 
 	if (priv->pos && priv->vel) {
 		*position = location_position_copy(priv->pos);
@@ -1051,6 +1053,7 @@ location_hybrid_get_velocity(LocationHybrid *self, LocationVelocity **velocity, 
 
 	LocationHybridPrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
+	LOCATION_IF_HYBRID_FAIL(VCONFKEY_LOCATION_GPS_STATE, VCONFKEY_LOCATION_WPS_STATE);
 
 	if (priv->vel) {
 		*velocity = location_velocity_copy(priv->vel);

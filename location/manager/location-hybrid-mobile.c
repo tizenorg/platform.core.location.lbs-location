@@ -95,8 +95,7 @@ static GParamSpec *properties[PROP_MAX] = {NULL, };
 
 static void location_ielement_interface_init(LocationIElementInterface *iface);
 
-G_DEFINE_TYPE_WITH_CODE(LocationHybrid, location_hybrid, G_TYPE_OBJECT,
-						G_IMPLEMENT_INTERFACE(LOCATION_TYPE_IELEMENT, location_ielement_interface_init));
+G_DEFINE_TYPE_WITH_CODE(LocationHybrid, location_hybrid, G_TYPE_OBJECT, G_IMPLEMENT_INTERFACE(LOCATION_TYPE_IELEMENT, location_ielement_interface_init));
 
 static LocationMethod
 hybrid_get_current_method(LocationHybridPrivate *priv)
@@ -125,11 +124,11 @@ hybrid_set_current_method(LocationHybridPrivate *priv, GType g_type)
 	return TRUE;
 }
 
-
 static int
 hybrid_get_update_method(LocationHybridPrivate *priv)
 {
-	if (!priv->gps && !priv->wps & !priv->mock) return -1;
+	if (!priv->gps && !priv->wps & !priv->mock)
+		return -1;
 
 	if (priv->gps_enabled)
 		hybrid_set_current_method(priv, LOCATION_TYPE_GPS);
@@ -217,9 +216,9 @@ _location_timeout_cb(gpointer data)
 	g_signal_emit(object, signals[SERVICE_UPDATED], 0, priv->signal_type, pos, vel, acc);
 	priv->signal_type = 0;
 
-	location_position_free(pos);
-	location_velocity_free(vel);
-	location_accuracy_free(acc);
+	if (pos) location_position_free(pos);
+	if (vel) location_velocity_free(vel);
+	if (acc) location_accuracy_free(acc);
 
 	return TRUE;
 }
@@ -291,13 +290,9 @@ location_hybrid_gps_cb(keynode_t *key, gpointer self)
 }
 
 static void
-hybrid_location_updated(GObject *obj,
-						guint error,
-						gpointer position,
-						gpointer velocity,
-						gpointer accuracy,
-						gpointer self)
+hybrid_location_updated(GObject *obj, guint error, gpointer position, gpointer velocity, gpointer accuracy, gpointer self)
 {
+	LOC_FUNC_LOG
 	LocationPosition *pos = (LocationPosition *)position;
 	LocationVelocity *vel = (LocationVelocity *)velocity;
 	LocationAccuracy *acc = (LocationAccuracy *)accuracy;
@@ -351,12 +346,6 @@ hybrid_service_updated(GObject *obj, gint type, gpointer data, gpointer velocity
 			return;
 		}
 	}
-	/* TODO: Why we need this logic? */
-	else if (g_type == LOCATION_TYPE_WPS &&
-		location_setting_get_int(VCONFKEY_LOCATION_WPS_STATE) == VCONFKEY_LOCATION_WPS_SEARCHING) {
-		LOCATION_LOGD("Searching WPS");
-		return;
-	}
 
 	if (hybrid_compare_g_type_method(priv, g_type)) {
 		if (priv->pos) location_position_free(priv->pos);
@@ -390,8 +379,7 @@ hybrid_service_updated(GObject *obj, gint type, gpointer data, gpointer velocity
 			LOC_COND_VOID(ret != LOCATION_ERROR_NONE, _E, "Fail hyhrid location_stop : [%s]", err_msg(ret));
 		}
 
-	} else if (g_type == LOCATION_TYPE_WPS
-		&& location_setting_get_int(VCONFKEY_LOCATION_GPS_STATE) == VCONFKEY_LOCATION_GPS_SEARCHING) {
+	} else if (g_type == LOCATION_TYPE_WPS && location_setting_get_int(VCONFKEY_LOCATION_GPS_STATE) == VCONFKEY_LOCATION_GPS_SEARCHING) {
 		LOCATION_LOGD("g_type is LOCATION_TYPE_WPS and GPS is searching");
 		hybrid_set_current_method(priv, g_type);
 

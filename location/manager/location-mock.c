@@ -86,10 +86,7 @@ static GParamSpec *properties[PROP_MAX] = {NULL, };
 #define GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE((o), LOCATION_TYPE_MOCK, LocationMockPrivate))
 
 static void location_ielement_interface_init(LocationIElementInterface *iface);
-
-G_DEFINE_TYPE_WITH_CODE(LocationMock, location_mock, G_TYPE_OBJECT,
-						G_IMPLEMENT_INTERFACE(LOCATION_TYPE_IELEMENT,
-											  location_ielement_interface_init));
+G_DEFINE_TYPE_WITH_CODE(LocationMock, location_mock, G_TYPE_OBJECT, G_IMPLEMENT_INTERFACE(LOCATION_TYPE_IELEMENT, location_ielement_interface_init));
 
 static void
 __reset_pos_data_from_priv(LocationMockPrivate *priv)
@@ -161,40 +158,17 @@ mock_location_cb(gboolean enabled, LocationPosition *pos, LocationVelocity *vel,
 	g_return_if_fail(priv);
 
 	if (priv->min_interval != LOCATION_UPDATE_INTERVAL_NONE) {
-		distance_based_position_signaling(self,
-										signals,
-										enabled,
-										pos,
-										vel,
-										acc,
-										priv->min_interval,
-										priv->min_distance,
-										&(priv->enabled),
-										&(priv->dist_updated_timestamp),
-										&(priv->pos),
-										&(priv->vel),
-										&(priv->acc));
+		distance_based_position_signaling(self, signals, enabled,
+										pos, vel, acc, priv->min_interval, priv->min_distance, &(priv->enabled),
+										&(priv->dist_updated_timestamp), &(priv->pos), &(priv->vel), &(priv->acc));
 	}
 
 	LOCATION_LOGD("Calling location_signaling, status =%d", pos->status);
 
-	location_signaling(self,
-						signals,
-						enabled,
-						priv->boundary_list,
-						pos,
-						vel,
-						acc,
-						priv->pos_interval,
-						priv->vel_interval,
-						priv->loc_interval,
-						&(priv->enabled),
-						&(priv->pos_updated_timestamp),
-						&(priv->vel_updated_timestamp),
-						&(priv->loc_updated_timestamp),
-						&(priv->pos),
-						&(priv->vel),
-						&(priv->acc));
+	location_signaling(self, signals, enabled, priv->boundary_list, pos, vel, acc,
+						priv->pos_interval, priv->vel_interval, priv->loc_interval, &(priv->enabled),
+						&(priv->pos_updated_timestamp), &(priv->vel_updated_timestamp), &(priv->loc_updated_timestamp),
+						&(priv->pos), &(priv->vel), &(priv->acc));
 }
 
 static void
@@ -305,7 +279,6 @@ location_mock_dispose(GObject *gobject)
 	if (priv->app_type != CPPAPP && priv->set_noti == TRUE) {
 		location_setting_ignore_notify(VCONFKEY_LOCATION_MOCK_ENABLED, location_setting_mock_cb);
 		priv->set_noti = FALSE;
-
 	}
 
 	G_OBJECT_CLASS(location_mock_parent_class)->dispose(gobject);
@@ -736,10 +709,13 @@ __set_mock_location_cb(gboolean enabled, LocationStatus status, gpointer self)
 	g_return_if_fail(priv);
 
 	LOCATION_LOGD("ENTER >>>");
-	LOCATION_LOGD("status = %d");
+	LOCATION_LOGD("Mock status = %d");
 	if (status == LOCATION_STATUS_MOCK_FAIL) {
-		/* g_signal_emit(obj, signals[SERVICE_DISABLED], 0, LOCATION_STATUS_NO_FIX); */
-		g_signal_emit(obj, signals[STATUS_CHANGED], 0, LOCATION_STATUS_MOCK_FAIL);
+	/*
+	if (priv->enabled == TRUE && status == LOCATION_STATUS_MOCK_FAIL) {
+		__set_started(self, FALSE); */
+		g_signal_emit(obj, signals[SERVICE_DISABLED], 0, LOCATION_STATUS_NO_FIX);
+		/* g_signal_emit(obj, signals[STATUS_CHANGED], 0, LOCATION_STATUS_MOCK_FAIL); */
 	}
 
 	LOCATION_LOGD("EXIT <<<");

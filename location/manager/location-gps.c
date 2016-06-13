@@ -193,30 +193,14 @@ static void gps_location_cb(gboolean enabled, LocationPosition *pos, LocationVel
 	g_return_if_fail(priv);
 
 	if (priv->min_interval != LOCATION_UPDATE_INTERVAL_NONE) {
-		distance_based_position_signaling(self, signals, enabled,
-										pos, vel, acc,
-										priv->min_interval,
-										priv->min_distance,
-										&(priv->enabled), &(priv->dist_updated_timestamp),
-										&(priv->pos), &(priv->vel), &(priv->acc));
+		distance_based_position_signaling(self, signals, enabled, pos, vel, acc,
+							priv->min_interval, priv->min_distance, &(priv->enabled),
+							&(priv->dist_updated_timestamp),&(priv->pos), &(priv->vel), &(priv->acc));
 	}
-	location_signaling(self,
-						signals,
-						enabled,	/* previous status */
-						priv->boundary_list,
-						pos,
-						vel,
-						acc,
-						priv->pos_interval,
-						priv->vel_interval,
-						priv->loc_interval,
-						&(priv->enabled),
-						&(priv->pos_updated_timestamp),
-						&(priv->vel_updated_timestamp),
-						&(priv->loc_updated_timestamp),
-						&(priv->pos),
-						&(priv->vel),
-						&(priv->acc));
+	location_signaling(self, signals, enabled, priv->boundary_list, pos, vel, acc,
+						priv->pos_interval, priv->vel_interval, priv->loc_interval, &(priv->enabled),
+						&(priv->pos_updated_timestamp), &(priv->vel_updated_timestamp),
+						&(priv->loc_updated_timestamp), &(priv->pos), &(priv->vel), &(priv->acc));
 }
 
 #ifndef TIZEN_DEVICE

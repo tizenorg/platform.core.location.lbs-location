@@ -112,7 +112,6 @@ gint location_setting_add_notify(const gchar *path, SettingCB setting_cb, gpoint
 	if (eventsystem_register_event(event_name, &g_event_req_id, (eventsystem_handler) __event_handler, NULL) != ES_R_OK) {
 
 		LOCATION_SECLOG("eventsystem_register_event failed");
-		return -1;
 	}
 
 	if (vconf_notify_key_changed(path, setting_cb, self)) {
@@ -130,7 +129,6 @@ gint location_setting_ignore_notify(const gchar *path, SettingCB setting_cb)
 
 	if (eventsystem_unregister_event(g_event_req_id) != ES_R_OK) {
 		LOCATION_SECLOG("eventsystem_unregister_event failed");
-		return -1;
 	}
 
 	if (vconf_ignore_key_changed(path, setting_cb)) {

@@ -25,7 +25,6 @@
 
 #include <glib.h>
 #include <stdio.h>
-#include <pthread.h>
 #include <vconf.h>
 
 #include "location.h"

@@ -56,22 +56,16 @@ enable_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL], gboolean *pr
 }
 
 void
-position_velocity_signaling(LocationObject *obj,
-							guint32 signals[LAST_SIGNAL],
-							guint pos_interval,
-							guint vel_interval,
-							guint loc_interval,
-							guint *pos_updated_timestamp,
-							guint *vel_updated_timestamp,
-							guint *loc_updated_timestamp,
-							GList *prev_bound,
-							LocationPosition *pos,
-							LocationVelocity *vel,
-							LocationAccuracy *acc)
+position_velocity_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL],
+			guint pos_interval, guint vel_interval, guint loc_interval,
+			guint *pos_last_timestamp, guint *vel_last_timestamp, guint *loc_last_timestamp,
+			GList *prev_bound, LocationPosition *cur_pos, LocationVelocity *cur_vel, LocationAccuracy *cur_acc)
 {
 	g_return_if_fail(obj);
 	g_return_if_fail(signals);
-	g_return_if_fail(pos);
+	g_return_if_fail(cur_pos);
+	g_return_if_fail(cur_vel);
+	g_return_if_fail(cur_acc);
 
 	int index = 0;
 	int signal_type = 0;
@@ -79,48 +73,48 @@ position_velocity_signaling(LocationObject *obj,
 	GList *boundary_list = prev_bound;
 	LocationBoundaryPrivate *priv = NULL;
 
-	if (pos && !pos->timestamp) {
+	if (cur_pos && !cur_pos->timestamp) {
 		LOCATION_LOGW("Invalid location with timestamp, 0");
 		return;
 	}
 
 	if (pos_interval > 0) {
-		if (pos->timestamp - *pos_updated_timestamp >= pos_interval) {
+		if (cur_pos->timestamp - *pos_last_timestamp >= pos_interval) {
 			signal_type |= POSITION_UPDATED;
-			*pos_updated_timestamp = pos->timestamp;
+			*pos_last_timestamp = cur_pos->timestamp;
 		}
 	}
 
 	if (vel_interval > 0) {
-		if (vel && (vel->timestamp - *vel_updated_timestamp >= vel_interval)) {
+		if (cur_vel && (cur_vel->timestamp - *vel_last_timestamp >= vel_interval)) {
 			signal_type |= VELOCITY_UPDATED;
-			*vel_updated_timestamp = vel->timestamp;
+			*vel_last_timestamp = cur_vel->timestamp;
 		}
 	}
 
 	if (loc_interval > 0) {
-		if (pos->timestamp - *loc_updated_timestamp >= loc_interval) {
+		if (cur_pos->timestamp - *loc_last_timestamp >= loc_interval) {
 			signal_type |= LOCATION_CHANGED;
-			*loc_updated_timestamp = pos->timestamp;
+			*loc_last_timestamp = cur_pos->timestamp;
 		}
 	}
 
 	if (signal_type != 0)
-		g_signal_emit(obj, signals[SERVICE_UPDATED], 0, signal_type, pos, vel, acc);
+		g_signal_emit(obj, signals[SERVICE_UPDATED], 0, signal_type, cur_pos, cur_vel, cur_acc);
 
 	if (boundary_list) {
 		while ((priv = (LocationBoundaryPrivate *)g_list_nth_data(boundary_list, index)) != NULL) {
-			is_inside = location_boundary_if_inside(priv->boundary, pos);
+			is_inside = location_boundary_if_inside(priv->boundary, cur_pos);
 			if (is_inside) {
 				if (priv->zone_status != ZONE_STATUS_IN) {
 					LOCATION_LOGD("Signal emit: ZONE IN");
-					g_signal_emit(obj, signals[ZONE_IN], 0, priv->boundary, pos, acc);
+					g_signal_emit(obj, signals[ZONE_IN], 0, priv->boundary, cur_pos, cur_acc);
 					priv->zone_status = ZONE_STATUS_IN;
 				}
 			} else {
 				if (priv->zone_status != ZONE_STATUS_OUT) {
 					LOCATION_LOGD("Signal emit : ZONE_OUT");
-					g_signal_emit(obj, signals[ZONE_OUT], 0, priv->boundary, pos, acc);
+					g_signal_emit(obj, signals[ZONE_OUT], 0, priv->boundary, cur_pos, cur_acc);
 					priv->zone_status = ZONE_STATUS_OUT;
 				}
 			}
@@ -130,20 +124,12 @@ position_velocity_signaling(LocationObject *obj,
 }
 
 void
-distance_based_position_signaling(LocationObject *obj,
-									guint32 signals[LAST_SIGNAL],
-									gboolean enabled,
-									LocationPosition *cur_pos,
-									LocationVelocity *cur_vel,
-									LocationAccuracy *cur_acc,
-									guint min_interval,
-									gdouble min_distance,
-									gboolean *prev_enabled,
-									guint *prev_dist_timestamp,
-									LocationPosition **prev_pos,	/* prev : keeping lastest info. */
-									LocationVelocity **prev_vel,
-									LocationAccuracy **prev_acc)
+distance_based_position_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL], gboolean enabled,
+				LocationPosition *cur_pos, LocationVelocity *cur_vel, LocationAccuracy *cur_acc,
+				guint min_interval, gdouble min_distance, gboolean *prev_enabled, guint *prev_dist_timestamp,
+				LocationPosition **prev_pos, LocationVelocity **prev_vel, LocationAccuracy **prev_acc)
 {
+	LOC_FUNC_LOG
 	g_return_if_fail(obj);
 	g_return_if_fail(signals);
 	g_return_if_fail(cur_pos);
@@ -191,27 +177,17 @@ distance_based_position_signaling(LocationObject *obj,
 }
 
 void
-location_signaling(LocationObject *obj,
-					guint32 signals[LAST_SIGNAL],
-					gboolean enabled,
-					GList *boundary_list,
-					LocationPosition *cur_pos,
-					LocationVelocity *cur_vel,
-					LocationAccuracy *cur_acc,
-					guint pos_interval,			/* interval : support an update interval */
-					guint vel_interval,
-					guint loc_interval,
-					gboolean *prev_enabled,
-					guint *prev_pos_timestamp,
-					guint *prev_vel_timestamp,
-					guint *prev_loc_timestamp,
-					LocationPosition **prev_pos,	/* prev : keeping lastest info. */
-					LocationVelocity **prev_vel,
-					LocationAccuracy **prev_acc)
+location_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL], gboolean enabled, GList *boundary_list,
+					LocationPosition *cur_pos, LocationVelocity *cur_vel, LocationAccuracy *cur_acc,
+					guint pos_interval, guint vel_interval, guint loc_interval, gboolean *prev_enabled,
+					guint *prev_pos_timestamp, guint *prev_vel_timestamp, guint *prev_loc_timestamp,
+					LocationPosition **prev_pos, LocationVelocity **prev_vel, LocationAccuracy **prev_acc)
 {
 	g_return_if_fail(obj);
 	g_return_if_fail(signals);
 	g_return_if_fail(cur_pos);
+	g_return_if_fail(cur_vel);
+	g_return_if_fail(cur_acc);
 
 	if (!cur_pos->timestamp) {
 		LOCATION_LOGD("Invalid location with timestamp, 0");
@@ -226,14 +202,14 @@ location_signaling(LocationObject *obj,
 	*prev_vel = location_velocity_copy(cur_vel);
 	*prev_acc = location_accuracy_copy(cur_acc);
 
-	LOCATION_LOGD("status = %d", cur_pos->status);
+	LOCATION_LOGD("cur_pos->status = %d", cur_pos->status);
 	enable_signaling(obj, signals, prev_enabled, enabled, cur_pos->status);
 	position_velocity_signaling(obj, signals, pos_interval, vel_interval, loc_interval, prev_pos_timestamp, prev_vel_timestamp, prev_loc_timestamp, boundary_list, cur_pos, cur_vel, cur_acc);
 }
 
 void
-satellite_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL], gboolean *prev_enabled,
-					int interval, gboolean emit, guint *updated_timestamp, LocationSatellite **prev_sat, LocationSatellite *sat)
+satellite_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL], gboolean *prev_enabled, int interval,
+					gboolean emit, guint *last_timestamp, LocationSatellite **prev_sat, LocationSatellite *sat)
 {
 	g_return_if_fail(obj);
 	g_return_if_fail(signals);
@@ -244,9 +220,9 @@ satellite_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL], gboolean 
 	if (*prev_sat) location_satellite_free(*prev_sat);
 	*prev_sat = location_satellite_copy(sat);
 
-	if (emit && sat->timestamp - *updated_timestamp >= interval) {
+	if (emit && sat->timestamp - *last_timestamp >= interval) {
 		g_signal_emit(obj, signals[SERVICE_UPDATED], 0, SATELLITE_UPDATED, sat, NULL, NULL);
-		*updated_timestamp = sat->timestamp;
+		*last_timestamp = sat->timestamp;
 	}
 }
 

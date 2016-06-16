@@ -1105,7 +1105,7 @@ static void location_gps_init(LocationGps *self)
 	priv->vel_interval = LOCATION_UPDATE_INTERVAL_DEFAULT;
 	priv->sat_interval = LOCATION_UPDATE_INTERVAL_DEFAULT;
 	priv->loc_interval = LOCATION_UPDATE_INTERVAL_DEFAULT;
-	priv->batch_interval = LOCATION_UPDATE_INTERVAL_NONE;
+	priv->batch_interval = LOCATION_UPDATE_INTERVAL_DEFAULT;
 	priv->batch_period = LOCATION_BATCH_PERIOD_DEFAULT;
 	priv->min_interval = LOCATION_UPDATE_INTERVAL_NONE;
 

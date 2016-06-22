@@ -25,7 +25,6 @@
 
 #include <glib.h>
 #include <stdio.h>
-#include <pthread.h>
 #include <vconf.h>
 
 #include "location.h"
@@ -569,22 +568,19 @@ location_get_last_velocity(LocationObject *obj, LocationVelocity **velocity, Loc
 EXPORT_API int
 location_get_accessibility_state(LocationAccessState *state)
 {
-	int auth = location_application_get_authority();
-	switch (auth) {
-	case LOCATION_APP_OFF:
-		*state = LOCATION_ACCESS_DENIED;
-		break;
-	case LOCATION_APP_ON:
+	int ret = LOCATION_ERROR_NONE;
+
+#ifndef TIZEN_PROFILE_TV
+	ret = location_check_cynara(LOCATION_PRIVILEGE);
+#endif
+
+	if (ret == LOCATION_ERROR_NONE) {
 		*state = LOCATION_ACCESS_ALLOWED;
-		break;
-	case LOCATION_APP_NOT_FOUND:
-		*state = LOCATION_ACCESS_NONE;
-		break;
-	default:
-		return LOCATION_ERROR_UNKNOWN;
+	} else {
+		*state = LOCATION_ACCESS_DENIED;
+		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
 	}
 
-	LOCATION_LOGD("get_accessibility_state [%d]", auth);
 	return LOCATION_ERROR_NONE;
 }
 

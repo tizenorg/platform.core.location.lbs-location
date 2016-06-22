@@ -194,6 +194,21 @@ wps_location_cb(gboolean enabled, LocationPosition *pos, LocationVelocity *vel, 
 }
 
 static void
+location_setting_search_cb(keynode_t *key, gpointer self)
+{
+	LOC_FUNC_LOG
+	g_return_if_fail(key);
+	g_return_if_fail(self);
+	LocationWpsPrivate *priv = GET_PRIVATE(self);
+	g_return_if_fail(priv);
+
+	if (location_setting_get_key_val(key) == VCONFKEY_LOCATION_WPS_SEARCHING) {
+		LOCATION_LOGD("enable_signaling : SERVICE_DISABLED");
+		enable_signaling(self, signals, &(priv->enabled), FALSE, LOCATION_STATUS_NO_FIX);
+	}
+}
+
+static void
 location_setting_wps_cb(keynode_t *key, gpointer self)
 {
 	LOC_FUNC_LOG
@@ -255,6 +270,7 @@ location_wps_start(LocationWps *self)
 
 	if (priv->app_type != CPPAPP && priv->set_noti == FALSE) {
 		location_setting_add_notify(VCONFKEY_LOCATION_NETWORK_ENABLED, location_setting_wps_cb, self);
+		location_state_add_notify(VCONFKEY_LOCATION_WPS_STATE, location_setting_search_cb, self);
 		priv->set_noti = TRUE;
 	}
 
@@ -281,6 +297,7 @@ location_wps_stop(LocationWps *self)
 
 	if (priv->app_type != CPPAPP && priv->set_noti == TRUE) {
 		location_setting_ignore_notify(VCONFKEY_LOCATION_NETWORK_ENABLED, location_setting_wps_cb);
+		location_state_ignore_notify(VCONFKEY_LOCATION_WPS_STATE, location_setting_search_cb);
 		priv->set_noti = FALSE;
 	}
 
@@ -299,6 +316,7 @@ location_wps_dispose(GObject *gobject)
 	g_mutex_clear(&priv->mutex);
 	if (priv->app_type != CPPAPP && priv->set_noti == TRUE) {
 		location_setting_ignore_notify(VCONFKEY_LOCATION_NETWORK_ENABLED, location_setting_wps_cb);
+		location_state_ignore_notify(VCONFKEY_LOCATION_WPS_STATE, location_setting_search_cb);
 		priv->set_noti = FALSE;
 
 	}
@@ -490,6 +508,8 @@ location_wps_get_position(LocationWps *self, LocationPosition **position, Locati
 		return LOCATION_ERROR_NOT_AVAILABLE;
 	}
 
+	LOCATION_IF_POS_FAIL(VCONFKEY_LOCATION_WPS_STATE);
+
 	if (priv->pos) {
 		*position = location_position_copy(priv->pos);
 		if (priv->acc) *accuracy = location_accuracy_copy(priv->acc);
@@ -511,6 +531,7 @@ location_wps_get_position_ext(LocationWps *self, LocationPosition **position, Lo
 	setting_retval_if_fail(VCONFKEY_LOCATION_NETWORK_ENABLED);
 
 	LOC_COND_RET(__get_started(self) != TRUE, LOCATION_ERROR_NOT_AVAILABLE, _E, "location is not started [%s]", err_msg(LOCATION_ERROR_NOT_AVAILABLE));
+	LOCATION_IF_POS_FAIL(VCONFKEY_LOCATION_WPS_STATE);
 
 	if (priv->pos && priv->vel) {
 		*position = location_position_copy(priv->pos);
@@ -571,6 +592,7 @@ location_wps_get_velocity(LocationWps *self, LocationVelocity **velocity, Locati
 	setting_retval_if_fail(VCONFKEY_LOCATION_NETWORK_ENABLED);
 
 	LOC_COND_RET(__get_started(self) != TRUE, LOCATION_ERROR_NOT_AVAILABLE, _E, "location is not started [%s]", err_msg(LOCATION_ERROR_NOT_AVAILABLE));
+	LOCATION_IF_POS_FAIL(VCONFKEY_LOCATION_WPS_STATE);
 
 	if (priv->vel) {
 		*velocity = location_velocity_copy(priv->vel);

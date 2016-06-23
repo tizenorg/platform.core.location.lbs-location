@@ -304,6 +304,8 @@ int location_set_mock_location(LocationObject *obj, const LocationPosition *posi
 int location_clear_mock_location(LocationObject *obj);
 
 int location_enable_restriction(const int enable);
+int location_enable_fused_interval(LocationObject *obj);
+int location_fused_accuracy_mode(LocationObject *obj, int fused_mode);
 
 /**
  * @} @}

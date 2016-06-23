@@ -44,6 +44,7 @@ SET(SRCS
 	${MANAGER_DIR}/location-gps.c
 	${MANAGER_DIR}/location-wps.c
 	${MANAGER_DIR}/location-mock.c
+	${MANAGER_DIR}/location-fused.c
 	${PRIVACY_SRC}
 
 	${MODULE_DIR}/module-internal.c

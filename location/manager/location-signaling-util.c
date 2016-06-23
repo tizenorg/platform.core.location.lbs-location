@@ -27,7 +27,8 @@
 #include "location-common-util.h"
 #include "location-log.h"
 #include "location-position.h"
-
+#include "vconf.h"
+//#include "vconf-internal-location-keys.h"
 
 void
 enable_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL], gboolean *prev_enabled, gboolean enabled, LocationStatus status)
@@ -96,6 +97,77 @@ position_velocity_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL],
 		if (cur_pos->timestamp - *loc_last_timestamp >= loc_interval) {
 			signal_type |= LOCATION_CHANGED;
 			*loc_last_timestamp = cur_pos->timestamp;
+		}
+	}
+
+	if (signal_type != 0) {
+		g_signal_emit(obj, signals[SERVICE_UPDATED], 0, signal_type, cur_pos, cur_vel, cur_acc);
+
+		LOCATION_LOGW("=================== Passive : vconf updated ======================");
+		int ret = vconf_set_int(VCONFKEY_LOCATION_RESTRICT, 0);
+		LOC_IF_FAIL_LOG(ret, _E, "vconf set failed!!");
+	}
+
+	if (boundary_list) {
+		while ((priv = (LocationBoundaryPrivate *)g_list_nth_data(boundary_list, index)) != NULL) {
+			is_inside = location_boundary_if_inside(priv->boundary, cur_pos);
+			if (is_inside) {
+				if (priv->zone_status != ZONE_STATUS_IN) {
+					LOCATION_LOGD("Signal emit: ZONE IN");
+					g_signal_emit(obj, signals[ZONE_IN], 0, priv->boundary, cur_pos, cur_acc);
+					priv->zone_status = ZONE_STATUS_IN;
+				}
+			} else {
+				if (priv->zone_status != ZONE_STATUS_OUT) {
+					LOCATION_LOGD("Signal emit : ZONE_OUT");
+					g_signal_emit(obj, signals[ZONE_OUT], 0, priv->boundary, cur_pos, cur_acc);
+					priv->zone_status = ZONE_STATUS_OUT;
+				}
+			}
+			index++;
+		}
+	}
+}
+
+void
+passive_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL],
+				guint pos_interval, guint vel_interval, guint loc_interval,
+				guint *pos_updated_timestamp, guint *vel_updated_timestamp, guint *loc_updated_timestamp,
+				GList *prev_bound, LocationPosition *cur_pos, LocationVelocity *cur_vel, LocationAccuracy *cur_acc)
+{
+	g_return_if_fail(obj);
+	g_return_if_fail(signals);
+	g_return_if_fail(cur_pos);
+
+	int index = 0;
+	int signal_type = 0;
+	gboolean is_inside = FALSE;
+	GList *boundary_list = prev_bound;
+	LocationBoundaryPrivate *priv = NULL;
+
+	if (cur_pos && !cur_pos->timestamp) {
+		LOCATION_LOGW("Invalid location with timestamp, 0");
+		return;
+	}
+
+	if (pos_interval > 0) {
+		if (cur_pos->timestamp - *pos_updated_timestamp >= pos_interval) {
+			signal_type |= POSITION_UPDATED;
+			*pos_updated_timestamp = cur_pos->timestamp;
+		}
+	}
+
+	if (vel_interval > 0) {
+		if (cur_vel && (cur_vel->timestamp - *vel_updated_timestamp >= vel_interval)) {
+			signal_type |= VELOCITY_UPDATED;
+			*vel_updated_timestamp = cur_vel->timestamp;
+		}
+	}
+
+	if (loc_interval > 0) {
+		if (cur_pos->timestamp - *loc_updated_timestamp >= loc_interval) {
+			signal_type |= LOCATION_CHANGED;
+			*loc_updated_timestamp = cur_pos->timestamp;
 		}
 	}
 

@@ -77,6 +77,8 @@ typedef int (*TYPE_GET_NMEA)(LocationIElement *self, char **nmea);
 typedef int (*TYPE_GET_STATUS)(LocationIElement *self, int *status);
 typedef int (*TYPE_SET_MOCK_LOCATION)(LocationIElement *self, const LocationPosition *position, const LocationVelocity *velocity, const LocationAccuracy *accuracy);
 typedef int (*TYPE_CLEAR_MOCK_LOCATION)(LocationIElement *self);
+typedef int (*TYPE_SET_FUSED_INTERVAL)(LocationIElement *self);
+typedef int (*TYPE_SET_FUSED_ACCURACY)(LocationIElement *self, int mode);
 
 struct _LocationIElementInterface {
 	GTypeInterface parent_iface;
@@ -102,6 +104,8 @@ struct _LocationIElementInterface {
 	TYPE_GET_STATUS get_status;
 	TYPE_SET_MOCK_LOCATION set_mock_location;
 	TYPE_CLEAR_MOCK_LOCATION clear_mock_location;
+	TYPE_SET_FUSED_INTERVAL fused_interval;
+	TYPE_SET_FUSED_ACCURACY fused_accuracy;
 };
 
 GType location_ielement_get_type(void);
@@ -127,6 +131,8 @@ int location_ielement_get_nmea(LocationIElement *self, char **nmea);
 int location_ielement_get_status(LocationIElement *self, int *state);
 int location_ielement_set_mock_location(LocationIElement *self, const LocationPosition *position, const LocationVelocity *velocity, const LocationAccuracy *accuracy);
 int location_ielement_clear_mock_location(LocationIElement *self);
+int location_ielement_fused_interval(LocationIElement *self);
+int location_ielement_fused_accuracy(LocationIElement *self, int mode);
 
 G_END_DECLS
 

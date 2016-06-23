@@ -260,3 +260,21 @@ int location_ielement_clear_mock_location(LocationIElement *self)
 	return LOCATION_IELEMENT_GET_INTERFACE(self)->clear_mock_location(self);
 }
 
+int location_ielement_fused_interval(LocationIElement *self)
+{
+	g_return_val_if_fail(LOCATION_IS_IELEMENT(self), LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail(LOCATION_IELEMENT_GET_INTERFACE(self), LOCATION_ERROR_NOT_AVAILABLE);
+	g_return_val_if_fail(LOCATION_IELEMENT_GET_INTERFACE(self)->fused_interval, LOCATION_ERROR_NOT_AVAILABLE);
+
+	return LOCATION_IELEMENT_GET_INTERFACE(self)->fused_interval(self);
+}
+
+int location_ielement_fused_accuracy(LocationIElement *self, int mode)
+{
+	g_return_val_if_fail(LOCATION_IS_IELEMENT(self), LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail(LOCATION_IELEMENT_GET_INTERFACE(self), LOCATION_ERROR_NOT_AVAILABLE);
+	g_return_val_if_fail(LOCATION_IELEMENT_GET_INTERFACE(self)->fused_accuracy, LOCATION_ERROR_NOT_AVAILABLE);
+
+	return LOCATION_IELEMENT_GET_INTERFACE(self)->fused_accuracy(self, mode);
+}
+

@@ -130,7 +130,7 @@ static gpointer mod_new(const char *module_name)
 		_mod->shutdown = shutdown;
 		_mod->handler = _mod->init(&(_mod->ops));
 		if (!_mod->handler) {
-			LOCATION_LOGW("module init failed");
+			LOCATION_LOGW("module init failed : gps");
 			gmod_free(_mod->gmod);
 			ret_mod = NULL;
 		} else
@@ -142,7 +142,7 @@ static gpointer mod_new(const char *module_name)
 		_mod->shutdown = shutdown;
 		_mod->handler = _mod->init(&(_mod->ops));
 		if (!_mod->handler) {
-			LOCATION_LOGW("module init failed");
+			LOCATION_LOGW("module init failed : wps");
 			gmod_free(_mod->gmod);
 			ret_mod = NULL;
 		} else
@@ -154,7 +154,19 @@ static gpointer mod_new(const char *module_name)
 		_mod->shutdown = shutdown;
 		_mod->handler = _mod->init(&(_mod->ops));
 		if (!_mod->handler) {
-			LOCATION_LOGW("module init failed");
+			LOCATION_LOGW("module init failed : mock");
+			gmod_free(_mod->gmod);
+			ret_mod = NULL;
+		} else
+			ret_mod = (gpointer) _mod;
+	} else if (g_str_has_prefix(module_name, "fused")) {
+		LocationFusedMod *_mod = g_new0(LocationFusedMod, 1);
+		_mod->gmod = gmod;
+		_mod->init = init;
+		_mod->shutdown = shutdown;
+		_mod->handler = _mod->init(&(_mod->ops));
+		if (!_mod->handler) {
+			LOCATION_LOGW("module init failed : fused");
 			gmod_free(_mod->gmod);
 			ret_mod = NULL;
 		} else
@@ -193,6 +205,16 @@ static void mod_free(gpointer mod, const char *module_name)
 		_mod->gmod = NULL;
 	} else if (0 == g_strcmp0(module_name, "mock")) {
 		LocationMockMod *_mod = (LocationMockMod *) mod;
+		if (_mod->shutdown && _mod->handler)
+			_mod->shutdown(_mod->handler);
+
+		_mod->handler = NULL;
+		_mod->init = NULL;
+		_mod->shutdown = NULL;
+		gmod_free(_mod->gmod);
+		_mod->gmod = NULL;
+	} else if (0 == g_strcmp0(module_name, "fused")) {
+		LocationFusedMod *_mod = (LocationFusedMod *) mod;
 		if (_mod->shutdown && _mod->handler)
 			_mod->shutdown(_mod->handler);
 

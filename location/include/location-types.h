@@ -65,9 +65,10 @@ typedef enum {
 	LOCATION_METHOD_GPS,				/*/< This method uses Global Positioning System. */
 	LOCATION_METHOD_WPS,				/*/< This method uses Wifi Positioning System. */
 	LOCATION_METHOD_MOCK,				/* < This method is for mock location */
-	LOCATION_METHOD_MOCK_GPS,				/* < This method is for mock location */
-	LOCATION_METHOD_MOCK_WPS,				/* < This method is for mock location */
-	LOCATION_METHOD_MAX,		/*/< The numer of methods */
+	LOCATION_METHOD_MOCK_GPS,			/* < This method is for mock location */
+	LOCATION_METHOD_MOCK_WPS,			/* < This method is for mock location */
+	LOCATION_METHOD_FUSED,				/* < This method uses fused location */
+	LOCATION_METHOD_MAX,				/*/< The numer of methods */
 } LocationMethod;
 
 /**
@@ -89,6 +90,41 @@ typedef enum {
 	LOCATION_ACCESS_DENIED,		/*/< An application is not permited to use location service. */
 	LOCATION_ACCESS_ALLOWED,	/*/< An application is able to use location service. */
 } LocationAccessState;
+
+/**
+ * @brief This represents the setting type.
+ */
+typedef enum {
+	LOCATION_FUSED_HIGH,
+	LOCATION_FUSED_BALANCED,
+	LOCATION_FUSED_NOPOWER
+} LocationFusedMode;
+
+typedef enum {
+	UNDECIDED,
+	MOVEMENT,
+	IMMOBILITY,
+	SLEEP
+} LocFusedAccelMotion;
+
+typedef enum {
+	UNINITIALIZED,
+	ONGOING,
+	COMPLETE
+} LocFusedCalibration;
+
+typedef enum {
+	SPATIAL_X,
+	SPATIAL_Y,
+	SPATIAL_Z,
+	SPATIAL_DIMENSION
+} LocFusedAccelAxis;
+
+typedef enum {
+	T1,
+	T2,
+	TIME_SHIFT
+} LocFusedTimeShift;
 
 /**
  * @brief This represents the setting type.

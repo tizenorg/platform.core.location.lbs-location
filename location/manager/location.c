@@ -35,6 +35,7 @@
 #include "location-gps.h"
 #include "location-wps.h"
 #include "location-mock.h"
+#include "location-fused.h"
 #include "location-position.h"
 #include "module-internal.h"
 #include "location-common-util.h"
@@ -69,6 +70,7 @@ static char *__convert_setting_key(LocationMethod method)
 		key = g_strdup(VCONFKEY_LOCATION_MOCK_ENABLED);
 		break;
 	default:
+		LOCATION_LOGD("Invalid setting key");
 		break;
 	}
 
@@ -138,6 +140,10 @@ location_new(LocationMethod method)
 		break;
 	case LOCATION_METHOD_MOCK:
 		self = g_object_new(LOCATION_TYPE_MOCK, NULL);
+		break;
+	case LOCATION_METHOD_FUSED:
+		self = g_object_new(LOCATION_TYPE_FUSED, NULL);
+		break;
 	default:
 		break;
 	}
@@ -230,20 +236,23 @@ location_is_supported_method(LocationMethod method)
 
 	switch (method) {
 	case LOCATION_METHOD_HYBRID:
-			if (module_is_supported("gps") || module_is_supported("wps") || module_is_supported("mock"))
-				is_supported = TRUE;
-			break;
+		if (module_is_supported("gps") || module_is_supported("wps") || module_is_supported("mock"))
+			is_supported = TRUE;
+		break;
 	case LOCATION_METHOD_GPS:
-			is_supported = module_is_supported("gps");
-			break;
+		is_supported = module_is_supported("gps");
+		break;
 	case LOCATION_METHOD_WPS:
-			is_supported = module_is_supported("wps");
-			break;
+		is_supported = module_is_supported("wps");
+		break;
 	case LOCATION_METHOD_MOCK:
-			is_supported = module_is_supported("mock");
-			break;
+		is_supported = module_is_supported("mock");
+		break;
+	case LOCATION_METHOD_FUSED:
+		is_supported = module_is_supported("fused");
+		break;
 	default:
-			break;
+		break;
 	}
 
 	return is_supported;
@@ -758,6 +767,30 @@ location_clear_mock_location(LocationObject *obj)
 	int ret = LOCATION_ERROR_NONE;
 	ret = location_ielement_clear_mock_location(LOCATION_IELEMENT(obj));
 	LOC_IF_FAIL(ret, _E, "Fail to clear_mock_location [%s]", err_msg(ret));
+
+	return ret;
+}
+
+EXPORT_API int
+location_enable_fused_interval(LocationObject *obj)
+{
+	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
+
+	int ret = LOCATION_ERROR_NONE;
+	ret = location_ielement_fused_interval(LOCATION_IELEMENT(obj));
+	LOC_IF_FAIL(ret, _E, "Fail to fused_interval [%s]", err_msg(ret));
+
+	return ret;
+}
+
+EXPORT_API int
+location_fused_accuracy_mode(LocationObject *obj, int fused_mode)
+{
+	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
+
+	int ret = LOCATION_ERROR_NONE;
+	ret = location_ielement_fused_accuracy(LOCATION_IELEMENT(obj), fused_mode);
+	LOC_IF_FAIL(ret, _E, "Fail to fused_accuracy [%s]", err_msg(ret));
 
 	return ret;
 }

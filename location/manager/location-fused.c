@@ -201,10 +201,10 @@ static void fused_nopower_cb(keynode_t * key, gpointer self)
 	LOC_FUNC_LOG
 	LOCATION_LOGD("gps_position_changed_cb ============== Passive invoke");
 	LocationFusedPrivate *priv = GET_PRIVATE(self);
-	g_return_val_if_fail(priv, LOCATION_ERROR_NOT_AVAILABLE);
-	g_return_val_if_fail(priv->mod, LOCATION_ERROR_NOT_AVAILABLE);
-	g_return_val_if_fail(priv->mod->handler, LOCATION_ERROR_NOT_AVAILABLE);
-	g_return_val_if_fail(priv->mod->ops.get_last_position, LOCATION_ERROR_NOT_AVAILABLE);
+	g_return_if_fail(priv);
+	g_return_if_fail(priv->mod);
+	g_return_if_fail(priv->mod->handler);
+	g_return_if_fail(priv->mod->ops.get_last_position);
 
 	LocationPosition *pos = NULL;
 	LocationVelocity *vel = NULL;

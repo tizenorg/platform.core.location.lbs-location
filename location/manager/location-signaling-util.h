@@ -51,6 +51,13 @@ void location_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL],
 						gboolean *prev_enabled, guint *prev_pos_timestamp, guint *prev_vel_timestamp, guint *prev_loc_timestamp,
 						LocationPosition **prev_pos, LocationVelocity **prev_vel, LocationAccuracy **prev_acc);
 
+void passive_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL],
+						gboolean enabled, GList *boundary_list,
+						LocationPosition *cur_pos, LocationVelocity *cur_vel, LocationAccuracy *cur_acc,
+						guint pos_interval, guint vel_interval, guint loc_interval,
+						gboolean *prev_enabled, guint *prev_pos_timestamp, guint *prev_vel_timestamp, guint *prev_loc_timestamp,
+						LocationPosition **prev_pos, LocationVelocity **prev_vel, LocationAccuracy **prev_acc);
+
 void distance_based_position_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL],
 									gboolean enabled,
 									LocationPosition *cur_pos, LocationVelocity *cur_vel, LocationAccuracy *cur_acc,

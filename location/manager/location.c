@@ -35,6 +35,7 @@
 #include "location-gps.h"
 #include "location-wps.h"
 #include "location-mock.h"
+#include "location-passive.h"
 #include "location-position.h"
 #include "module-internal.h"
 #include "location-common-util.h"
@@ -138,6 +139,10 @@ location_new(LocationMethod method)
 		break;
 	case LOCATION_METHOD_MOCK:
 		self = g_object_new(LOCATION_TYPE_MOCK, NULL);
+		break;
+	case LOCATION_METHOD_PASSIVE:
+		self = g_object_new(LOCATION_TYPE_PASSIVE, NULL);
+		break;
 	default:
 		break;
 	}
@@ -230,18 +235,21 @@ location_is_supported_method(LocationMethod method)
 
 	switch (method) {
 	case LOCATION_METHOD_HYBRID:
-			if (module_is_supported("gps") || module_is_supported("wps") || module_is_supported("mock"))
-				is_supported = TRUE;
-			break;
+		if (module_is_supported("gps") || module_is_supported("wps") || module_is_supported("mock"))
+			is_supported = TRUE;
+		break;
 	case LOCATION_METHOD_GPS:
-			is_supported = module_is_supported("gps");
-			break;
+		is_supported = module_is_supported("gps");
+		break;
 	case LOCATION_METHOD_WPS:
-			is_supported = module_is_supported("wps");
-			break;
+		is_supported = module_is_supported("wps");
+		break;
 	case LOCATION_METHOD_MOCK:
-			is_supported = module_is_supported("mock");
-			break;
+		is_supported = module_is_supported("mock");
+		break;
+	case LOCATION_METHOD_PASSIVE:
+		is_supported = module_is_supported("passive");
+		break;
 	default:
 			break;
 	}

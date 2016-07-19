@@ -190,7 +190,8 @@ wps_location_cb(gboolean enabled, LocationPosition *pos, LocationVelocity *vel, 
 					&(priv->loc_updated_timestamp),
 					&(priv->pos),
 					&(priv->vel),
-					&(priv->acc));
+					&(priv->acc),
+					FALSE);
 }
 
 static void

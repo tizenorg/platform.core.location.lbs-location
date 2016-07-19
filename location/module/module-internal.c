@@ -159,6 +159,18 @@ static gpointer mod_new(const char *module_name)
 			ret_mod = NULL;
 		} else
 			ret_mod = (gpointer) _mod;
+	} else if (g_str_has_prefix(module_name, "passive")) {
+		LocationPassiveMod *_mod = g_new0(LocationPassiveMod, 1);
+		_mod->gmod = gmod;
+		_mod->init = init;
+		_mod->shutdown = shutdown;
+		_mod->handler = _mod->init(&(_mod->ops));
+		if (!_mod->handler) {
+			LOCATION_LOGW("module init failed");
+			gmod_free(_mod->gmod);
+			ret_mod = NULL;
+		} else
+			ret_mod = (gpointer) _mod;
 	} else {
 		LOCATION_LOGW("module name (%s) is wrong", module_name);
 		ret_mod = NULL;

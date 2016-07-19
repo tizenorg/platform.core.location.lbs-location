@@ -59,7 +59,7 @@ void
 position_velocity_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL],
 			guint pos_interval, guint vel_interval, guint loc_interval,
 			guint *pos_last_timestamp, guint *vel_last_timestamp, guint *loc_last_timestamp,
-			GList *prev_bound, LocationPosition *cur_pos, LocationVelocity *cur_vel, LocationAccuracy *cur_acc)
+			GList *prev_bound, LocationPosition *cur_pos, LocationVelocity *cur_vel, LocationAccuracy *cur_acc, gboolean passive_sig)
 {
 	g_return_if_fail(obj);
 	g_return_if_fail(signals);
@@ -79,21 +79,21 @@ position_velocity_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL],
 	}
 
 	if (pos_interval > 0) {
-		if (cur_pos->timestamp - *pos_last_timestamp >= pos_interval) {
+		if ((cur_pos->timestamp - *pos_last_timestamp >= pos_interval) || (passive_sig == TRUE)) {
 			signal_type |= POSITION_UPDATED;
 			*pos_last_timestamp = cur_pos->timestamp;
 		}
 	}
 
 	if (vel_interval > 0) {
-		if (cur_vel && (cur_vel->timestamp - *vel_last_timestamp >= vel_interval)) {
+		if ((cur_vel->timestamp - *vel_last_timestamp >= vel_interval) || (passive_sig == TRUE)) {
 			signal_type |= VELOCITY_UPDATED;
 			*vel_last_timestamp = cur_vel->timestamp;
 		}
 	}
 
 	if (loc_interval > 0) {
-		if (cur_pos->timestamp - *loc_last_timestamp >= loc_interval) {
+		if ((cur_pos->timestamp - *loc_last_timestamp >= loc_interval) || (passive_sig == TRUE)) {
 			signal_type |= LOCATION_CHANGED;
 			*loc_last_timestamp = cur_pos->timestamp;
 		}
@@ -181,7 +181,7 @@ location_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL], gboolean e
 					LocationPosition *cur_pos, LocationVelocity *cur_vel, LocationAccuracy *cur_acc,
 					guint pos_interval, guint vel_interval, guint loc_interval, gboolean *prev_enabled,
 					guint *prev_pos_timestamp, guint *prev_vel_timestamp, guint *prev_loc_timestamp,
-					LocationPosition **prev_pos, LocationVelocity **prev_vel, LocationAccuracy **prev_acc)
+					LocationPosition **prev_pos, LocationVelocity **prev_vel, LocationAccuracy **prev_acc, gboolean passive_sig)
 {
 	g_return_if_fail(obj);
 	g_return_if_fail(signals);
@@ -204,7 +204,7 @@ location_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL], gboolean e
 
 	LOCATION_LOGD("cur_pos->status = %d", cur_pos->status);
 	enable_signaling(obj, signals, prev_enabled, enabled, cur_pos->status);
-	position_velocity_signaling(obj, signals, pos_interval, vel_interval, loc_interval, prev_pos_timestamp, prev_vel_timestamp, prev_loc_timestamp, boundary_list, cur_pos, cur_vel, cur_acc);
+	position_velocity_signaling(obj, signals, pos_interval, vel_interval, loc_interval, prev_pos_timestamp, prev_vel_timestamp, prev_loc_timestamp, boundary_list, cur_pos, cur_vel, cur_acc, passive_sig);
 }
 
 void

@@ -168,7 +168,7 @@ mock_location_cb(gboolean enabled, LocationPosition *pos, LocationVelocity *vel,
 	location_signaling(self, signals, enabled, priv->boundary_list, pos, vel, acc,
 						priv->pos_interval, priv->vel_interval, priv->loc_interval, &(priv->enabled),
 						&(priv->pos_updated_timestamp), &(priv->vel_updated_timestamp), &(priv->loc_updated_timestamp),
-						&(priv->pos), &(priv->vel), &(priv->acc));
+						&(priv->pos), &(priv->vel), &(priv->acc), FALSE);
 }
 
 static void

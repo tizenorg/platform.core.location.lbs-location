@@ -37,7 +37,7 @@ void enable_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL], gboolea
 void position_velocity_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL],
 								guint pos_interval,	guint vel_interval,	guint loc_interval,
 								guint *pos_last_timestamp, guint *vel_last_timestamp, guint *loc_last_timestamp,
-								GList *prev_bound, LocationPosition *cur_pos, LocationVelocity *cur_vel, LocationAccuracy *cur_acc);
+								GList *prev_bound, LocationPosition *cur_pos, LocationVelocity *cur_vel, LocationAccuracy *cur_acc, gboolean passive_sig);
 
 void satellite_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL],
 						gboolean *prev_enabled, int interval, gboolean emit,
@@ -45,6 +45,14 @@ void satellite_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL],
 						LocationSatellite *sat);
 
 void location_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL],
+						gboolean enabled, GList *boundary_list,
+						LocationPosition *cur_pos, LocationVelocity *cur_vel, LocationAccuracy *cur_acc,
+						guint pos_interval, guint vel_interval, guint loc_interval,
+						gboolean *prev_enabled, guint *prev_pos_timestamp, guint *prev_vel_timestamp, guint *prev_loc_timestamp,
+						LocationPosition **prev_pos, LocationVelocity **prev_vel, LocationAccuracy **prev_acc,
+						gboolean passive_sig);
+
+void passive_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL],
 						gboolean enabled, GList *boundary_list,
 						LocationPosition *cur_pos, LocationVelocity *cur_vel, LocationAccuracy *cur_acc,
 						guint pos_interval, guint vel_interval, guint loc_interval,

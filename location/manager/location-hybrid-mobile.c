@@ -367,7 +367,7 @@ hybrid_service_updated(GObject *obj, gint type, gpointer data, gpointer velocity
 			} else {
 				position_velocity_signaling(self, signals, priv->pos_interval, priv->vel_interval, priv->loc_interval,
 								&(priv->pos_updated_timestamp), &(priv->vel_updated_timestamp), &(priv->loc_updated_timestamp),
-								priv->boundary_list, pos, vel, acc);
+								priv->boundary_list, pos, vel, acc, FALSE);
 			}
 		}
 
@@ -403,7 +403,7 @@ hybrid_service_updated(GObject *obj, gint type, gpointer data, gpointer velocity
 				LOCATION_LOGD("position_velocity_signaling");
 				position_velocity_signaling(self, signals, priv->pos_interval, priv->vel_interval, priv->loc_interval,
 											&(priv->pos_updated_timestamp), &(priv->vel_updated_timestamp), &(priv->loc_updated_timestamp),
-											priv->boundary_list, pos, vel, acc);
+											priv->boundary_list, pos, vel, acc, FALSE);
 			}
 		}
 	}

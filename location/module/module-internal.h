@@ -62,6 +62,14 @@ typedef struct {
 	LocModMockOps ops;
 } LocationMockMod;
 
+typedef struct {
+	GMod *gmod;
+	gpointer handler;
+	gpointer(*init)(LocModPassiveOps *ops);
+	void (*shutdown)(gpointer handle);
+	LocModPassiveOps ops;
+} LocationPassiveMod;
+
 gboolean module_init(void);
 gpointer module_new(const char *module_name);
 void module_free(gpointer mod, const char *module_name);

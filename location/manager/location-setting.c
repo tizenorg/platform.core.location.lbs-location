@@ -29,8 +29,9 @@
 #include "location-log.h"
 #include "location-setting.h"
 
+#ifdef EVENT_SYSTEM
 static unsigned int g_event_req_id;
-
+#endif
 
 gint location_setting_get_key_val(keynode_t *key)
 {
@@ -74,6 +75,7 @@ gchar *location_setting_get_string(const gchar *path)
 	return vconf_get_str(path);
 }
 
+#ifdef EVENT_SYSTEM
 static char *__convert_event_from_vconf(const char *vconf)
 {
 	char *event = NULL;
@@ -100,20 +102,20 @@ static void __event_handler(const char *event_name, bundle *data, void *self)
 
 	LOCATION_SECLOG("[%s: %s]", event_name, value);
 }
+#endif
 
 gint location_setting_add_notify(const gchar *path, SettingCB setting_cb, gpointer self)
 {
 	g_return_val_if_fail(path, -1);
 	g_return_val_if_fail(self, -1);
 
+#ifdef EVENT_SYSTEM
 	const char *event_name = NULL;
 	event_name = __convert_event_from_vconf(path);
 
-	if (eventsystem_register_event(event_name, &g_event_req_id, (eventsystem_handler) __event_handler, NULL) != ES_R_OK) {
-
+	if (eventsystem_register_event(event_name, &g_event_req_id, (eventsystem_handler) __event_handler, NULL) != ES_R_OK)
 		LOCATION_SECLOG("eventsystem_register_event failed");
-	}
-
+#endif
 	if (vconf_notify_key_changed(path, setting_cb, self)) {
 		LOCATION_SECLOG("vconf notify add failed [%s]", path);
 		return -1;
@@ -127,9 +129,10 @@ gint location_setting_ignore_notify(const gchar *path, SettingCB setting_cb)
 	g_return_val_if_fail(path, -1);
 	g_return_val_if_fail(setting_cb, -1);
 
-	if (eventsystem_unregister_event(g_event_req_id) != ES_R_OK) {
+#ifdef EVENT_SYSTEM
+	if (eventsystem_unregister_event(g_event_req_id) != ES_R_OK)
 		LOCATION_SECLOG("eventsystem_unregister_event failed");
-	}
+#endif
 
 	if (vconf_ignore_key_changed(path, setting_cb)) {
 		LOCATION_SECLOG("vconf notify remove failed [%s]", path);

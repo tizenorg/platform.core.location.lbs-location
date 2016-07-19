@@ -86,7 +86,7 @@ position_velocity_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL],
 	}
 
 	if (vel_interval > 0) {
-		if (cur_vel && (cur_vel->timestamp - *vel_last_timestamp >= vel_interval)) {
+		if (cur_vel->timestamp - *vel_last_timestamp >= vel_interval) {
 			signal_type |= VELOCITY_UPDATED;
 			*vel_last_timestamp = cur_vel->timestamp;
 		}

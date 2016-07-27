@@ -298,8 +298,7 @@ int location_get_nmea(LocationObject *obj, char **nmea_data);
 /* Tizen 3.0 */
 
 int location_get_service_state(LocationObject *obj, int *state);
-int location_enable_mock(const LocationMethod method, const int enable);
-int location_set_mock_method_enabled(const LocationMethod method, const int enable);
+int location_enable_mock(const int enable);
 int location_set_mock_location(LocationObject *obj, const LocationPosition *position, const LocationVelocity *velocity, const LocationAccuracy *accuracy);
 int location_clear_mock_location(LocationObject *obj);
 

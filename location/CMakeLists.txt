@@ -43,7 +43,6 @@ SET(SRCS
 	${MANAGER_DIR}/location-common-util.c
 	${MANAGER_DIR}/location-gps.c
 	${MANAGER_DIR}/location-wps.c
-	${MANAGER_DIR}/location-mock.c
 	${PRIVACY_SRC}
 
 	${MODULE_DIR}/module-internal.c

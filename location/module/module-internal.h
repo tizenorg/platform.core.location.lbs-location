@@ -54,14 +54,6 @@ typedef struct {
 	LocModWpsOps ops;
 } LocationWpsMod;
 
-typedef struct {
-	GMod *gmod;
-	gpointer handler;
-	gpointer(*init)(LocModMockOps *ops);
-	void (*shutdown)(gpointer handle);
-	LocModMockOps ops;
-} LocationMockMod;
-
 gboolean module_init(void);
 gpointer module_new(const char *module_name);
 void module_free(gpointer mod, const char *module_name);

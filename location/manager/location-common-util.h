@@ -66,9 +66,10 @@ int location_get_app_type(char *app_id);
 const char* err_msg(int err);
 
 #define LOCATION_IF_POS_FAIL(path) {\
-		int state = 0; \
+		int state = 0, mock; \
+		vconf_get_int(VCONFKEY_LOCATION_MOCK_ENABLED, &mock); \
 		vconf_get_int(path, &state); \
-		if (state != 2){\
+		if (state != 2 && mock != 1){\
 			return LOCATION_ERROR_NOT_AVAILABLE;\
 		}\
 	}
@@ -76,7 +77,8 @@ const char* err_msg(int err);
 #define LOCATION_IF_HYBRID_FAIL(gpath, wpath) { \
 		int gps = 0; vconf_get_int(gpath, &gps); \
 		int wps = 0; vconf_get_int(wpath, &wps); \
-		if (gps != 2 && wps != 2) {\
+		int mock = 0; vconf_get_int(VCONFKEY_LOCATION_MOCK_ENABLED, &mock); \
+		if (gps != 2 && wps != 2 && mock != 1) {\
 			return LOCATION_ERROR_NOT_AVAILABLE;\
 		}\
 	}

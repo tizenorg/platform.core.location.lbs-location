@@ -147,18 +147,6 @@ static gpointer mod_new(const char *module_name)
 			ret_mod = NULL;
 		} else
 			ret_mod = (gpointer) _mod;
-	} else if (g_str_has_prefix(module_name, "mock")) {
-		LocationMockMod *_mod = g_new0(LocationMockMod, 1);
-		_mod->gmod = gmod;
-		_mod->init = init;
-		_mod->shutdown = shutdown;
-		_mod->handler = _mod->init(&(_mod->ops));
-		if (!_mod->handler) {
-			LOCATION_LOGW("module init failed");
-			gmod_free(_mod->gmod);
-			ret_mod = NULL;
-		} else
-			ret_mod = (gpointer) _mod;
 	} else {
 		LOCATION_LOGW("module name (%s) is wrong", module_name);
 		ret_mod = NULL;
@@ -183,16 +171,6 @@ static void mod_free(gpointer mod, const char *module_name)
 		_mod->gmod = NULL;
 	} else if (0 == g_strcmp0(module_name, "wps")) {
 		LocationWpsMod *_mod = (LocationWpsMod *) mod;
-		if (_mod->shutdown && _mod->handler)
-			_mod->shutdown(_mod->handler);
-
-		_mod->handler = NULL;
-		_mod->init = NULL;
-		_mod->shutdown = NULL;
-		gmod_free(_mod->gmod);
-		_mod->gmod = NULL;
-	} else if (0 == g_strcmp0(module_name, "mock")) {
-		LocationMockMod *_mod = (LocationMockMod *) mod;
 		if (_mod->shutdown && _mod->handler)
 			_mod->shutdown(_mod->handler);
 

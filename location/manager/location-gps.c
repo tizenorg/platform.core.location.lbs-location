@@ -238,8 +238,10 @@ static void location_setting_search_cb(keynode_t *key, gpointer self)
 	g_return_if_fail(priv);
 
 	if (location_setting_get_key_val(key) == VCONFKEY_LOCATION_GPS_SEARCHING) {
-		LOCATION_LOGD("enable_signaling : SERVICE_DISABLED");
-		enable_signaling(self, signals, &(priv->enabled), FALSE, LOCATION_STATUS_NO_FIX);
+		if (!location_setting_get_int(VCONFKEY_LOCATION_MOCK_ENABLED)) {
+			LOCATION_LOGD("enable_signaling : SERVICE_DISABLED");
+			enable_signaling(self, signals, &(priv->enabled), FALSE, LOCATION_STATUS_NO_FIX);
+		}
 	}
 }
 #endif
@@ -1063,6 +1065,44 @@ static int location_gps_set_option(LocationGps *self, const char *option)
 	return ret;
 }
 
+static int
+location_gps_set_mock_location(LocationGps *self, LocationPosition *position, LocationVelocity *velocity, LocationAccuracy *accuracy)
+{
+	LOC_FUNC_LOG
+	LocationGpsPrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(priv->mod->handler, LOCATION_ERROR_NOT_AVAILABLE);
+	g_return_val_if_fail(priv->mod->ops.set_mock_location, LOCATION_ERROR_NOT_AVAILABLE);
+
+	int ret = LOCATION_ERROR_NONE;
+	if (!location_setting_get_int(VCONFKEY_LOCATION_MOCK_ENABLED)) {
+		ret = LOCATION_ERROR_SETTING_OFF;
+	} else {
+		ret = priv->mod->ops.set_mock_location(priv->mod->handler, position, velocity, accuracy, NULL, self);
+		LOC_IF_FAIL_LOG(ret, _E, "Failed to set_mock_location [%s]", err_msg(ret));
+	}
+
+	return ret;
+}
+
+static int
+location_gps_clear_mock_location(LocationGps *self)
+{
+	LOC_FUNC_LOG
+	LocationGpsPrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(priv->mod->handler, LOCATION_ERROR_NOT_AVAILABLE);
+	g_return_val_if_fail(priv->mod->ops.clear_mock_location, LOCATION_ERROR_NOT_AVAILABLE);
+
+	int ret = LOCATION_ERROR_NONE;
+	if (!location_setting_get_int(VCONFKEY_LOCATION_MOCK_ENABLED)) {
+		ret = LOCATION_ERROR_SETTING_OFF;
+	} else {
+		ret = priv->mod->ops.clear_mock_location(priv->mod->handler, NULL, self);
+		LOC_IF_FAIL_LOG(ret, _E, "Failed to clear_mock_location [%s]", err_msg(ret));
+	}
+
+	return ret;
+}
+
 static void location_ielement_interface_init(LocationIElementInterface *iface)
 {
 	iface->start = (TYPE_START_FUNC)location_gps_start;
@@ -1083,6 +1123,8 @@ static void location_ielement_interface_init(LocationIElementInterface *iface)
 	iface->request_single_location = (TYPE_REQUEST_SINGLE_LOCATION)location_gps_request_single_location;
 	iface->get_nmea = (TYPE_GET_NMEA)location_gps_get_nmea;
 
+	iface->set_mock_location = (TYPE_SET_MOCK_LOCATION) location_gps_set_mock_location;
+	iface->clear_mock_location = (TYPE_CLEAR_MOCK_LOCATION) location_gps_clear_mock_location;
 }
 
 static void location_gps_init(LocationGps *self)

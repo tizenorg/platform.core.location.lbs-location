@@ -684,22 +684,6 @@ location_mock_get_nmea(LocationMock *self, char **nmea_data)
 
 
 /* Tizen 3.0 */
-
-static int
-location_mock_get_status(LocationMock *self, int *status)
-{
-	LocationMockPrivate *priv = GET_PRIVATE(self);
-	g_return_val_if_fail(priv->mod->handler, LOCATION_ERROR_NOT_AVAILABLE);
-
-	if (__get_started(self) == TRUE)
-		*status = 1;
-	else
-		*status = 0;
-
-	return LOCATION_ERROR_NONE;
-}
-
-
 static void
 __set_mock_location_cb(gboolean enabled, LocationStatus status, gpointer self)
 {
@@ -782,7 +766,6 @@ location_ielement_interface_init(LocationIElementInterface *iface)
 	iface->request_single_location = (TYPE_REQUEST_SINGLE_LOCATION)location_mock_request_single_location;
 	iface->get_nmea = (TYPE_GET_NMEA)location_mock_get_nmea;
 
-	iface->get_status = (TYPE_GET_STATUS) location_mock_get_status;
 	iface->set_mock_location = (TYPE_SET_MOCK_LOCATION) location_mock_set_mock_location;
 	iface->clear_mock_location = (TYPE_CLEAR_MOCK_LOCATION) location_mock_clear_mock_location;
 }

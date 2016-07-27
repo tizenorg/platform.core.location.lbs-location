@@ -34,7 +34,6 @@
 #include "location-hybrid.h"
 #include "location-gps.h"
 #include "location-wps.h"
-#include "location-mock.h"
 #include "location-position.h"
 #include "module-internal.h"
 #include "location-common-util.h"
@@ -65,7 +64,7 @@ static char *__convert_setting_key(LocationMethod method)
 	case LOCATION_METHOD_WPS:
 		key = g_strdup(VCONFKEY_LOCATION_NETWORK_ENABLED);
 		break;
-	case LOCATION_METHOD_MOCK:
+	case _TMP_METHOD_MOCK:
 		key = g_strdup(VCONFKEY_LOCATION_MOCK_ENABLED);
 		break;
 	default:
@@ -84,8 +83,6 @@ static LocationMethod __convert_method_from_key(const char *key)
 		_method = LOCATION_METHOD_GPS;
 	else if (g_strcmp0(key, VCONFKEY_LOCATION_NETWORK_ENABLED) == 0)
 		_method = LOCATION_METHOD_WPS;
-	else if (g_strcmp0(key, VCONFKEY_LOCATION_MOCK_ENABLED) == 0)
-		_method = LOCATION_METHOD_MOCK;
 
 	return _method;
 }
@@ -136,8 +133,6 @@ location_new(LocationMethod method)
 	case LOCATION_METHOD_WPS:
 		self = g_object_new(LOCATION_TYPE_WPS, NULL);
 		break;
-	case LOCATION_METHOD_MOCK:
-		self = g_object_new(LOCATION_TYPE_MOCK, NULL);
 	default:
 		break;
 	}
@@ -230,18 +225,15 @@ location_is_supported_method(LocationMethod method)
 
 	switch (method) {
 	case LOCATION_METHOD_HYBRID:
-			if (module_is_supported("gps") || module_is_supported("wps") || module_is_supported("mock"))
-				is_supported = TRUE;
-			break;
+		if (module_is_supported("gps") || module_is_supported("wps"))
+			is_supported = TRUE;
+		break;
 	case LOCATION_METHOD_GPS:
-			is_supported = module_is_supported("gps");
-			break;
+		is_supported = module_is_supported("gps");
+		break;
 	case LOCATION_METHOD_WPS:
-			is_supported = module_is_supported("wps");
-			break;
-	case LOCATION_METHOD_MOCK:
-			is_supported = module_is_supported("mock");
-			break;
+		is_supported = module_is_supported("wps");
+		break;
 	default:
 			break;
 	}
@@ -634,28 +626,10 @@ location_set_option(LocationObject *obj, const char *option)
 /*
  * Tizen 3.0
  */
-
 EXPORT_API int
-location_get_service_state(LocationObject *obj, int *state)
+location_enable_mock(const int enable)
 {
-	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
-	g_return_val_if_fail(state, LOCATION_ERROR_PARAMETER);
-
 	int ret = LOCATION_ERROR_NONE;
-	ret = location_ielement_get_status(LOCATION_IELEMENT(obj), state);
-	LOC_IF_FAIL(ret, _E, "Fail to get_position [%s]", err_msg(ret));
-
-	return ret;
-}
-
-
-EXPORT_API int
-location_enable_mock(const LocationMethod method, const int enable)
-{
-	int ret = 0;
-	char *_key = NULL;
-
-	LOC_COND_RET(method != LOCATION_METHOD_MOCK, LOCATION_ERROR_PARAMETER, _E, "Method is not mock [%s]", err_msg(LOCATION_ERROR_PARAMETER));
 
 #ifndef TIZEN_PROFILE_TV
 	ret = location_check_cynara(LOCATION_PRIVILEGE);
@@ -669,76 +643,19 @@ location_enable_mock(const LocationMethod method, const int enable)
 	LOC_COND_RET(!developer_option, LOCATION_ERROR_NOT_ALLOWED, _E, "Cannot enable mock location because developer option is not turned on", ret);
 #endif
 
-	_key = __convert_setting_key(method);
-	LOC_COND_RET(!_key, LOCATION_ERROR_NOT_SUPPORTED, _E, "Invalid method = %d [%s]", method, err_msg(LOCATION_ERROR_NOT_SUPPORTED));
-
-	ret = vconf_set_int(_key, enable);
+	ret = vconf_set_int(VCONFKEY_LOCATION_MOCK_ENABLED, enable);
 	if (ret != VCONF_OK) {
-		LOCATION_SECLOG("vconf_set_int failed [%s], ret=[%d]", _key, ret);
-		g_free(_key);
+		LOCATION_SECLOG("vconf_set_int failed [MOCK_ENABLED], ret=[%d]", ret);
 		return LOCATION_ERROR_NOT_ALLOWED;
-	}
-
-	g_free(_key);
-
-	return ret;
-}
-
-#if 0
-static char *__convert_mock_setting_key(LocationMethod method)
-{
-	char *key = NULL;
-	switch (method) {
-	case LOCATION_METHOD_MOCK_GPS:
-			key = g_strdup(VCONFKEY_LOCATION_MOCK_GPS_ENABLED);
-			break;
-	case LOCATION_METHOD_MOCK_WPS:
-			key = g_strdup(VCONFKEY_LOCATION_MOCK_NETWORK_ENABLED);
-			break;
-	default:
-			break;
-	}
-	return key;
-}
-
-EXPORT_API int
-location_set_mock_method_enabled(const LocationMethod method, const int enable)
-{
-	int ret = 0;
-	char *_key = NULL;
-	int vconf_val = 0;
-
-	_key = __convert_setting_key(method);
-	LOC_COND_RET(!_key, LOCATION_ERROR_NOT_SUPPORTED, _E, "Invalid method = %d [%s]", method, err_msg(LOCATION_ERROR_NOT_SUPPORTED));
-
-	ret = vconf_get_int(_key, &vconf_val);
-	if (ret != VCONF_OK) {
-		LOCATION_SECLOG("failed [%s], error [%d]", _key, ret);
-		g_free(_key);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
-
-	if (vconf_val) {
-		_key = __convert_mock_setting_key(method);
-		LOC_COND_RET(!_key, LOCATION_ERROR_NOT_SUPPORTED, _E, "Invalid method[%d]", method);
-		ret = vconf_set_int(_key, enable);
-		if (ret != VCONF_OK) {
-			LOCATION_SECLOG("vconf_set_int failed [%s], ret=[%d]", _key, ret);
-			g_free(_key);
-			return LOCATION_ERROR_NOT_ALLOWED;
-		}
-		g_free(_key);
 	}
 
 	return ret;
 }
-#endif
-
 
 EXPORT_API int
 location_set_mock_location(LocationObject *obj, const LocationPosition *position, const LocationVelocity *velocity, const LocationAccuracy *accuracy)
 {
-	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
+//	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail(position, LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail(velocity, LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail(accuracy, LOCATION_ERROR_PARAMETER);
@@ -753,7 +670,7 @@ location_set_mock_location(LocationObject *obj, const LocationPosition *position
 EXPORT_API int
 location_clear_mock_location(LocationObject *obj)
 {
-	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
+//	g_return_val_if_fail(obj, LOCATION_ERROR_PARAMETER);
 
 	int ret = LOCATION_ERROR_NONE;
 	ret = location_ielement_clear_mock_location(LOCATION_IELEMENT(obj));

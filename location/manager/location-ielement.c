@@ -229,16 +229,6 @@ location_ielement_get_nmea(LocationIElement *self, char **nmea)
 
 
 /* Tizen 3.0 */
-
-int location_ielement_get_status(LocationIElement *self, int *state)
-{
-	g_return_val_if_fail(LOCATION_IS_IELEMENT(self), LOCATION_ERROR_PARAMETER);
-	g_return_val_if_fail(LOCATION_IELEMENT_GET_INTERFACE(self), LOCATION_ERROR_NOT_AVAILABLE);
-	g_return_val_if_fail(LOCATION_IELEMENT_GET_INTERFACE(self)->get_status, LOCATION_ERROR_NOT_AVAILABLE);
-
-	return LOCATION_IELEMENT_GET_INTERFACE(self)->get_status(self, state);
-}
-
 int location_ielement_set_mock_location(LocationIElement *self, const LocationPosition *position, const LocationVelocity *velocity, const LocationAccuracy *accuracy)
 {
 	g_return_val_if_fail(LOCATION_IS_IELEMENT(self), LOCATION_ERROR_PARAMETER);

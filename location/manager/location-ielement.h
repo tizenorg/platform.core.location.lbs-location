@@ -54,8 +54,6 @@ enum {
 	ZONE_OUT,
 	LOCATION_UPDATED,
 	BATCH_UPDATED,
-	MOCK_LOCATION_SET,
-	MOCK_LOCATION_FAIL,
 	STATUS_CHANGED,
 	LAST_SIGNAL,
 };
@@ -99,7 +97,6 @@ struct _LocationIElementInterface {
 	TYPE_GET_NMEA get_nmea;
 
 	/* Tizen 3.0 */
-	TYPE_GET_STATUS get_status;
 	TYPE_SET_MOCK_LOCATION set_mock_location;
 	TYPE_CLEAR_MOCK_LOCATION clear_mock_location;
 };
@@ -124,7 +121,6 @@ int location_ielement_stop_batch(LocationIElement *self);
 int location_ielement_get_nmea(LocationIElement *self, char **nmea);
 
 /* Tizen 3.0 */
-int location_ielement_get_status(LocationIElement *self, int *state);
 int location_ielement_set_mock_location(LocationIElement *self, const LocationPosition *position, const LocationVelocity *velocity, const LocationAccuracy *accuracy);
 int location_ielement_clear_mock_location(LocationIElement *self);
 

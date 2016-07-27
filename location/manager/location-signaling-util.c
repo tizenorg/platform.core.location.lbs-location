@@ -202,7 +202,7 @@ location_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL], gboolean e
 	*prev_vel = location_velocity_copy(cur_vel);
 	*prev_acc = location_accuracy_copy(cur_acc);
 
-	LOCATION_LOGD("cur_pos->status = %d", cur_pos->status);
+//	LOCATION_LOGD("cur_pos->status = %d", cur_pos->status);
 	enable_signaling(obj, signals, prev_enabled, enabled, cur_pos->status);
 	position_velocity_signaling(obj, signals, pos_interval, vel_interval, loc_interval, prev_pos_timestamp, prev_vel_timestamp, prev_loc_timestamp, boundary_list, cur_pos, cur_vel, cur_acc);
 }

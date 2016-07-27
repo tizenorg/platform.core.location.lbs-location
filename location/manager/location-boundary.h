@@ -151,119 +151,40 @@ void location_boundary_free(LocationBoundary *boundary);
 LocationBoundary *location_boundary_copy(const LocationBoundary *boundary);
 
 /**
- * @brief
- * Add Boundary on LocationFW.
- * You should call this fuction when you want to receive a crossing signal(zone-in/zone-out) from #LocationBoundary.
- * @remarks It supports multi-boundaries. \n
-	 However a duplicated boundary would not be allowed.
- * @pre
- * #location_new should be called before.\n
+ * @brief Add Boundary on LocationFW. You should call this fuction when you want to receive a crossing signal(zone-in/zone-out) from #LocationBoundary.
+ * @remarks It supports multi-boundaries. However a duplicated boundary would not be allowed.
+ * @pre #location_new should be called before.\n
  * @post None.
  * @param [in] obj - a #LocationObject
  * @param [in] boundary - a #LocationBoundary
  * @return int
- * @retval 0										Success
- * Please refer #LocationError for more information.
- * @par Example
- * @code
-#include <location.h>
-
-static void cb_zone_in (GObject *self, gpointer boundary, gpointer position, gpointer accuracy, gpointer user_data)
-{
-	g_printf ("[zone-in] position - lat: %f, long: %f", position->latitude, position->longitude);
-}
-
-static void cb_zone_out (GObject *self, gpointer boundary, gpointer position, gpointer accuracy, gpointer user_data)
-{
-	g_printf ("[zone-out] position - lat: %f, long: %f", position->latitude, position->longitude);
-}
-
-void location_test_boundary_add(LocationObject *loc)
-{
-	LocationPosition* rb = location_position_new (0, 37.300, -121.86, 0, LOCATION_STATUS_2D_FIX);
-	LocationPosition* lt = location_position_new (0, 37.360, -121.92, 0, LOCATION_STATUS_2D_FIX);
-
-	LoationBoundary *boundary = location_boundary_new_for_rect (lt, rb);
-
-	ret = location_boundary_add(loc, boundary);
-
-	g_signal_connect(loc, "zone-in", G_CALLBACK(cb_zone_in), NULL);
-	g_siganl_connect(loc, "zone-out", G_CALLBACK(cb_zone_out), NULL);
-
-	location_position_free(rb);
-	location_position_free(lt);
-}
- * @endcode
+ * @retval 0 Success
  */
 int location_boundary_add(const LocationObject *obj, const LocationBoundary *boundary);
 
 /**
- * @brief
- * Remove Boundary on LocationFW.
+ * @brief Remove Boundary on LocationFW.
  * You should call this function when you don't want to receive a crossing signal(zone-in/zone-out) from #LocationBoundary any more.
  * @remarks It supports multi-boundaries.
- * @pre
- * #location_init should be called before.\n
+ * @pre #location_init should be called before.\n
  * @post None.
  * @param [in] obj - a #LocationObject
  * @param [in] boundary - a #LocationBoundary
  * @return int
- * @retval 0										Success
- *
- * Please refer #LocationError for more information.
- * @par Example
- * @code
-#include <location.h>
-
-void location_test_boundary_remove(LocationObject *loc)
-{
-	int ret = 0;
-	LocationPosition* rb = location_position_new (0, 37.300, -121.86, 0, LOCATION_STATUS_2D_FIX);
-	LocationPosition* lt = location_position_new (0, 37.360, -121.92, 0, LOCATION_STATUS_2D_FIX);
-
-	LoationBoundary *boundary = location_boundary_new_for_rect (lt, rb);
-
-	ret = location_boundary_remove(loc, boundary);
-
-	location_position_free(rb);
-	location_position_free(lt);
-
-}
- * @endcode
+ * @retval 0	Success
  */
 int location_boundary_remove(const LocationObject *obj, const LocationBoundary *boundary);
 
 /**
- * @brief
- * Call a function for each element of a Boundary list.
+ * @brief Call a function for each element of a Boundary list.
  * @remarks None.
- * @pre
- * #location_init should be called before.\n
+ * @pre #location_init should be called before.\n
  * @post None.
  * @param [in] obj - a #LocationObject
  * @param [in] func - a #LocationBoundaryFunc
  * @param [in] user_data - a #void
  * @return int
- * @retval 0										Success
- *
- * Please refer #LocationError for more information.
- * @par Example
- * @code
-#include <location.h>
-
-static void remove_boundary(LocationBoundary *boundary, void *user_data)
-{
-	LocationBoundary *loc = (LocationBoundary *) user_data;
-	if (loc == NULL || boundary == NULL) return;
-
-	location_boundary_remove(loc, boundary);
-}
-
-void location_test_boundary_foreach(LocationObject *loc)
-{
-	int ret = location_boundary_foreach(loc, remove_boundary, loc);
-}
- * @endcode
+ * @retval 0	Success
  */
 int location_boundary_foreach(const LocationObject *obj, LocationBoundaryFunc func, gpointer user_data);
 
@@ -275,24 +196,7 @@ int location_boundary_foreach(const LocationObject *obj, LocationBoundaryFunc fu
  * @post	 None.* @param [in] boundary - a #LocationBoundary
  * @param [in] position - a #LocationPosition
  * @return gboolean
- * @retval\n
- * TRUE - if inside\n
- * FALSE - if outside\n
- * @par Example
- * @code
-#include <location.h>
-
-void location_test_boundary_if_inside(LocationObject *loc, LocationBoundary *boundary)
-{
-	gboolean is_inside = FALSE;
-	LocationPosition* position = location_position_new (0, 37.300, -121.86, 0, LOCATION_STATUS_2D_FIX);
-	is_inside = location_boundary_if_inside(boundary, position);
-	if (is_inside == TRUE) g_printf("The position is inside of the boundary\n");
-	else g_printf("The position is outside of the boundary\n");
-
-}
- * @endcode
-
+ * @retval\n TRUE - if inside\n FALSE - if outside\n
  */
 gboolean location_boundary_if_inside(LocationBoundary *boundary, LocationPosition *position);
 

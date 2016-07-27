@@ -68,9 +68,4 @@ gint location_state_ignore_notify(const gchar *path, SettingCB setting_cb);
 		} \
 	}
 
-/* For test
-#define VCONFKEY_LOCATION_MOCK_ENABLED "db/location/setting/MockEnabled"
-#define VCONFKEY_LOCATION_MOCK_STATE "memory/location/mock/state"
-*/
-
 #endif	/* __LOCATION_SETTING_H__ */
